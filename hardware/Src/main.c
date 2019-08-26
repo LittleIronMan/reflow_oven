@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,7 +57,14 @@ static void MX_SPI3_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-
+void myPrint(const char *data, ...) {
+	static uint16_t counter = 1;
+	static char buf[256];
+	int n = sprintf(buf, "%d> %s\n", counter, data);
+	va_list argList;
+	printf(buf, argList);
+	counter++;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -277,30 +284,30 @@ void StartDefaultTask(void const * argument)
 	{
 		osDelay(2000);
 		counter++;
-		uint16_t temperatureRequestData = 0;
-		HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
-		if (err1 == HAL_OK) {
+		//uint16_t temperatureRequestData = 0;
+		//HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
+		//if (err1 == HAL_OK) {
 			uint16_t receivedData = 0;
 			HAL_StatusTypeDef err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
 			if (err2 != HAL_OK) {
-				printf("Receive error, errcode == %d\n", (uint8_t)err2);
+				myPrint("Receive error, errcode == %d", (uint8_t)err2);
 			}
 			else {
+				myPrint("Received data == %d", receivedData);
 				if (receivedData & 0x4) {
-					printf("Disconnected termocouple\n");
+					myPrint("Disconnected termocouple");
 				}
 				else {
-					printf("Received data == %d\n", receivedData);
 					float temp = 0.0f;
 					//temp = ((receivedData >> 3) & 0xfff) * 0.25;
-					temp = ((receivedData >> 3) & 0xfff);
-					printf("Current temperature == %f\n", temp);
+					temp = ((receivedData >> 3) & 0xfff) * 0.25f;
+					myPrint("Current temperature == %f deg", temp);
 				}
 			}
-		}
-		else {
-			printf("Transmit error, errcode == %d\n", (uint8_t)err1);
-		}
+		//}
+		//else {
+		//	myPrint("Transmit error, errcode == %d", (uint8_t)err1);
+		//}
 	}
   /* USER CODE END 5 */ 
 }
