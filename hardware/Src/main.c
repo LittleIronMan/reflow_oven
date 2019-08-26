@@ -61,8 +61,12 @@ void myPrint(const char *data, ...) {
 	static uint16_t counter = 1;
 	static char buf[256];
 	int n = sprintf(buf, "%d> %s\n", counter, data);
-	va_list argList;
-	printf(buf, argList);
+	
+	va_list args;
+	va_start(args, data);
+	vprintf(buf, args);
+	va_end(args);
+	
 	counter++;
 }
 /* USER CODE END PFP */
@@ -206,7 +210,7 @@ static void MX_SPI3_Init(void)
   /* SPI3 parameter configuration*/
   hspi3.Instance = SPI3;
   hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi3.Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
   hspi3.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
@@ -288,13 +292,17 @@ void StartDefaultTask(void const * argument)
 		//HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
 		//if (err1 == HAL_OK) {
 			uint16_t receivedData = 0;
+			uint8_t arr[2] = {0, 0};
 			HAL_StatusTypeDef err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
-			if (err2 != HAL_OK) {
-				myPrint("Receive error, errcode == %d", (uint8_t)err2);
+			HAL_StatusTypeDef err1 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
+			if (err2 != HAL_OK || err1 != HAL_OK) {
+				myPrint("Receive error, errcode == %u", (uint8_t)err2);
 			}
 			else {
-				myPrint("Received data == %d", receivedData);
-				if (receivedData & 0x4) {
+				myPrint("Received data == %x", receivedData);
+				myPrint("Received arr == %x", ((uint16_t)(arr[1] << 8) + arr[0]));
+				uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
+				if (coupleDisconnected) {
 					myPrint("Disconnected termocouple");
 				}
 				else {
