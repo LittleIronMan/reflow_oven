@@ -200,11 +200,11 @@ static void MX_SPI3_Init(void)
   hspi3.Instance = SPI3;
   hspi3.Init.Mode = SPI_MODE_MASTER;
   hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi3.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -273,12 +273,35 @@ void StartDefaultTask(void const * argument)
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
 	uint8_t counter = 0;
-  for(;;)
-  {
-    osDelay(2000);
+	for (;;)
+	{
+		osDelay(2000);
 		counter++;
-	printf("Hello World!!!");
-  }
+		uint16_t temperatureRequestData = 0;
+		HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
+		if (err1 == HAL_OK) {
+			uint16_t receivedData = 0;
+			HAL_StatusTypeDef err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
+			if (err2 != HAL_OK) {
+				printf("Receive error, errcode == %d\n", (uint8_t)err2);
+			}
+			else {
+				if (receivedData & 0x4) {
+					printf("Disconnected termocouple\n");
+				}
+				else {
+					printf("Received data == %d\n", receivedData);
+					float temp = 0.0f;
+					//temp = ((receivedData >> 3) & 0xfff) * 0.25;
+					temp = ((receivedData >> 3) & 0xfff);
+					printf("Current temperature == %f\n", temp);
+				}
+			}
+		}
+		else {
+			printf("Transmit error, errcode == %d\n", (uint8_t)err1);
+		}
+	}
   /* USER CODE END 5 */ 
 }
 
