@@ -1,0 +1,12 @@
+// общие стили для всех страниц веб-приложения
+
+@import "./vars.scss";
+
+.default {
+  //font-family: 'Open Sans', sans-serif;
+  font-family: 'Libre Baskerville', serif;
+  //font-size: 16px;
+  //font-size: 1em;
+  background-color: $mainColor;
+  color: $mainTextColor;
+}
