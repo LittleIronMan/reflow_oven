@@ -351,7 +351,7 @@ void StartDefaultTask(void const * argument)
 					myPrint("Current temperature == %f deg", temp);
 
 					char msgBuf[20];
-					int n = sprintf(msgBuf, "Temp %f", temp);
+					int n = sprintf(msgBuf, "Temp %.2f\n", temp);
 					HAL_UART_Transmit(&huart1, msgBuf, n, HAL_MAX_DELAY);
 				}
 			}

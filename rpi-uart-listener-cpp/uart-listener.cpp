@@ -6,7 +6,7 @@
 
 int main(){
     int fd;
-    if((fd = serialOpen("/dev/ttyS1", 9600)) < 0){
+    if((fd = serialOpen("/dev/ttyAMA0", 115200)) < 0){
         fprintf(stderr, "Unable to open: %s\n", strerror(errno));
         return 1;
     }
