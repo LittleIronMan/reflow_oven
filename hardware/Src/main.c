@@ -329,19 +329,17 @@ void StartDefaultTask(void const * argument)
 		//HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
 		//if (err1 == HAL_OK) {
 			uint16_t receivedData = 0;
-			uint8_t arr[2] = {0, 0};
-			HAL_StatusTypeDef err2, err3;
+			HAL_StatusTypeDef err2;
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 			err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
 			//err3 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
 			
-			if (err2 != HAL_OK || err3 != HAL_OK) {
+			if (err2 != HAL_OK) {
 				myPrint("Receive error, errcode == %u", (uint8_t)err2);
 			}
 			else {
 				myPrint("Received data == %x", receivedData);
-				myPrint("Received arr == %x", ((uint16_t)(arr[1] << 8) + arr[0]));
 				uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
 				if (coupleDisconnected) {
 					myPrint("Disconnected termocouple");
@@ -351,6 +349,10 @@ void StartDefaultTask(void const * argument)
 					//temp = ((receivedData >> 3) & 0xfff) * 0.25;
 					temp = ((receivedData >> 3) & 0xfff) * 0.25f;
 					myPrint("Current temperature == %f deg", temp);
+
+					char msgBuf[20];
+					int n = sprintf(msgBuf, "Temp %f", temp);
+					HAL_UART_Transmit(&huart1, msgBuf, n, HAL_MAX_DELAY);
 				}
 			}
 		//}
