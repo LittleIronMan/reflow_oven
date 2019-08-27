@@ -1,0 +1,25 @@
+>>>---- Using the Mini UART port ----<<<
+	P.S. Не знаю, обязательно делать ли это шаг, но оставлю тут на всякий:
+sudo raspi-config
+	-> Interfacing Options
+	-> P6 Serial
+	-> A screen will ask you if you would like a login shell to be accessible over serial.
+		If you want to control the Raspberry Pi through a serial port terminal, select Yes.
+		If you are using the serial port to control other serial devices, select No.
+	-> If you selected No another screen will ask you if you would like the serial port hardware to be enabled.  Select Yes.
+
+>>>---- Using the PL011 UART port ----<<<
+# For Raspbian Linux releases after 18th March 2016 there is a
+	# device tree file called pi3-miniuart-bt which
+	# makes the Raspberry Pi disable the Bluetooth module and
+	# map pl011 UART on pins 14 and 15 as before.
+# Add device tree to /boot/config.txt to disable the bluetooth module.
+	sudo vi /boot/config.txt
+# Add at the end of the file
+	dtoverlay=pi3-miniuart-bt
+# disable the serial console
+	sudo vi /boot/cmdline.txt
+# Find the following text and remove it:
+	console=serial0,115200
+# Exit the editor saving your changes and then:
+	sudo reboot
