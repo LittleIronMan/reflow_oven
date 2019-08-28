@@ -1,30 +1,11 @@
 // глобальные переменные, которые можно использовать в других scss-модулях
 
-$richFont: 'Playfair Display', serif;
-$richFont: 'Dancing Script', cursive;
+//$richFont: 'Playfair Display', serif;
+//$richFont: 'Dancing Script', cursive;
 $richFont: 'Nanum Myeongjo', serif;
+$mainFont: 'Libre Baskerville', serif;
 
 //$mainColor: #172f1c;
 $mainColor: #ffb65b;
 $mainTextColor: darken($mainColor, 70%);
 $mainBorderColor: rgba($mainTextColor, 0.5);
-$navbarHeight: 12vh;
-$mainContextHeight: 72vh;
-
-$menuBtnHeight: 2em;
-$menuBtnTop: 0.5em;
-$menuBtnLeft: 0.5em;
-$menuItemHeight: 3em;
-
-// the :export directive is the magic sauce for webpack
-:export {
-  mainColor: $mainColor;
-  mainTextColor: $mainTextColor;
-  navbarHeight: $navbarHeight;
-  mainContextHeight: $mainContextHeight;
-
-  menuBtnHeight: $menuBtnHeight;
-  menuBtnTop: $menuBtnTop;
-  menuBtnLeft: $menuBtnLeft;
-  menuItemHeight: $menuItemHeight;
-}

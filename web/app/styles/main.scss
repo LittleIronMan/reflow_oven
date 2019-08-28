@@ -10,6 +10,14 @@
 
 html { font-size: calc(1em + 1vw); }
 
+button {
+  background-color: #747474;
+  border-style: solid;
+  border-width: 0;
+  font-family: $mainFont;
+  font-size: 1rem;
+}
+
 a {
   outline: none;
   text-decoration: none;

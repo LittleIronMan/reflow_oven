@@ -7,3 +7,21 @@
   border-radius: 5px;
   text-align: right;
 }
+
+.controlButtons {
+  & button {
+    margin: 10px;
+    &.start {
+      background-color: #74ff74;
+    }
+    &.stop {
+      background-color: #ff7474;
+    }
+  }
+}
+
+.graphView {
+  border-style: solid;
+  border-width: 0.5px;
+  border-color: $mainBorderColor;
+}
