@@ -1,3 +1,5 @@
+взято отсюда: https://www.abelectronics.co.uk/kb/article/1035/raspberry-pi-3--4-and-zero-w-serial-port-usage
+
 >>>---- Using the Mini UART port ----<<<
 	P.S. Не знаю, обязательно делать ли это шаг, но оставлю тут на всякий:
 sudo raspi-config
