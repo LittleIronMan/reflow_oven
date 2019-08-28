@@ -11,6 +11,7 @@
     "app-module-path": "^2.2.0",
     "classnames": "^2.2.6",
     "express": "^4.17.1",
+    "raspi-serial": "^5.1.1",
     "react": "^16.5.0",
     "react-dom": "^16.5.0",
     "react-router-dom": "^5.0.1",
