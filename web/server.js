@@ -30,16 +30,15 @@ var PIPE_PATH = 'not/exists/path';
 if (process.platform === 'linux') { PIPE_PATH = '/tmp/uart-server.fifo'; }
 if (process.platform === 'win32') { PIPE_PATH = '\\\\.\\pipe\\win32_unused.fifo'; }
 
-var client = net.connect(PIPE_PATH, function() {
-    console.log('Start uart-server.fifo connection');
+var server = net.createServer(function(stream) {
+    console.log('connect to uart-server.fifo');
+    stream.on('data', function(c) {
+        console.log('data:', c.toString());
+    });
+    stream.on('end', function() {
+        server.close();
+    });
 });
 
-client.on('data', function(data) {
-    console.log('Receive uart data:', data.toString());
-    // client.end('Thanks!');
-});
-
-client.on('end', function() {
-    console.log('End uart-server.fifo connection');
-});
+server.listen('/tmp/test.sock');
 
