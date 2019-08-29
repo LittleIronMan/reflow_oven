@@ -32,7 +32,7 @@ int main() {
         char ch = serialGetchar(uartDescriptor);
 		buf[charCounter] = ch;
 		if (ch == '\n') {
-			sendToServer(msg, charCounter);
+			sendToServer(buf, charCounter);
 			charCounter = 0;
 		}
 		else {
