@@ -22,3 +22,19 @@ http.listen(PORT, () => {
     console.log(`App listening to ${PORT}....`);
     console.log('Press Ctrl+C to quit.');
 });
+
+if (process.platform !== 'win32') { // это я так проверяю что сервер запущен на raspberry, а не на винде
+    // теперь настраиваем общение с контроллером через uart
+    const raspi = require('raspi');
+    const Serial = require('raspi-serial').Serial;
+    raspi.init(() => {
+        var serial = new Serial();
+        serial.open(() => {
+            serial.on('data', (data) => {
+                // process.stdout.write(data);
+                console.log(data);
+            });
+            // serial.write('Hello from raspi-serial');
+        });
+    });
+}
