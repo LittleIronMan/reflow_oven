@@ -24,21 +24,17 @@ http.listen(PORT, () => {
 });
 
 // настраиваем uart-listener
-// взято отсюда: https://stackoverflow.com/a/32172145
-var net = require('net');
-var PIPE_PATH = 'not/exists/path';
-if (process.platform === 'linux') { PIPE_PATH = '/tmp/uart-server.fifo'; }
-if (process.platform === 'win32') { PIPE_PATH = '\\\\.\\pipe\\win32_unused.fifo'; }
-
-var server = net.createServer(function(stream) {
-    console.log('connect to uart-server.fifo');
-    stream.on('data', function(c) {
-        console.log('data:', c.toString());
+if (process.platform === 'linux') {
+    const fs = require('fs');
+    const net = require('net');
+    fs.open('/tmp/uart-server.fifo', fs.constants.O_RDONLY | fs.constants.O_NONBLOCK, (err, fd) => {
+        // Handle err
+        const pipe = new net.Socket({fd});
+        // Now `pipe` is a stream that can be used for reading from the FIFO.
+        pipe.on('data', (data) => {
+            console.log(data);
+            // process data ...
+        });
     });
-    stream.on('end', function() {
-        server.close();
-    });
-});
-
-server.listen(PIPE_PATH);
+}
 
