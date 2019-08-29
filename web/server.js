@@ -23,18 +23,23 @@ http.listen(PORT, () => {
     console.log('Press Ctrl+C to quit.');
 });
 
-if (process.platform !== 'win32') { // это я так проверяю что сервер запущен на raspberry, а не на винде
-    // теперь настраиваем общение с контроллером через uart
-    const raspi = require('raspi');
-    const Serial = require('raspi-serial').Serial;
-    raspi.init(() => {
-        var serial = new Serial();
-        serial.open(() => {
-            serial.on('data', (data) => {
-                // process.stdout.write(data);
-                console.log(data);
-            });
-            // serial.write('Hello from raspi-serial');
-        });
-    });
-}
+// настраиваем uart-listener
+// взято отсюда: https://stackoverflow.com/a/32172145
+var net = require('net');
+var PIPE_PATH = 'not/exists/path';
+if (process.platform === 'linux') { PIPE_PATH = '/tmp/uart-server.fifo'; }
+if (process.platform === 'win32') { PIPE_PATH = '\\\\.\\pipe\\win32_unused.fifo'; }
+
+var client = net.connect(PIPE_PATH, function() {
+    console.log('Start uart-server.fifo connection');
+});
+
+client.on('data', function(data) {
+    console.log('Receive uart data:', data.toString());
+    // client.end('Thanks!');
+});
+
+client.on('end', function() {
+    console.log('End uart-server.fifo connection');
+});
+
