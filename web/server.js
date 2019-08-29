@@ -40,5 +40,5 @@ var server = net.createServer(function(stream) {
     });
 });
 
-server.listen('/tmp/test.sock');
+server.listen(PIPE_PATH);
 
