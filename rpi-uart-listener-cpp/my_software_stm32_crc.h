@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-const uint32_t CRC_INITIALVALUE = 0xFFFFFFFF;
+extern const uint32_t CRC_INITIALVALUE;
 
 uint32_t stm32_sw_crc32_by_bit(uint32_t crc32, uint8_t pBuffer[], uint32_t NumOfByte);
 uint32_t stm32_sw_crc32_by_nibble(uint32_t crc32, uint8_t pBuffer[], uint32_t NumOfByte);
