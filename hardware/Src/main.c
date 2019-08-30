@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdarg.h>
+#include "safe_uart_messenger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -378,6 +379,13 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfByte)
+{
+	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfByte/4);
+}
+
+uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfByte) = crc_calc_hardware;
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -397,40 +405,36 @@ void StartDefaultTask(void const * argument)
 	{
 		osDelay(500);
 		counter++;
-		//uint16_t temperatureRequestData = 0;
-		//HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
-		//if (err1 == HAL_OK) {
-			uint16_t receivedData = 0;
-			HAL_StatusTypeDef err2;
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-			err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
-			//err3 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
-			
-			if (err2 != HAL_OK) {
-				myPrint("Receive error, errcode == %u", (uint8_t)err2);
+
+		uint16_t receivedData = 0;
+		HAL_StatusTypeDef err2;
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+		err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
+		//err3 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
+		
+		if (err2 != HAL_OK) {
+			myPrint("Receive error, errcode == %u", (uint8_t)err2);
+		}
+		else {
+			myPrint("Received data == %x", receivedData);
+			uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
+			if (coupleDisconnected) {
+				myPrint("Disconnected termocouple");
 			}
 			else {
-				myPrint("Received data == %x", receivedData);
-				uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
-				if (coupleDisconnected) {
-					myPrint("Disconnected termocouple");
-				}
-				else {
-					float temp = 0.0f;
-					//temp = ((receivedData >> 3) & 0xfff) * 0.25;
-					temp = ((receivedData >> 3) & 0xfff) * 0.25f;
-					myPrint("Current temperature == %f deg", temp);
+				float temp = 0.0f;
+				//temp = ((receivedData >> 3) & 0xfff) * 0.25;
+				temp = ((receivedData >> 3) & 0xfff) * 0.25f;
+				myPrint("Current temperature == %f deg", temp);
 
-					char msgBuf[20];
-					int n = sprintf(msgBuf, "Temp %.2f\n", temp);
-					HAL_UART_Transmit(&huart1, msgBuf, n, HAL_MAX_DELAY);
-				}
+				char msgContentBuf[20];
+				uint16_t n1 = sprintf(msgContentBuf, "Temp %.2f\n", temp);
+				char uartMsgBuf[256];
+				uint16_t n2 = createUartMsg(uartMsgBuf, msgContentBuf, n1);
+				HAL_UART_Transmit(&huart1, uartMsgBuf, n2, HAL_MAX_DELAY);
 			}
-		//}
-		//else {
-		//	myPrint("Transmit error, errcode == %d", (uint8_t)err1);
-		//}
+		}
 	}
   /* USER CODE END 5 */ 
 }
