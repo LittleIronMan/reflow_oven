@@ -1,4 +1,4 @@
-#include "my_software_stm32_crc.hpp"
+#include "my_software_stm32_crc.h"
 
 const uint32_t POLY_USED_IN_STM32 = 0x04C11DB7;
 
