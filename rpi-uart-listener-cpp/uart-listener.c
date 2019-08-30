@@ -109,16 +109,16 @@ int main() {
 		case CHECK_SUM: {
 			if ((charCounter & 0x0003) == 0) {
 				// перепроверяем пакет целиком, включая контрольную сумму
-				contentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
-				printf("Returned contentLen == %d\n", contentLen); fflush(stdout);
-				if (contentLen < 0) {
+				long validContentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
+				printf("Returned contentLen == %d\n", validContentLen); fflush(stdout);
+				if (validContentLen < 0) {
 					printf("Wrong package: bad checksum\n"); fflush(stdout);
 				}
 				else {
 					printf("Package received!\n"); fflush(stdout);
-					contentBuf[contentLen] = '\n';
+					contentBuf[validContentLen] = '\n';
 					//sendToServer(buf, charCounter);
-					write(fifoDescriptor, uartBuf, contentLen + 1);
+					write(fifoDescriptor, uartBuf, validContentLen + 1);
 				}
 				state = NO_MSG;
 			}
