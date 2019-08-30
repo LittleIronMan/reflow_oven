@@ -78,6 +78,7 @@ int main() {
 				if (ch == '^') {
 					state++;
 					contentLen = *((uint16_t*)&uartBuf[1]);
+					printf("Package begin detected: msg lenght == %d\n", contentLen); fflush(stdout);
 				}
 				else {
 					state = NO_MSG;
@@ -89,6 +90,7 @@ int main() {
 			if (charCounter == 4 + contentLen) {
 				if (ch == '$') {
 					state++;
+					printf("Package end detected\n"); fflush(stdout);
 				}
 				else {
 					printf("Wrong package: bad message end\n"); fflush(stdout);

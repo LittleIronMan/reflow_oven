@@ -1,5 +1,6 @@
 #include "safe_uart_messenger.h"
 #include <string.h>
+#include <stdio.h>
 
 uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
 {
