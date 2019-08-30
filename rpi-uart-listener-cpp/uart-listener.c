@@ -23,6 +23,14 @@ char *uartToServerFifo = "/tmp/uart-server.fifo";
 bool isFileExists(const char *name);
 void sendToServer(char *msg, int len);
 
+typedef enum {
+	NO_MSG = 0,
+	MSG_BEGIN,
+	CONTENT,
+	MSG_END,
+	CHECK_SUM
+} MessageReceiverState;
+
 int main() {
 	printf("Main func started!\n"); fflush(stdout);
 	int uartDescriptor;
@@ -48,28 +56,53 @@ int main() {
 
 	printf("Start loop\n"); fflush(stdout);
 	char uartBuf[256]; // буфер, в котором будет храниться передаваемые из контроллера данные(упакованные в посылки)
+	uint16_t charCounter = 0; // счетчик символов в буфере
 	char contentBuf[256]; // в этом буфере будут хранится распакованные данные
-	unsigned int charCounter = 0; // счетчик символов в буфере
-	bool msgStartDetected = false, msgContentEndDetected = false;
+	uint16_t contentLen = 0; // количество ожидаемых символов в буфере
+	MessageReceiverState state = NO_MSG;
 	while (true) {
 		// бесконечно читаем из uart'a по одному символу и передаем принятые строки серверу
 		char ch = serialGetchar(uartDescriptor);
 		// putchar(ch); fflush(stdout);
 		uartBuf[charCounter] = ch;
-		if (!msgStartDetected) {
+
+		switch (state) {
+		case NO_MSG: {
 			if (ch == '^') {
-				msgStartDetected = true;
-				charCounter = 1; continue;
+				state++;
+				charCounter = 0;
 			}
-		}
-		else if (!msgContentEndDetected) {
-			if (ch == '$') {
-				msgContentEndDetected = true;
+			break; }
+		case MSG_BEGIN: {
+			if (charCounter == 4) {
+				if (ch == '^') {
+					state++;
+					contentLen = *((uint16_t*)&uartBuf[1]);
+				}
+				else {
+					state = NO_MSG;
+				}
 			}
-		}
-		else {
-			if (ch == '\0') {
-				long contentLen = getMsgContent(contentBuf, uartBuf, charCounter - 1);
+			break; }
+		case CONTENT: {
+			if (charCounter == 4 + contentLen + 1) {
+				if (ch == '$') {
+					state++;
+				}
+				else {
+					state = NO_MSG;
+				}
+			}
+			break; }
+		case MSG_END: {
+			if (charCounter & 0x0003 == 1) {
+				state++;
+			}
+			break; }
+		case CHECK_SUM: {
+			if (charCounter & 0x0003 == 0) {
+				// перепроверяем пакет целиком, включая контрольную сумму
+				contentLen = getMsgContent(contentBuf, uartBuf, charCounter);
 				if (contentLen < 0) {
 					printf("\nWrong package!\n"); fflush(stdout);
 				}
@@ -78,8 +111,10 @@ int main() {
 					//sendToServer(buf, charCounter);
 					write(fifoDescriptor, uartBuf, contentLen + 1);
 				}
-				msgStartDetected = msgContentEndDetected = false;
+				state = NO_MSG;
 			}
+			break; }
+		default: break;
 		}
 		charCounter++;
 	}
