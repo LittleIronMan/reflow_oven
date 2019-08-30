@@ -198,10 +198,10 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_crc.h">
       <Filter>Drivers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.hpp">
+    <ClInclude Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.h">
+    <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
@@ -302,16 +302,16 @@
     <ClCompile Include="..\Src\unix_time.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c">
       <Filter>Drivers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.cpp">
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c">
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

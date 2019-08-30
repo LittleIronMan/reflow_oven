@@ -115,7 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.hpp" />
+    <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.h" />
     <ClInclude Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h" />
@@ -178,9 +178,9 @@
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.cpp" />
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.c" />
     <ClCompile Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c" />
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.cpp" />
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c" />

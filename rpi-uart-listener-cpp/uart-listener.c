@@ -8,7 +8,13 @@
 #include <unistd.h> 
 
 #include <wiringSerial.h>
+
 #include "safe_uart/safe_uart_messenger.h"
+#include "my_software_stm32_crc.h"
+uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
+	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
+}
+uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software;
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
