@@ -50,27 +50,38 @@ int main() {
 	char uartBuf[256]; // буфер, в котором будет храниться передаваемые из контроллера данные(упакованные в посылки)
 	char contentBuf[256]; // в этом буфере будут хранится распакованные данные
 	unsigned int charCounter = 0; // счетчик символов в буфере
+	bool msgStartDetected = false, msgContentEndDetected = false;
 	while (true) {
 		// бесконечно читаем из uart'a по одному символу и передаем принятые строки серверу
 		char ch = serialGetchar(uartDescriptor);
-		putchar(ch);
+		// putchar(ch); fflush(stdout);
 		uartBuf[charCounter] = ch;
-		if (ch == '\0') {
-			long contentLen = getMsgContent(contentBuf, uartBuf, charCounter - 1);
-			if (contentLen < 0) {
-				printf("\nWrong package!\n"); fflush(stdout);
+		if (!msgStartDetected) {
+			if (ch == '^') {
+				msgStartDetected = true;
+				charCounter = 1; continue;
 			}
-			else {
-				contentBuf[contentLen] = '\n';
-				//sendToServer(buf, charCounter);
-				write(fifoDescriptor, uartBuf, contentLen + 1); 
+		}
+		else if (!msgContentEndDetected) {
+			if (ch == '$') {
+				msgContentEndDetected = true;
 			}
-			charCounter = 0;
 		}
 		else {
-			charCounter++;
+			if (ch == '\0') {
+				long contentLen = getMsgContent(contentBuf, uartBuf, charCounter - 1);
+				if (contentLen < 0) {
+					printf("\nWrong package!\n"); fflush(stdout);
+				}
+				else {
+					contentBuf[contentLen] = '\n';
+					//sendToServer(buf, charCounter);
+					write(fifoDescriptor, uartBuf, contentLen + 1);
+				}
+				msgStartDetected = msgContentEndDetected = false;
+			}
 		}
-		fflush(stdout);
+		charCounter++;
 	}
 	//close(fifoDescriptor); 
 }
