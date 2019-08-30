@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.hpp" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h" />
@@ -137,6 +138,7 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h" />
+    <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_crc.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h" />
@@ -152,9 +154,11 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_spi.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h" />
+    <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h" />
     <ClInclude Include="..\Inc\main.h" />
     <ClInclude Include="..\Inc\stm32f1xx_hal_conf.h" />
     <ClInclude Include="..\Inc\stm32f1xx_it.h" />
+    <ClInclude Include="..\Inc\unix_time.h" />
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h" />
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h" />
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h" />
@@ -173,8 +177,11 @@
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.cpp" />
+    <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.cpp" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c" />
+    <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dma.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash_ex.c" />
@@ -189,6 +196,7 @@
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi_ex.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_tim.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_tim_ex.c" />
+    <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_uart.c" />
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.c" />
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\croutine.c" />
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c" />
@@ -198,10 +206,12 @@
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\queue.c" />
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\tasks.c" />
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\timers.c" />
+    <ClCompile Include="..\Src\freertos.c" />
     <ClCompile Include="..\Src\main.c" />
     <ClCompile Include="..\Src\stm32f1xx_hal_msp.c" />
     <ClCompile Include="..\Src\stm32f1xx_it.c" />
     <ClCompile Include="..\Src\system_stm32f1xx.c" />
+    <ClCompile Include="..\Src\unix_time.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

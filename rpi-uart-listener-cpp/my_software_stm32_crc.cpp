@@ -1,5 +1,7 @@
 #include "my_software_stm32_crc.hpp"
 
+const uint32_t POLY_USED_IN_STM32 = 0x04C11DB7;
+
 uint32_t stm32_sw_crc32_by_bit(uint32_t crc32, uint8_t pBuffer[], uint32_t NumOfByte)
 {
 	uint32_t last_data;
