@@ -1,1 +1,1 @@
-g++ -o uart-listener -lwiringPi uart-listener.cpp
+gcc -o uart-listener -lwiringPi uart-listener.cpp

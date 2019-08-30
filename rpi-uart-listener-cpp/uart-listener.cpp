@@ -7,7 +7,7 @@
 #include <unistd.h> 
 
 #include <wiringSerial.h>
-#include <safe_uart/safe_uart_messenger.h>
+#include "safe_uart/safe_uart_messenger.h"
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
