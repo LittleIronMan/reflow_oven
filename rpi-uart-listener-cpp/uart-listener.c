@@ -63,14 +63,14 @@ int main() {
 	while (true) {
 		// бесконечно читаем из uart'a по одному символу и передаем принятые строки серверу
 		char ch = serialGetchar(uartDescriptor);
+		if (state != NO_MSG) { uartBuf[charCounter] = ch; }
 		// putchar(ch); fflush(stdout);
-		uartBuf[charCounter] = ch;
 
 		switch (state) {
 		case NO_MSG: {
 			if (ch == '^') {
 				state++;
-				charCounter = 0;
+				charCounter = 0; uartBuf[0] = '^';
 			}
 			break; }
 		case MSG_BEGIN: {
@@ -118,6 +118,7 @@ int main() {
 			break; }
 		default: break;
 		}
+
 		charCounter++;
 	}
 	//close(fifoDescriptor); 
