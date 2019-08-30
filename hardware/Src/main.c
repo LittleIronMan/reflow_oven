@@ -430,7 +430,7 @@ void StartDefaultTask(void const * argument)
 
 				char msgContentBuf[20];
 				uint16_t n1 = sprintf(msgContentBuf, "Temp %.2f\n", temp);
-				char uartMsgBuf[256];
+				char uartMsgBuf[40];
 				uint16_t n2 = createUartMsg(uartMsgBuf, msgContentBuf, n1);
 				
 				printf("Uart message: ");
@@ -444,7 +444,8 @@ void StartDefaultTask(void const * argument)
 				if (contentLen < 0) { myPrint("Unpack uart message error"); }
 				else { myPrint("Unpacked message: %s", unpackedMsg); }
 				
-				HAL_UART_Transmit(&huart1, uartMsgBuf, n2, HAL_MAX_DELAY);
+				uartMsgBuf[n2] = '\0';
+				HAL_UART_Transmit(&huart1, uartMsgBuf, n2 + 1, HAL_MAX_DELAY);
 			}
 		}
 	}

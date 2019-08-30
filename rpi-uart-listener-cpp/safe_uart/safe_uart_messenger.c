@@ -21,13 +21,22 @@ uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t c
 
 long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 {
-	if (msgNumOfBytes <= 8) { return -1; }
-	if (uartMsgBuf[0] != '^') { return -1; }
+	if (msgNumOfBytes <= 8) {
+		printf("Too little bytes count: %d\n", msgNumOfBytes); return -1;
+	}
+	if (uartMsgBuf[0] != '^') {
+		printf("First symbol != %02x, but %02x\n", '^', uartMsgBuf[0]); return -1;
+	}
 	uint16_t contentLen = *((uint16_t*)&uartMsgBuf[1]);
-	if (uartMsgBuf[3 + contentLen] != '$') { return -1; }
+	if (uartMsgBuf[3 + contentLen] != '$') {
+		printf("Content close symbol != %02x, but %02x\n", '$', uartMsgBuf[3 + contentLen]); return -1;
+	}
 	uint32_t packageSum = *((uint32_t*)&uartMsgBuf[msgNumOfBytes - 4]);
 	uint32_t checkSum = crc_calc(&uartMsgBuf[3], contentLen);
-	if (packageSum != checkSum) { return -1; }
+	if (packageSum != checkSum) {
+		printf("Check sum's are not equal: in package %x, but calculated %x", packageSum, checkSum);
+		return -1;
+	}
 	memcpy(msgContentBuf, &uartMsgBuf[3], contentLen);
 	return contentLen;
 }
