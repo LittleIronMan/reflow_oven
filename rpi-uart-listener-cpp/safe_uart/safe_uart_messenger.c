@@ -43,22 +43,23 @@ uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t c
 long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 {
 	if (msgNumOfBytes <= 9) {
-		printf("Too little bytes count: %d\n", msgNumOfBytes); return -1;
+		printf("Too little bytes count: %d\n", msgNumOfBytes); fflush(stdout); return -1;
 	}
 	if (uartMsgBuf[0] != '^' || uartMsgBuf[3] != '^') {
-		printf("Bad package gate\n"); return -1;
+		printf("Bad package gate\n"); fflush(stdout); return -1;
 	}
 	uint16_t contentLen = *((uint16_t*)&uartMsgBuf[1]);
 	if (uartMsgBuf[4 + contentLen] != '$') {
-		printf("Content close symbol != %02x, but %02x\n", '$', uartMsgBuf[4 + contentLen]); return -1;
+		printf("Content close symbol != %02x, but %02x\n", '$', uartMsgBuf[4 + contentLen]); fflush(stdout); return -1;
 	}
 	else if (msgNumOfBytes - (4 + contentLen + 1) < 4) {
-		printf("Bad uart package size\n"); return -1;
+		printf("Bad uart package size\n"); fflush(stdout); return -1;
 	}
 	uint32_t packageSum = *((uint32_t*)&uartMsgBuf[msgNumOfBytes - 4]);
+	printf("Calculate checksum\n"); fflush(stdout);
 	uint32_t checkSum = crc_calc(&uartMsgBuf[4], contentLen);
 	if (packageSum != checkSum) {
-		printf("Check sum's are not equal: in package %x, but calculated %x", packageSum, checkSum);
+		printf("Check sum's are not equal: in package %x, but calculated %x", packageSum, checkSum); fflush(stdout);
 		return -1;
 	}
 	memcpy(msgContentBuf, &uartMsgBuf[4], contentLen);
