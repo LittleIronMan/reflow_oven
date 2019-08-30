@@ -379,12 +379,12 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfByte)
+uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfBytes)
 {
-	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfByte/4);
+	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfBytes >> 2);
 }
 
-uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfByte) = crc_calc_hardware;
+uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_hardware;
 
 /* USER CODE END 4 */
 
@@ -417,7 +417,7 @@ void StartDefaultTask(void const * argument)
 			myPrint("Receive error, errcode == %u", (uint8_t)err2);
 		}
 		else {
-			myPrint("Received data == %x", receivedData);
+			//myPrint("Received data == %x", receivedData);
 			uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
 			if (coupleDisconnected) {
 				myPrint("Disconnected termocouple");
@@ -426,12 +426,24 @@ void StartDefaultTask(void const * argument)
 				float temp = 0.0f;
 				//temp = ((receivedData >> 3) & 0xfff) * 0.25;
 				temp = ((receivedData >> 3) & 0xfff) * 0.25f;
-				myPrint("Current temperature == %f deg", temp);
+				//myPrint("Current temperature == %f deg", temp);
 
 				char msgContentBuf[20];
 				uint16_t n1 = sprintf(msgContentBuf, "Temp %.2f\n", temp);
 				char uartMsgBuf[256];
 				uint16_t n2 = createUartMsg(uartMsgBuf, msgContentBuf, n1);
+				
+				printf("Uart message: ");
+				for (uint16_t i = 0; i < n2; i++) {
+					printf("%02x ", (uint8_t)uartMsgBuf[i]);
+				}
+				printf("\n");
+				
+				char unpackedMsg[20];
+				long contentLen = getMsgContent(unpackedMsg, uartMsgBuf, n2);
+				if (contentLen < 0) { myPrint("Unpack uart message error"); }
+				else { myPrint("Unpacked message: %s", unpackedMsg); }
+				
 				HAL_UART_Transmit(&huart1, uartMsgBuf, n2, HAL_MAX_DELAY);
 			}
 		}
