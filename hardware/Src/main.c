@@ -323,7 +323,7 @@ void StartDefaultTask(void const * argument)
 	uint8_t counter = 0;
 	for (;;)
 	{
-		osDelay(2000);
+		osDelay(500);
 		counter++;
 		//uint16_t temperatureRequestData = 0;
 		//HAL_StatusTypeDef err1 = HAL_SPI_Transmit(&hspi3, (uint8_t*)&temperatureRequestData, 1, HAL_MAX_DELAY);
