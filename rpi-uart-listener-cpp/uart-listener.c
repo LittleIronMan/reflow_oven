@@ -63,7 +63,7 @@ int main() {
 	while (true) {
 		// бесконечно читаем из uart'a по одному символу и передаем принятые строки серверу
 		char ch = serialGetchar(uartDescriptor);
-		if (state != NO_MSG) { uartBuf[charCounter] = ch; }
+		if (state != NO_MSG && charCounter < 256) { uartBuf[charCounter] = ch; }
 		// putchar(ch); fflush(stdout);
 
 		switch (state) {
@@ -98,12 +98,16 @@ int main() {
 			}
 			break; }
 		case MSG_END: {
-			if (charCounter & 0x0003 == 0) {
+			if ((charCounter & 0x0003) == 0) {
 				state++;
+				printf("Check sum detected\n"); fflush(stdout);
+			}
+			else if (charCounter >= 4 + contentLen + 4) {
+				state = NO_MSG;
 			}
 			break; }
 		case CHECK_SUM: {
-			if (charCounter & 0x0003 == 0) {
+			if ((charCounter & 0x0003) == 0) {
 				// перепроверяем пакет целиком, включая контрольную сумму
 				contentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
 				if (contentLen < 0) {
