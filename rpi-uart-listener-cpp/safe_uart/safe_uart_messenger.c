@@ -59,7 +59,7 @@ long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNu
 	printf("Calculate checksum\n"); fflush(stdout);
 	uint32_t checkSum = crc_calc(&uartMsgBuf[4], contentLen);
 	if (packageSum != checkSum) {
-		printf("Check sum's are not equal: in package %x, but calculated %x", packageSum, checkSum); fflush(stdout);
+		printf("Check sum's are not equal: in package %x, but calculated %x\n", packageSum, checkSum); fflush(stdout);
 		return -1;
 	}
 	memcpy(msgContentBuf, &uartMsgBuf[4], contentLen);

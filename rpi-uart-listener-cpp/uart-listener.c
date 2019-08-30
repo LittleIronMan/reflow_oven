@@ -110,6 +110,7 @@ int main() {
 			if ((charCounter & 0x0003) == 0) {
 				// перепроверяем пакет целиком, включая контрольную сумму
 				contentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
+				printf("Returned contentLen == %d\n", contentLen); fflush(stdout);
 				if (contentLen < 0) {
 					printf("Wrong package: bad checksum\n"); fflush(stdout);
 				}
