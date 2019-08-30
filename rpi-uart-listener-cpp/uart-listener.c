@@ -74,7 +74,7 @@ int main() {
 			}
 			break; }
 		case MSG_BEGIN: {
-			if (charCounter == 4) {
+			if (charCounter == 3) {
 				if (ch == '^') {
 					state++;
 					contentLen = *((uint16_t*)&uartBuf[1]);
@@ -86,7 +86,7 @@ int main() {
 			}
 			break; }
 		case CONTENT: {
-			if (charCounter == 4 + contentLen + 1) {
+			if (charCounter == 4 + contentLen) {
 				if (ch == '$') {
 					state++;
 				}
@@ -96,14 +96,14 @@ int main() {
 			}
 			break; }
 		case MSG_END: {
-			if (charCounter & 0x0003 == 1) {
+			if (charCounter & 0x0003 == 0) {
 				state++;
 			}
 			break; }
 		case CHECK_SUM: {
 			if (charCounter & 0x0003 == 0) {
 				// перепроверяем пакет целиком, включая контрольную сумму
-				contentLen = getMsgContent(contentBuf, uartBuf, charCounter);
+				contentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
 				if (contentLen < 0) {
 					printf("Wrong package: bad checksum\n"); fflush(stdout);
 				}
