@@ -81,6 +81,7 @@ int main() {
 				}
 				else {
 					state = NO_MSG;
+					printf("Wrong package: bad begin\n"); fflush(stdout);
 				}
 			}
 			break; }
@@ -90,7 +91,7 @@ int main() {
 					state++;
 				}
 				else {
-					state = NO_MSG;
+					printf("Wrong package: bad message end\n"); fflush(stdout);
 				}
 			}
 			break; }
@@ -104,9 +105,10 @@ int main() {
 				// перепроверяем пакет целиком, включая контрольную сумму
 				contentLen = getMsgContent(contentBuf, uartBuf, charCounter);
 				if (contentLen < 0) {
-					printf("\nWrong package!\n"); fflush(stdout);
+					printf("Wrong package: bad checksum\n"); fflush(stdout);
 				}
 				else {
+					printf("Package received!\n"); fflush(stdout);
 					contentBuf[contentLen] = '\n';
 					//sendToServer(buf, charCounter);
 					write(fifoDescriptor, uartBuf, contentLen + 1);
