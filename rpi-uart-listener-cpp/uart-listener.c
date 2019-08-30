@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <fcntl.h> 
 #include <sys/stat.h> 
@@ -49,14 +50,14 @@ int main() {
 		putchar(ch);
 		uartBuf[charCounter] = ch;
 		if (ch == '\0') {
-			long contextLen = getMsgContent(contentBuf, uartBuf, charCounter - 1);
-			if (contextLen < 0) {
-				printf("\nWrong package!\n"); fflush();
+			long contentLen = getMsgContent(contentBuf, uartBuf, charCounter - 1);
+			if (contentLen < 0) {
+				printf("\nWrong package!\n"); fflush(stdout);
 			}
 			else {
-				contextBuf[contextLen] = '\n';
+				contentBuf[contentLen] = '\n';
 				//sendToServer(buf, charCounter);
-				write(fifoDescriptor, uartBuf, contextLen + 1); 
+				write(fifoDescriptor, uartBuf, contentLen + 1); 
 			}
 			charCounter = 0;
 		}
