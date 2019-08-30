@@ -32,7 +32,7 @@ if (process.platform === 'linux') {
         const pipe = new net.Socket({fd});
         // Now `pipe` is a stream that can be used for reading from the FIFO.
         pipe.on('data', (data) => {
-            console.log(data);
+            console.log(data.toString());
             // process data ...
         });
     });
