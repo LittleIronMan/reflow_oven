@@ -101,13 +101,13 @@ int main() {
 			}
 			break; }
 		case MSG_END: {
-			if ((charCounter & 0x0003) == 0) {
+			if ((charCounter & 0x0003) == 0) { // последняя тетрада байт
 				state++;
 				nrcLogV("Check sum detected");
 			}
 			break; }
 		case CHECK_SUM: {
-			if ((charCounter & 0x0003) == 0) {
+			if ((charCounter & 0x0003) == 3) { // последний байт пакета
 				// перепроверяем пакет целиком, включая контрольную сумму
 				long validContentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
 				nrcLogV("Returned contentLen == %d", validContentLen);

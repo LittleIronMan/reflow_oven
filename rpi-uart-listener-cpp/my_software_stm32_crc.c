@@ -1,6 +1,6 @@
 #include "my_software_stm32_crc.h"
 
-const uint32_t POLY_USED_IN_STM32 = 0x04C11DB7;
+const uint32_t POLY_USED_IN_STM32 = 0xEDB88320;
 const uint32_t CRC_INITIALVALUE = 0xFFFFFFFF;
 
 uint32_t stm32_sw_crc32_by_bit(uint32_t crc32, uint8_t pBuffer[], uint32_t NumOfByte)
