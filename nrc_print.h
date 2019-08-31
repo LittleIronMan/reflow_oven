@@ -23,7 +23,7 @@ void nrcPrintfEx(uint8_t viewMode, char *fmt, ...);
 
 #if NRC_LOG_LEVEL >= NRC_LOG_LEVEL_DEBUG
 #define nrcPrintfD(...) nrcPrintfEx(0, __VA_ARGS__)
-#define nrcLogD(...) nrcPrintfEx(NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
+#define nrcLogD(...); nrcPrintfEx(NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
 #else
 #define nrcPrintfD(...)
 #define nrcLogD(...)
