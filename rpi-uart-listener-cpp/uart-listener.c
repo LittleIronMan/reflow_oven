@@ -65,6 +65,7 @@ int main() {
 		char ch = serialGetchar(uartDescriptor);
 		if (state != NO_MSG && charCounter < 256) { uartBuf[charCounter] = ch; }
 		// putchar(ch); fflush(stdout);
+		printf("%02x ", ch);
 
 		switch (state) {
 		case NO_MSG: {
