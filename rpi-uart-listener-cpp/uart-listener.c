@@ -99,7 +99,7 @@ int main() {
 			}
 			break; }
 		case MSG_END: {
-			if ((charCounter & 0x0003) == 0) {
+			if ((charCounter & 0x0003) == 0) { // последняя тетрада байт
 				state++;
 				printf("Check sum detected\n"); fflush(stdout);
 			}
@@ -108,7 +108,7 @@ int main() {
 			}
 			break; }
 		case CHECK_SUM: {
-			if ((charCounter & 0x0003) == 0) {
+			if ((charCounter & 0x0003) == 3) { // последний байт пакета
 				// перепроверяем пакет целиком, включая контрольную сумму
 				long validContentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
 				printf("Returned contentLen == %d\n", validContentLen); fflush(stdout);
