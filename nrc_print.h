@@ -20,19 +20,21 @@ void nrcPrintfEx(uint8_t viewMode, char *fmt, ...);
 
 #define nrcPrintf(...) nrcPrintfEx(0, __VA_ARGS__)
 #define nrcLog(...) nrcPrintfEx(NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
-#define nrcPrintfD(...)
-#define nrcLogD(...)
-#define nrcPrintfV(...)
-#define nrcLogV(...)
 
 #if NRC_LOG_LEVEL >= NRC_LOG_LEVEL_DEBUG
 #define nrcPrintfD(...) nrcPrintfEx(0, __VA_ARGS__)
 #define nrcLogD(...) nrcPrintfEx(NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
+#else
+#define nrcPrintfD(...)
+#define nrcLogD(...)
 #endif
 
 #if NRC_LOG_LEVEL >= NRC_LOG_LEVEL_VERBATIM
 #define nrcPrintfV(...) nrcPrintfEx(0, __VA_ARGS__)
 #define nrcLogV(...) nrcPrintfEx(NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
+#endif
+#define nrcPrintfV(...)
+#define nrcLogV(...)
 #endif
 
 #endif // nrc_printf_h
