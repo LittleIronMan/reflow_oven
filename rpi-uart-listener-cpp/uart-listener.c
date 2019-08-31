@@ -112,6 +112,11 @@ int main() {
 				// перепроверяем пакет целиком, включая контрольную сумму
 				long validContentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
 				printf("Returned contentLen == %d\n", validContentLen); fflush(stdout);
+				for (uint16_t i = 0; i < charCounter + 1; i++) {
+					printf("%02x ", uartBuf[i]);
+				}
+				printf("\n"); fflush(stdout);
+
 				if (validContentLen < 0) {
 					printf("Wrong package: bad checksum\n"); fflush(stdout);
 				}
