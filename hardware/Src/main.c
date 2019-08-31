@@ -24,8 +24,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdarg.h>
 #include "safe_uart_messenger.h"
+#include "nrc_print.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,18 +67,7 @@ static void MX_CRC_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-void myPrint(const char *data, ...) {
-	static uint16_t counter = 1;
-	static char buf[256];
-	int n = sprintf(buf, "%d> %s\n", counter, data);
-	
-	va_list args;
-	va_start(args, data);
-	vprintf(buf, args);
-	va_end(args);
-	
-	counter++;
-}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -414,13 +403,13 @@ void StartDefaultTask(void const * argument)
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
 		
 		if (err2 != HAL_OK) {
-			myPrint("Receive error, errcode == %u", (uint8_t)err2);
+			nrcLog("Receive error, errcode == %u", (uint8_t)err2);
 		}
 		else {
 			//myPrint("Received data == %x", receivedData);
 			uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
 			if (coupleDisconnected) {
-				myPrint("Disconnected termocouple");
+				nrcLog("Disconnected termocouple");
 			}
 			else {
 				float temp = 0.0f;
@@ -433,16 +422,16 @@ void StartDefaultTask(void const * argument)
 				char uartMsgBuf[40];
 				uint16_t n2 = createUartMsg(uartMsgBuf, msgContentBuf, n1);
 				
-				printf("Uart message: ");
+				nrcPrintfV("Uart message: ");
 				for (uint16_t i = 0; i < n2; i++) {
-					printf("%02x ", (uint8_t)uartMsgBuf[i]);
+					nrcPrintfV("%02x ", (uint8_t)uartMsgBuf[i]);
 				}
-				printf("\n");
+				nrcPrintfV("\n");
 				
 				char unpackedMsg[20];
 				long contentLen = getMsgContent(unpackedMsg, uartMsgBuf, n2);
-				if (contentLen < 0) { myPrint("Unpack uart message error"); }
-				else { myPrint("Unpacked message: %s", unpackedMsg); }
+				if (contentLen < 0) { nrcLog("Unpack uart message error"); }
+				else { nrcLogD("Unpacked message: %s", unpackedMsg); }
 				
 				uartMsgBuf[n2] = '\0';
 				HAL_UART_Transmit(&huart1, uartMsgBuf, n2 + 1, HAL_MAX_DELAY);

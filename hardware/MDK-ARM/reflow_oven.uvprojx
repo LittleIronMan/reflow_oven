@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F105xC</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;..\..\rpi-uart-listener-cpp\safe_uart</IncludePath>
+              <IncludePath>../Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;..\..\rpi-uart-listener-cpp\safe_uart;C:\reflow_oven</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -414,6 +414,11 @@
               <FileName>safe_uart_messenger.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrc_print.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\nrc_print.c</FilePath>
             </File>
           </Files>
         </Group>

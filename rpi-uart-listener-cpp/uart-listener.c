@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -11,6 +10,9 @@
 
 #include "safe_uart/safe_uart_messenger.h"
 #include "my_software_stm32_crc.h"
+#include "../nrc_print.h"
+#define NRC_LOG_NEED_FFLUSH // call fflush(stdout) after each printf(...) call
+
 uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
 	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
 }
@@ -32,29 +34,29 @@ typedef enum {
 } MessageReceiverState;
 
 int main() {
-	printf("Main func started!\n"); fflush(stdout);
+	nrcLogV("Main func started!");
 	int uartDescriptor;
 	if ((uartDescriptor = serialOpen(serialPortName, serialBaudRate)) < 0) {
-	printf("Unable to open serial port: %s\n", strerror(errno)); fflush(stdout);
+		nrcLog("Unable to open serial port: %s", strerror(errno));
 		return 1;
 	}  
 	else {
-		printf("Serial port opened successfull!\n"); fflush(stdout);
+		nrcLog("Serial port opened successfull!");
 	}
 
-	printf("Check fifo\n"); fflush(stdout);
+	nrcLogD("Check fifo");
 	if (!isFileExists(uartToServerFifo)) {
-		printf("Create new fifo\n"); fflush(stdout);
+		nrcLog("Create new fifo");
 		mkfifo(uartToServerFifo, 0666);
 	}
   
 	int fifoDescriptor = open(uartToServerFifo, O_WRONLY);
 	if (fifoDescriptor < 0) {
-	fprintf(stderr, "Cannot open FIFO for read: %s\n", strerror(errno));
+		nrcLog("Cannot open FIFO for read: %s", strerror(errno));
 		return 1;
 	}
 
-	printf("Start loop\n"); fflush(stdout);
+	nrcLogV("Start loop");
 	char uartBuf[256]; // буфер, в котором будет храниться передаваемые из контроллера данные(упакованные в посылки)
 	uint16_t charCounter = 0; // счетчик символов в буфере
 	char contentBuf[256]; // в этом буфере будут хранится распакованные данные
@@ -64,8 +66,6 @@ int main() {
 		// бесконечно читаем из uart'a по одному символу и передаем принятые строки серверу
 		char ch = serialGetchar(uartDescriptor);
 		if (state != NO_MSG && charCounter < 256) { uartBuf[charCounter] = ch; }
-		// putchar(ch); fflush(stdout);
-		printf("%02x ", ch);
 
 		switch (state) {
 		case NO_MSG: {
@@ -79,11 +79,12 @@ int main() {
 				if (ch == '^') {
 					state++;
 					contentLen = *((uint16_t*)&uartBuf[1]);
-					printf("Package begin detected: msg lenght == %d\n", contentLen); fflush(stdout);
+					nrcLogV("Package begin detected: msg lenght == %d", contentLen);
 				}
 				else {
 					state = NO_MSG;
-					printf("Wrong package: bad begin\n"); fflush(stdout);
+					nrcLog("Wrong package");
+					nrcLogD("Because: bad begin");
 				}
 			}
 			break; }
@@ -91,37 +92,36 @@ int main() {
 			if (charCounter == 4 + contentLen) {
 				if (ch == '$') {
 					state++;
-					printf("Package end detected\n"); fflush(stdout);
+					nrcLogV("Package end detected");
 				}
 				else {
-					printf("Wrong package: bad message end\n"); fflush(stdout);
+					nrcLog("Wrong package")
+					nrcLogD("Because: bad message end");
 				}
 			}
 			break; }
 		case MSG_END: {
 			if ((charCounter & 0x0003) == 0) {
 				state++;
-				printf("Check sum detected\n"); fflush(stdout);
-			}
-			else if (charCounter >= 4 + contentLen + 4) {
-				state = NO_MSG;
+				nrcLogV("Check sum detected");
 			}
 			break; }
 		case CHECK_SUM: {
 			if ((charCounter & 0x0003) == 0) {
 				// перепроверяем пакет целиком, включая контрольную сумму
 				long validContentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
-				printf("Returned contentLen == %d\n", validContentLen); fflush(stdout);
+				nrcLogV("Returned contentLen == %d", validContentLen);
 				for (uint16_t i = 0; i < charCounter + 1; i++) {
-					printf("%02x ", uartBuf[i]);
+					nrcPrintfV("%02x ", uartBuf[i]);
 				}
-				printf("\n"); fflush(stdout);
+				nrcPrintfV("\n");
 
 				if (validContentLen < 0) {
-					printf("Wrong package: bad checksum\n"); fflush(stdout);
+					nrcLog("Wrong package");
+					nrcLogD("Because: bad checksum");
 				}
 				else {
-					printf("Package received!\n"); fflush(stdout);
+					nrcLogD("Package received!");
 					contentBuf[validContentLen] = '\n';
 					//sendToServer(buf, charCounter);
 					write(fifoDescriptor, uartBuf, validContentLen + 1);
@@ -147,6 +147,6 @@ void sendToServer(char *msg, int len) {
 	//для примера код чтения из FIFO, просто чтобы был
 	//fifoDescripror = open(myfifo, O_RDONLY); // Open FIFO for Read only
 	//read(fifoDescripror, arr, sizeof(arr1)); // Read from FIFO
-	//printf("User2: %s\n", arr); // Print the read message
+	//nrcLog("User2: %s", arr); // Print the read message
 	//close(fifoDescriptor); 
 }
