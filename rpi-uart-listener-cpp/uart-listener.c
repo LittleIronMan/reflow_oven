@@ -20,7 +20,6 @@ uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
-char *uartToServerFifo = "/tmp/uart-server.fifo";
 
 bool isFileExists(const char *name);
 void sendToServer(char *msg, int len);
@@ -42,18 +41,6 @@ int main() {
 	}  
 	else {
 		nrcLog("Serial port opened successfull!");
-	}
-
-	nrcLogD("Check fifo");
-	if (!isFileExists(uartToServerFifo)) {
-		nrcLog("Create new fifo");
-		mkfifo(uartToServerFifo, 0666);
-	}
-  
-	int fifoDescriptor = open(uartToServerFifo, O_WRONLY);
-	if (fifoDescriptor < 0) {
-		nrcLog("Cannot open FIFO for read: %s", strerror(errno));
-		return 1;
 	}
 
 	nrcLogV("Start loop");
@@ -122,9 +109,8 @@ int main() {
 				}
 				else {
 					nrcLogD("Package received!");
-					contentBuf[validContentLen] = '\n';
-					//sendToServer(buf, charCounter);
-					write(fifoDescriptor, uartBuf, validContentLen + 1);
+					contentBuf[validContentLen] = '\0';
+					nrcPrintf("%s", contentBuf);
 				}
 				state = NO_MSG;
 			}

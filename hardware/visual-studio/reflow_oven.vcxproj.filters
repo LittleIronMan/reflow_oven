@@ -204,6 +204,9 @@
     <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\nrc_print.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">
@@ -312,6 +315,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nrc_print.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

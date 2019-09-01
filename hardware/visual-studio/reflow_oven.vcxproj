@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\nrc_print.h" />
     <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.h" />
     <ClInclude Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />
@@ -178,6 +179,7 @@
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\nrc_print.c" />
     <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.c" />
     <ClCompile Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c" />
     <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.c" />

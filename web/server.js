@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io').listen(http);
+const child_process = require('child_process');
 
 app.use(express.static(__dirname));
 
@@ -24,18 +25,19 @@ http.listen(PORT, () => {
 });
 
 // настраиваем uart-listener
-if (process.platform === 'linux') {
-    const fs = require('fs');
-    const net = require('net');
-    fs.open('/tmp/uart-server.fifo', fs.constants.O_RDONLY | fs.constants.O_NONBLOCK, (err, fd) => {
-        // Handle err
-        const pipe = new net.Socket({fd});
-        // Now `pipe` is a stream that can be used for reading from the FIFO.
-        pipe.on('data', (data) => {
-            console.log(data);
-            //console.log(data.toString());
-            // process data ...
-        });
-    });
-}
+var uartListener = child_process.spawn('../rpi-uart-listener-cpp/uart-listener',
+    [],
+   // {cwd: "../rpi-uart-listener-cpp"} // дополнительная опция(если в дочернем процессе придется отрывать какие-нибудь файлы)
+    );
 
+uartListener.stdout.on('data', function (data) {
+    console.log('stdout: ' + data);
+});
+
+uartListener.stderr.on('data', function (data) {
+    console.log('stderr: ' + data);
+});
+
+uartListener.on('close', function (code) {
+    console.log('child process exited with code ' + code);
+});
