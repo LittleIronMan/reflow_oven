@@ -3,9 +3,18 @@ import page from 'styles/page.scss';
 import style from './PageMain.scss';
 
 class TempMonitor extends Component {
+    constructor(props) {
+        super(props);
+        this.state.tempValue = 0;
+    }
+
+    componentDitMount() {
+        tempLabel.update = (data) => this.setState({tempValue: data});
+    }
+
     render() {
         return <div className={style.tempMonitor}>
-            current temperature = 0&deg;C
+            current temperature = {this.state.tempValue}&deg;C
         </div>;
     }
 }

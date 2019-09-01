@@ -9,8 +9,12 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
 	var socket = io();
+	var tempLabel;
 	socket.on('Temp', function(data) {
 		console.log('Temp event, value == ', data);
+		if (tempLabel.update != null) {
+		    tempLabel.update(data);
+        }
 	});
     </script>
 </head>
