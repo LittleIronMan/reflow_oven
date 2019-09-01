@@ -1,3 +1,4 @@
 hardware/visual-studio/.vs
 hardware/MDK-ARM/reflow_oven
 hardware/MDK-ARM/reflow_oven.uvguix.mrsta
+rpi-uart-listener-cpp/.idea

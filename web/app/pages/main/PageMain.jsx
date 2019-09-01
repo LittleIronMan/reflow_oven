@@ -5,10 +5,10 @@ import style from './PageMain.scss';
 class TempMonitor extends Component {
     constructor(props) {
         super(props);
-        this.state.tempValue = 0;
+        this.state = {tempValue: 0};
     }
 
-    componentDitMount() {
+    componentDidMount() {
         tempLabel.update = (data) => this.setState({tempValue: data});
     }
 

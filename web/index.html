@@ -9,7 +9,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
 	var socket = io();
-	var tempLabel;
+	var tempLabel = {};
 	socket.on('Temp', function(data) {
 		console.log('Temp event, value == ', data);
 		if (tempLabel.hasOwnProperty('update')) {

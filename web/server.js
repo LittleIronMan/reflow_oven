@@ -3,8 +3,6 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-const io = require('socket.io').listen(http);
-const child_process = require('child_process');
 
 app.use(express.static(__dirname));
 
@@ -12,6 +10,7 @@ app.get('*', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+const io = require('socket.io').listen(http);
 io.on('connection', function(socket){
     console.log('a user connected');
 });
@@ -25,15 +24,21 @@ http.listen(PORT, () => {
 });
 
 // настраиваем uart-listener
-var uartListener = child_process.spawn('../rpi-uart-listener-cpp/uart-listener',
-    [],
-   // {cwd: "../rpi-uart-listener-cpp"} // дополнительная опция(если в дочернем процессе придется отрывать какие-нибудь файлы)
-    );
+const child_process = require('child_process');
+var uartListener;
+if (process.platform === 'linux') {
+    uartListener = child_process.spawn('../rpi-uart-listener-cpp/uart-listener');
+}
+else if (process.platform === 'win32') {
+    uartListener = child_process.spawn('python', ['-u', '../rpi-uart-listener-cpp/uart-listener-win32-emulate.py']);
+}
 
 uartListener.stdout.on('data', function (data) {
     let str = data.toString();
     if (str.startsWith("Temp")) {
-        let temp = parseFloat(str.substring(5, str.indexOf('\n')));
+        let args = [5];
+        let eolIdx = str.indexOf('\n'); if (eolIdx !== -1) { args.push(eolIdx); }
+        let temp = parseFloat(str.substring(...args));
         console.log("Emit Temp with value: ", temp);
         io.emit('Temp', temp);
     }
