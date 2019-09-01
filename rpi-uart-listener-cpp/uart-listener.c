@@ -11,7 +11,7 @@
 #include "safe_uart/safe_uart_messenger.h"
 #include "my_software_stm32_crc.h"
 #include "../nrc_print.h"
-#define NRC_LOG_NEED_FFLUSH // call fflush(stdout) after each printf(...) call
+#include "nrc_print_conf.h"
 
 uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
 	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);

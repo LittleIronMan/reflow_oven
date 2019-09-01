@@ -1,17 +1,17 @@
+#ifndef nrc_printf_h
+#define nrc_printf_h
+
 #include <stdio.h> // printf
 #include <stdarg.h> // va_list
 #include <stdint.h> // uint8_t, uint16_t etc...
-
-#ifndef nrc_printf_h
-#define nrc_printf_h
 
 #define NRC_LOG_LEVEL_DEFAULT 1
 #define NRC_LOG_LEVEL_DEBUG 2
 #define NRC_LOG_LEVEL_VERBATIM 3
 
-//#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEFAULT
-#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEBUG
-//#define NRC_LOG_LEVEL NRC_LOG_LEVEL_VERBATIM
+#ifndef NRC_LOG_LEVEL
+#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEFAULT
+#endif
 
 #define NRC_LOG_ADD_EOL 0x1
 #define NRC_LOG_ADD_COUNTER 0x2
