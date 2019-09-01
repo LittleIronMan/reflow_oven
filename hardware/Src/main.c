@@ -428,11 +428,6 @@ void StartDefaultTask(void const * argument)
 				}
 				nrcPrintfV("\n");
 				
-				char unpackedMsg[20];
-				long contentLen = getMsgContent(unpackedMsg, uartMsgBuf, n2);
-				if (contentLen < 0) { nrcLog("Unpack uart message error"); }
-				else { nrcLogD("Unpacked message: %s", unpackedMsg); }
-				
 				uartMsgBuf[n2] = '\0';
 				HAL_UART_Transmit(&huart1, uartMsgBuf, n2 + 1, HAL_MAX_DELAY);
 			}

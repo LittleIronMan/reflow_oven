@@ -31,7 +31,12 @@ var uartListener = child_process.spawn('../rpi-uart-listener-cpp/uart-listener',
     );
 
 uartListener.stdout.on('data', function (data) {
-    console.log('stdout: ' + data);
+    console.log('Received: ' + data);
+    if (data.startsWith("Temp")) {
+        let temp = parseFloat(data.substring(5), data.find('\n') - 1);
+        console.log("Emit Temp with value: ", temp);
+        io.emit('Temp', temp);
+    }
 });
 
 uartListener.stderr.on('data', function (data) {
