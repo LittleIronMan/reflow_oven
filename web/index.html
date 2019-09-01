@@ -12,7 +12,7 @@
 	var tempLabel;
 	socket.on('Temp', function(data) {
 		console.log('Temp event, value == ', data);
-		if (tempLabel.update != null) {
+		if (tempLabel.hasOwnProperty('update')) {
 		    tempLabel.update(data);
         }
 	});
