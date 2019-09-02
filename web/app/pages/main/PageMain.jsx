@@ -9,7 +9,7 @@ class TempMonitor extends Component {
     }
 
     componentDidMount() {
-        tempLabel.update = (data) => this.setState({tempValue: data});
+        globalVar.updateTempLabel = (data) => this.setState({tempValue: data});
     }
 
     render() {
@@ -28,21 +28,24 @@ class ControlButtons extends Component {
     }
 }
 
-class GraphView extends Component {
+class GraphLayer extends Component {
     constructor(props) {
         super(props);
+        this.state = {dataPoints: []};
         this.drawGraph = this.drawGraph.bind(this);
     }
 
     drawGraph() {
-        var canvas = document.getElementById("layerIdeal");
-        var context = canvas.getContext("2d");
+        let canvas = this.canvas;
+        let context = canvas.getContext("2d");
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.beginPath();
-        context.strokeStyle = '#ff5a88';
+        context.strokeStyle = this.props.strokeStyle ? this.props.strokeStyle : 'gray';
         context.lineWidth = 3;
+
+        let arr = this.state.dataPoints;
 
         // var lines = 200,
         //     frag = canvas.width / lines,
@@ -53,19 +56,19 @@ class GraphView extends Component {
         //     context.lineTo(i*frag, -sine+scale);
         // }
 
-        if (currentPoints.length === 0) {
+        if (arr.length === 0) {
             console.log("empty current points array");
             return;
         }
 
         const fullPeriod = 20; // размерность времени всей ширины графика(в секундах)
         const maxTemp = 220; // максимальная температура в градусах цельсия(определяет высоту графика)
-        const lastTime = currentPoints[currentPoints.length - 1].time;
+        const lastTime = arr[arr.length - 1].time;
 
         let firstPoint = true;
         let firstPointTime = 0;
-        for (let i = 0; i < currentPoints.length; i++) {
-            let data = currentPoints[i];
+        for (let i = 0; i < arr.length; i++) {
+            let data = arr[i];
             if ((lastTime - data.time) > fullPeriod) { continue; } // слишком старые данные не рисуем
 
             if (firstPoint) { firstPointTime = data.time; }
@@ -85,18 +88,39 @@ class GraphView extends Component {
     componentDidMount() {
         this.drawGraph();
         window.addEventListener("resize", this.drawGraph);
-        graph.update = () => this.drawGraph();
     }
     componentWillUnmount() {
         window.removeEventListener("resize", this.drawGraph);
     }
 
     render() {
+        let className = style.graphLayer + (this.props.superClass ? (" " + this.props.superClass) : "");
+        return <canvas id={this.props.id} className={className} ref={(domNode) => {this.canvas = domNode;}}/>
+    }
+}
+
+class GraphView extends Component {
+    constructor(props) {
+        super(props);
+    }
+
+    componentDidMount() {
+        globalVar.updateRealData = (newData) => {
+            if (this._realMeasureGraph) {
+                let arr = this._realMeasureGraph.state.dataPoints;
+                if (arr.length > 100) { arr.shift(); } // удаляем устаревшие измерения температуры
+                arr.push(newData);
+                this._realMeasureGraph.forceUpdate();
+            }
+        };
+    }
+
+    render() {
         return <div className={style.graphView}>
-            <canvas id="backLayer" className={style.graphLayer + " " + style.backLayer}> </canvas>
-            <canvas id="layerIdeal" className={style.graphLayer}> </canvas>
-            <canvas id="layerReal" className={style.graphLayer}> </canvas>
-        </div>
+            <GraphLayer id='backLayer' superClass={style.backLayer}/>
+            <GraphLayer id='layerIdeal'/>
+            <GraphLayer id='layerReal' strokeStyle={'#ff5a88'} ref={(node) => {this._realMeasureGraph = node;}}/>
+        </div>;
     }
 }
 

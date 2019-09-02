@@ -9,22 +9,16 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
 	var socket = io();
-	var tempLabel = {};
-	var graph = {};
-    var currentPoints = [];
+	var globalVar = {};
 	socket.on('temp measure', function(data) {
-		//console.log('Temp event, value == ', data);
+        if (globalVar.hasOwnProperty('updateRealData')) {
+            globalVar.updateRealData(data);
+        }
 
-        if (currentPoints.length > 100) { currentPoints.shift(); } // удаляем устаревшие данные, если их много
-        currentPoints.push(data);
-
-		if (tempLabel.hasOwnProperty('update')) {
-		    tempLabel.update(data.temp);
+		if (globalVar.hasOwnProperty('updateTempLabel')) {
+		    globalVar.updateTempLabel(data.temp);
 		    // console.log("Push point: ", data);
 		    // console.log("currentPoints.length == ", currentPoints.length);
-        }
-        if (tempLabel.hasOwnProperty('update')) {
-            graph.update();
         }
 	});
     </script>
