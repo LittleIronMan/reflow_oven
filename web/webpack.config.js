@@ -6,7 +6,15 @@ let env = process.env.NODE_ENV;
 env = env ? env.trim() : env; // trim вызывается потому-что в конце может быть пробел
 
 module.exports = {
-    entry: './app/app.jsx', // входная точка - исходный файл
+    mode: 'development',
+    entry: [
+        // Add the client which connects to our middleware
+        // You can use full urls like 'webpack-hot-middleware/client?path=http://localhost:3000/__webpack_hmr'
+        // useful if you run your app from another point like django
+        'webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000',
+        // And then the actual application
+        './app/app.jsx', // входная точка - исходный файл
+    ],
     output: {
         path: path.resolve(__dirname, './public'), // путь к каталогу выходных файлов - папка public
         publicPath: '/public/',
@@ -23,6 +31,8 @@ module.exports = {
             chunkFilename: '[id].css',
             ignoreOrder: false, // Enable to remove warnings about conflicting order
         }),
+        new webpack.HotModuleReplacementPlugin(),
+        //new webpack.NoEmitOnErrorsPlugin(),
     ],
     module: {
         rules: [
@@ -35,13 +45,9 @@ module.exports = {
                     presets: ['@babel/preset-env', '@babel/preset-react'], // используемые плагины
                 },
             },
-            {
-                test: /\.css$/,
-                loader: 'style!css',
-            },
             // загрузчик для css
             {
-                test: /\.(scss|sass)$/i,
+                test: /\.(css|scss|sass)$/i,
                 include: [
                     // path.resolve(__dirname, 'node_modules'),
                     path.resolve(__dirname, 'app'),
@@ -55,7 +61,8 @@ module.exports = {
                             // you can specify a publicPath here
                             // by default it uses publicPath in webpackOptions.output
                             // publicPath: '../',
-                                hmr: env === 'development', // hmr == hot module replacement
+                                //hmr: env === 'development', // hmr == hot module replacement
+                                hmr: true, // hmr == hot module replacement
                             },
                         },
                     {
@@ -98,6 +105,7 @@ module.exports = {
     },
     devServer: {
         historyApiFallback: true,
+        hot: true,
     },
     optimization: {
         // We no not want to minimize our code.

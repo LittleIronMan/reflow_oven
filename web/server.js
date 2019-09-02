@@ -1,9 +1,21 @@
 'use strict';
+const webpack = require('webpack');
+const middleware = require('webpack-dev-middleware');
+const webpackConfig = require('./webpack.config');
+let compiler = webpack(webpackConfig);
 
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 
+app.use(middleware(compiler, {
+    //noInfo: true,
+    logLevel: 'warn',
+    publicPath: webpackConfig.output.publicPath
+}));
+app.use(require('webpack-hot-middleware')(compiler, {
+    path: '/__webpack_hmr',
+}));
 app.use(express.static(__dirname));
 
 app.get('*', (req, res) => {

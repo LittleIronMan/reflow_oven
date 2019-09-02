@@ -11,7 +11,7 @@
 	var socket = io();
 	var tempLabel = {};
 	socket.on('Temp', function(data) {
-		console.log('Temp event, value == ', data);
+		//console.log('Temp event, value == ', data);
 		if (tempLabel.hasOwnProperty('update')) {
 		    tempLabel.update(data);
         }
