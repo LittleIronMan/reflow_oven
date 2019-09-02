@@ -47,12 +47,10 @@ else if (process.platform === 'win32') {
 
 uartListener.stdout.on('data', function (data) {
     let str = data.toString();
-    if (str.startsWith("Temp")) {
-        let args = [5];
-        let eolIdx = str.indexOf('\n'); if (eolIdx !== -1) { args.push(eolIdx); }
-        let temp = parseFloat(str.substring(...args));
-        console.log("Emit Temp with value: ", temp);
-        io.emit('Temp', temp);
+    if (str.startsWith("temp measure")) {
+        let words = str.match(/\S+/g) || [];
+        let data = {time: parseFloat(words[2]), temp: parseFloat(words[3])};
+        io.emit('temp measure', data);
     }
 });
 

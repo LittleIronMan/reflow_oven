@@ -35,22 +35,45 @@ class GraphView extends Component {
     }
 
     drawGraph() {
-        var canvas = document.getElementById("surface");
+        var canvas = document.getElementById("layerIdeal");
         var context = canvas.getContext("2d");
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         context.clearRect(0, 0, canvas.width, canvas.height);
-
         context.beginPath();
-        var lines = 200,
-            frag = canvas.width / lines,
-            scale = canvas.height / 2;
+        context.strokeStyle = '#ff5a88';
 
-        context.moveTo(0, scale);
-        for (var i = 0; i < lines; i++) {
-            var sine = Math.sin(2*3.141592 * i/lines)*scale;
+        // var lines = 200,
+        //     frag = canvas.width / lines,
+        //     scale = canvas.height / 2;
+        // context.moveTo(0, scale);
+        // for (let i = 0; i < lines; i++) {
+        //     let sine = Math.sin(2*3.141592 * i/lines)*scale;
+        //     context.lineTo(i*frag, -sine+scale);
+        // }
 
-            context.lineTo(i*frag, -sine+scale);
+        if (currentPoints.length === 0) {
+            console.log("empty current points array");
+            return;
+        }
+
+        const fullPeriod = 20; // размерность времени всей ширины графика(в секундах)
+        const maxTemp = 220; // максимальная температура в градусах цельсия(определяет высоту графика)
+        const lastTime = currentPoints[currentPoints.length - 1].time;
+
+        let firstPoint = true;
+        let firstPointTime = 0;
+        for (let i = 0; i < currentPoints.length; i++) {
+            let data = currentPoints[i];
+            if ((lastTime - data.time) > fullPeriod) { continue; } // слишком старые данные не рисуем
+
+            if (firstPoint) { firstPointTime = data.time; }
+
+            let x = ((data.time - firstPointTime) / fullPeriod) * canvas.width;
+            let y = (1 - data.temp/maxTemp) * canvas.height;
+
+            if (firstPoint) { context.moveTo(x, y); firstPoint = false; }
+            else { context.lineTo(x, y); }
         }
         context.stroke();
     }
@@ -61,15 +84,18 @@ class GraphView extends Component {
     componentDidMount() {
         this.drawGraph();
         window.addEventListener("resize", this.drawGraph);
+        graph.update = () => this.drawGraph();
     }
     componentWillUnmount() {
         window.removeEventListener("resize", this.drawGraph);
     }
 
     render() {
-        return <canvas id="surface" className={style.graphView}>
-
-        </canvas>
+        return <div className={style.graphView}>
+            <canvas id="backLayer" className={style.graphLayer + " " + style.backLayer}> </canvas>
+            <canvas id="layerIdeal" className={style.graphLayer}> </canvas>
+            <canvas id="layerReal" className={style.graphLayer}> </canvas>
+        </div>
     }
 }
 

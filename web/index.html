@@ -10,10 +10,21 @@
     <script>
 	var socket = io();
 	var tempLabel = {};
-	socket.on('Temp', function(data) {
+	var graph = {};
+    var currentPoints = [];
+	socket.on('temp measure', function(data) {
 		//console.log('Temp event, value == ', data);
+
+        if (currentPoints.length > 100) { currentPoints.shift(); } // удаляем устаревшие данные, если их много
+        currentPoints.push(data);
+
 		if (tempLabel.hasOwnProperty('update')) {
-		    tempLabel.update(data);
+		    tempLabel.update(data.temp);
+		    // console.log("Push point: ", data);
+		    // console.log("currentPoints.length == ", currentPoints.length);
+        }
+        if (tempLabel.hasOwnProperty('update')) {
+            graph.update();
         }
 	});
     </script>
