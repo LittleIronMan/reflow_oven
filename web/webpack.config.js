@@ -42,7 +42,15 @@ module.exports = {
                 exclude: /(node_modules)/, // исключаем из обработки папку node_modules
                 loader: 'babel-loader', // определяем загрузчик
                 options: {
-                    presets: ['@babel/preset-env', '@babel/preset-react'], // используемые плагины
+                    presets: [
+                        '@babel/preset-env',
+                        '@babel/preset-react',
+                    ],
+                    plugins: [
+                        [
+                            '@babel/plugin-proposal-class-properties',
+                        ]
+                    ]
                 },
             },
             // загрузчик для css

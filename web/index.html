@@ -11,8 +11,8 @@
 	var socket = io();
 	var globalVar = {};
 	socket.on('temp measure', function(data) {
-        if (globalVar.hasOwnProperty('updateRealData')) {
-            globalVar.updateRealData(data);
+        if (globalVar.hasOwnProperty('updateRealTimeView')) {
+            globalVar.updateRealTimeView(data);
         }
 
 		if (globalVar.hasOwnProperty('updateTempLabel')) {
