@@ -42,6 +42,7 @@ class GraphView extends Component {
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.beginPath();
         context.strokeStyle = '#ff5a88';
+        context.lineWidth = 3;
 
         // var lines = 200,
         //     frag = canvas.width / lines,
