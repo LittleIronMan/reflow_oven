@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
 		//Emulates the system printf function to the serial device.
 		// void serialPrintf(int fd, char *message, Е);
 
-		int uartDescriptor;
 		if ((uartDescriptor = serialOpen(serialPortName, serialBaudRate)) < 0) {
 			nrcLog("Unable to open serial port: %s", strerror(errno));
 			return 1;
@@ -54,8 +53,11 @@ int main(int argc, char *argv[])
 		}
 
 		uint16_t len = strlen(data);
-		for (uint16_t i = 0; i < len; i++) {
-
+		if (data[0] == '\"') {
+			transmitMsg(&data[1], len - 2);
+		}
+		else {
+			transmitMsg(data, len);
 		}
 	}
 
