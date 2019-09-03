@@ -374,11 +374,21 @@ static void MX_GPIO_Init(void)
 void StartBackgroundTask(void const * argument)
 {
 	char msgBuf[256];
+	nrcLogD("Start background task");
 	for (;;) {
 		long msgLen = receiveMsg(msgBuf);
 		if (msgLen > 0) {
 			// отражаем эхом это-же сообщение
-			transmitMsg(msgBuf, msgLen);
+			long result = transmitMsg(msgBuf, msgLen);
+			if (result == 0) {
+				nrcLogD("Error sending data");
+			}
+			else {
+				nrcLog("Message successful transmitted");
+			}
+		}
+		else {
+			nrcLogD("Receive error");
 		}
 	}
 }

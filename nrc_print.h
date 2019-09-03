@@ -6,6 +6,7 @@
 #include <stdint.h> // uint8_t, uint16_t etc...
 #include <nrc_print_config.h> // NRC_LOG_LEVEL, NRC_LOG_NEED_FFLUSH
 
+#define NRC_LOG_DISABLED 0
 #define NRC_LOG_LEVEL_DEFAULT 1
 #define NRC_LOG_LEVEL_DEBUG 2
 #define NRC_LOG_LEVEL_VERBATIM 3
@@ -19,8 +20,13 @@
 
 void nrcPrintfEx(uint8_t viewMode, char *fmt, ...);
 
+#if NRC_LOG_LEVEL >= NRC_LOG_LEVEL_DEFAULT
 #define nrcPrintf(...) nrcPrintfEx(0, __VA_ARGS__)
 #define nrcLog(...) nrcPrintfEx(NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
+#else
+#define nrcPrintf(...)
+#define nrcLog(...)
+#endif
 
 #if NRC_LOG_LEVEL >= NRC_LOG_LEVEL_DEBUG
 #define nrcPrintfD(...) nrcPrintfEx(0, __VA_ARGS__)

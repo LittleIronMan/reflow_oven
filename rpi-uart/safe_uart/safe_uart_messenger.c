@@ -120,7 +120,7 @@ long receiveMsg(uint8_t contentBuf[])
 						return -1;
 					}
 					else {
-						nrcLogV("Package begin detected: msg lenght == %d", contentLen);
+						//nrcLogV("Package begin detected: msg lenght == %d", contentLen);
 					}
 				}
 				else {
@@ -134,7 +134,7 @@ long receiveMsg(uint8_t contentBuf[])
 			if (byteCounter == 4 + contentLen) {
 				if (receivedByte == '$') {
 					state++;
-					nrcLogV("Package end detected");
+					//nrcLogV("Package end detected");
 				}
 				else {
 					nrcLog("Wrong package")
@@ -145,7 +145,7 @@ long receiveMsg(uint8_t contentBuf[])
 		case MSG_END: {
 			if ((byteCounter & 0x0003) == 0) { // последняя тетрада байт
 				state++;
-				nrcLogV("Check sum detected");
+				//nrcLogV("Check sum detected");
 			}
 			break; }
 		case CHECK_SUM: {
@@ -163,8 +163,9 @@ long receiveMsg(uint8_t contentBuf[])
 					nrcLogD("Because: bad checksum");
 				}
 				else {
-					nrcLogD("Package received!");
+					nrcLogD("Package received!");					
 					contentBuf[validContentLen] = '\0';
+					nrcLogV("Received content: %s", contentBuf);
 					return validContentLen;
 				}
 				state = NO_MSG;

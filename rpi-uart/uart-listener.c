@@ -37,7 +37,7 @@ int main() {
 			nrcLog("Wrong message");
 		}
 		else {
-			nrcLog("%s", msgContent);
+			printf("%s\n", msgContent);
 		}
 	}
 	//close(fifoDescriptor); 
