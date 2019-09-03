@@ -28,9 +28,8 @@ int main(int argc, char *argv[])
 
 	char *data = NULL;
 
+	int opt, optIdx;
 	while ((opt = getopt_long(argc, argv, "s:l:h", long_opt, &optIdx)) != -1) {
-		int opt, optIdx;
-
 		switch (opt) {
 		case 'h': {
 			nrcLog("Sorry, help not ready, bye."); return(-1);
