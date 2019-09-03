@@ -127,6 +127,7 @@ long receiveMsg(uint8_t contentBuf[])
 					state = NO_MSG;
 					nrcLog("Wrong package");
 					nrcLogD("Because: bad begin");
+					return -1;
 				}
 			}
 			break; }
@@ -137,8 +138,10 @@ long receiveMsg(uint8_t contentBuf[])
 					//nrcLogV("Package end detected");
 				}
 				else {
+					state = NO_MSG;
 					nrcLog("Wrong package")
-						nrcLogD("Because: bad message end");
+					nrcLogD("Because: bad message end");
+					return -1;
 				}
 			}
 			break; }
@@ -159,8 +162,10 @@ long receiveMsg(uint8_t contentBuf[])
 				nrcPrintfV("\n");
 
 				if (validContentLen < 0) {
+					state = NO_MSG;
 					nrcLog("Wrong package");
 					nrcLogD("Because: bad checksum");
+					return -1;
 				}
 				else {
 					nrcLogD("Package received!");					
@@ -176,6 +181,7 @@ long receiveMsg(uint8_t contentBuf[])
 
 		byteCounter++;
 	}
+	return -1;
 }
 
 uint8_t uartTransmitBuf[UART_TRANSMIT_BUF_SIZE];
