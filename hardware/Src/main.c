@@ -378,13 +378,14 @@ void StartBackgroundTask(void const * argument)
 	for (;;) {
 		long msgLen = receiveMsg(msgBuf);
 		if (msgLen > 0) {
+			continue;
 			// отражаем эхом это-же сообщение
 			long result = transmitMsg(msgBuf, msgLen);
 			if (result == 0) {
 				nrcLogD("Error sending data");
 			}
 			else {
-				nrcLog("Message successful transmitted");
+				nrcLogD("Message successful transmitted");
 			}
 		}
 		else {
@@ -437,6 +438,7 @@ void StartDefaultTask(void const * argument)
 				char msgContentBuf[20];
 				uint16_t len = sprintf(msgContentBuf, "Temp %.2f\n", temp);
 				//transmitMsg(msgContentBuf, len);
+				transmitMsg("ping\n", 5);
 			}
 		}
 	}

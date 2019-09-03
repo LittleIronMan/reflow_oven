@@ -117,8 +117,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\nrc_print.h" />
     <ClInclude Include="..\..\rpi-uart\my_software_stm32_crc.h" />
-    <ClInclude Include="..\..\rpi-uart\raspberry_config\nrc_print_config.h" />
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\nrc_print_config.h" />
     <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.h" />
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-transmitter\nrc_print_config.h" />
     <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-transmitter\uart_config.h" />
     <ClInclude Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />

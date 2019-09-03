@@ -1,7 +1,11 @@
 #include "nrc_print.h"
 
-void nrcPrintfEx(uint8_t viewMode, char *fmt, ...)
+void nrcPrintfEx(unsigned char logLevel, uint8_t viewMode, char *fmt, ...)
 {
+#if NRC_LOG_LEVEL_DYNAMIC == 1
+	if (logLevel > logLevelGlobal) { return; }
+#endif
+
 	static char printfBuf[256];
 	static uint16_t printfCounter = 1;
 

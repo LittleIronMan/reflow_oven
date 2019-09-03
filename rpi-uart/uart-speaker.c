@@ -7,46 +7,46 @@
 #include "safe_uart/safe_uart_messenger.h"
 #include "../nrc_print.h"
 
-#include <unistd.h>
-#include <getopt.h>
+#include <stdlib.h> // atoi
+#include <unistd.h> // getopt(), getopt_long()
+#include <getopt.h> // ^
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
+unsigned char logLevelGlobal = NRC_LOG_LEVEL_DEFAULT;
 
 int main(int argc, char *argv[])
 {
-	char *data = NULL;
-
 	static struct option long_opt[] = {
-		{"help",  0, 0, 'h'},
-		{"send", 1, 0, 's'},
+		{"help",  0, NULL, 'h'},
+		{"send", 1, NULL, 's'},
+		{"log", 1, NULL, 'l'},
 		{0,0,0,0}
 	};
 
-	while (1) {
-		int opt;
-		int optIdx;
+	char *data = NULL;
 
-		if ((opt = getopt_long(argc, argv, "s:h", long_opt, &optIdx)) == -1) {
-			break;
-		}
+	while ((opt = getopt_long(argc, argv, "s:l:h", long_opt, &optIdx)) != -1) {
+		int opt, optIdx;
 
 		switch (opt) {
 		case 'h': {
-			nrcLog("Sorry, help not ready, bye.");
-			//usage(argv[0]);
-			return(-1);
+			nrcLog("Sorry, help not ready, bye."); return(-1);
 		}
 		case 's': {
-			//printf("option 'c' selected, filename: %s\n", optarg);
-			//return(0);
 			data = optarg;
 			break;
 		}
+		case 'l': {
+			int tmp = atoi(optarg);
+			if (tmp < NRC_LOG_LEVEL_VERBATIM && tmp >= 0) {
+				logLevelGlobal = tmp;
+			}
+			break;
+		}
 		default:
-			//usage(argv[0]);
 			return(-1);
 		}
 	}

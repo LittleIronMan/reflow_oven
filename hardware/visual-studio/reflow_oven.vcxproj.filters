@@ -216,9 +216,6 @@
     <ClInclude Include="..\Inc\unix_time.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rpi-uart\raspberry_config\nrc_print_config.h">
-      <Filter>raspberry</Filter>
-    </ClInclude>
     <ClInclude Include="..\Inc\uart_config.h">
       <Filter>stm32</Filter>
     </ClInclude>
@@ -238,7 +235,13 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\rpi-uart\my_software_stm32_crc.h">
-      <Filter>stm32</Filter>
+      <Filter>raspberry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\nrc_print_config.h">
+      <Filter>raspberry\uart-receiver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-transmitter\nrc_print_config.h">
+      <Filter>raspberry\uart-transmitter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -356,13 +359,13 @@
     <ClCompile Include="..\..\nrc_print.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\rpi-uart\my_software_stm32_crc.c">
-      <Filter>stm32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\rpi-uart\uart-listener.c">
       <Filter>raspberry</Filter>
     </ClCompile>
     <ClCompile Include="..\..\rpi-uart\uart-speaker.c">
+      <Filter>raspberry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rpi-uart\my_software_stm32_crc.c">
       <Filter>raspberry</Filter>
     </ClCompile>
   </ItemGroup>
