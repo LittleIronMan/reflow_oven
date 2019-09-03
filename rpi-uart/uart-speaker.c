@@ -16,7 +16,7 @@ char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
-const uint16_t uartReceiveBufSize = 1; // не используется в этом модуле
+const uint16_t uartReceiveBufSize = 1; // РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃВ¤ РІ СЌС‚РѕРј РјРѕРґСѓР»Рµ
 uint8_t uartReceiveByteRaspberry() {
 	return 0; // no action
 }
@@ -32,7 +32,7 @@ uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
 uint16_t(*uartTransmitData) (uint8_t[], uint16_t) = uartTransmitDataRaspberry;
 
 
-// следующие 2 функции взяты отсюда:
+// СЃР»РµРґСѓСЋС‰РёРµ 2 С„СѓРЅРєС†РёРё РІР·В¤С‚С‹ РѕС‚СЃСЋРґР°:
 // https://stackoverflow.com/a/868894
 char * getCmdOption(char **begin, char **end, const std::string &option)
 {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		// void serialPuts(int fd, char *s);
 
 		//Emulates the system printf function to the serial device.
-		// void serialPrintf(int fd, char *message, …);
+		// void serialPrintf(int fd, char *message, Р•);
 
 		int uartDescriptor;
 		if ((uartDescriptor = serialOpen(serialPortName, serialBaudRate)) < 0) {
