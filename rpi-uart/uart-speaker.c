@@ -1,4 +1,6 @@
 #include <string.h> // strlen
+#include <errno.h>
+#include <stdbool.h>
 
 #include <wiringSerial.h>
 
@@ -68,6 +70,7 @@ int main(int argc, char *argv[])
 		}
 
 		uint16_t len = strlen(data);
+		nrcLog("Send data: %s", data);
 		if (data[0] == '\"') {
 			transmitMsg(&data[1], len - 2);
 		}

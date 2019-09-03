@@ -59,7 +59,7 @@ uartListener.stdout.on('data', function (data) {
         setTimeout(sendPing, 500); // повторная отправка
     }
     else {
-        //console.log("Unhandled uart message: ", data);
+        console.log("Unhandled uart message: ", str);
     }
 });
 
@@ -85,4 +85,4 @@ function sendPing() {
     }
 }
 
-sendPing();
+setTimeout(sendPing, 3000);
