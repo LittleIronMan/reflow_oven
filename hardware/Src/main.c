@@ -67,7 +67,7 @@ static void MX_CRC_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-void backgroundTask(void const * argument);
+void StartBackgroundTask(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -80,6 +80,7 @@ uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfBytes)
 uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_hardware;
 
 const uint16_t uartReceiveBufSize = 512;
+uint8_t uartReceiveBuf[uartReceiveBufSize];
 uint8_t uartReceiveByteStm32() {
 	uint8_t receivedByte;
 	HAL_StatusTypeDef result;
@@ -90,6 +91,7 @@ uint8_t uartReceiveByteStm32() {
 uint8_t(*uartReceiveByte) () = uartReceiveByteStm32;
 
 const uint16_t uartTransmitBufSize = 512;
+uint8_t uartTransmitBuf[uartTransmitBufSize];
 uint16_t uartTransmitDataStm32(uint8_t data[], uint16_t bytesCount) {
 	HAL_StatusTypeDef result = HAL_UART_Transmit(&huart1, data, bytesCount, HAL_MAX_DELAY);
 	if (result == HAL_OK) {
@@ -162,7 +164,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  osThreadDef(backgroundTask, idleTask, osPriorityIdle, 0, 128);
+  osThreadDef(backgroundTask, StartBackgroundTask, osPriorityIdle, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(backgroundTask), NULL);
 
   /* USER CODE END RTOS_THREADS */
@@ -398,8 +400,16 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void backgroundTask(void const * argument)
+void StartBackgroundTask(void const * argument)
 {
+	char msgBuf[256];
+	for (;;) {
+		long msgLen = receiveMsg(msgBuf);
+		if (msgLen > 0) {
+			// отражаем эхом это-же сообщение
+			transmitMsg(msgBuf, msgLen);
+		}
+	}
 }
 /* USER CODE END 4 */
 
@@ -445,7 +455,7 @@ void StartDefaultTask(void const * argument)
 
 				char msgContentBuf[20];
 				uint16_t len = sprintf(msgContentBuf, "Temp %.2f\n", temp);
-				transmitMsg(msgContentBuf, len);
+				//transmitMsg(msgContentBuf, len);
 			}
 		}
 	}

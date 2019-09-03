@@ -14,5 +14,7 @@ extern uint16_t(*uartTransmitData) (uint8_t[], uint16_t);
 
 extern const uint16_t uartReceiveBufSize;
 extern const uint16_t uartTransmitBufSize;
+extern uint8_t uartReceiveBuf[];
+extern uint8_t uartTransmitBuf[];
 
 #endif // safe_uart_messenger_hpp

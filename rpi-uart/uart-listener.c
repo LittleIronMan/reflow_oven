@@ -22,12 +22,14 @@ uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
 uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software;
 
 const uint16_t uartReceiveBufSize = 1024;
+uint8_t uartReceiveBuf[uartReceiveBufSize];
 uint8_t uartReceiveByteRaspberry() {
 	return serialGetchar(uartDescriptor);
 }
 uint8_t(*uartReceiveByte) () = uartReceiveByteRaspberry;
 
 const uint16_t uartTransmitBufSize = 1; // этот буфер не используется в этом модуле, но указать нужно
+uint8_t uartTransmitBuf[uartTransmitBufSize];
 uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
 	return 0; // no action
 }

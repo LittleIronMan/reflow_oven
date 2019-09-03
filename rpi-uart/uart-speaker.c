@@ -17,12 +17,14 @@ unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
 const uint16_t uartReceiveBufSize = 1; // не используетс¤ в этом модуле
+uint8_t uartReceiveBuf[uartReceiveBufSize];
 uint8_t uartReceiveByteRaspberry() {
 	return 0; // no action
 }
 uint8_t(*uartReceiveByte) () = uartReceiveByteRaspberry;
 
 const uint16_t uartTransmitBufSize = 1024;
+uint8_t uartTransmitBuf[uartTransmitBufSize];
 uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
 	for (uint16_t int = 0; i < bytesCount; i++) {
 		serialPutchar(uartDescriptor, data[i]);

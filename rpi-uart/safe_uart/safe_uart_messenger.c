@@ -79,14 +79,12 @@ typedef enum {
 	CHECK_SUM
 } MessageReceiverState;
 
-char uartReceiveBuf[uartReceiveBufSize]; // буфер, в котором будут храниться упакованные данные
-
 long receiveMsg(uint8_t contentBuf[])
 {
 	uint16_t byteCounter = 0; // счетчик принятых байтов
 	uint16_t contentLen = 0; // ожидаемое количество байтов полезного контента в пакете
 	MessageReceiverState state = NO_MSG;
-	while (true) {
+	while (1) {
 		// побайтно читаем данные из потока, и ищем упакованные сообщения
 		uint8_t receivedByte = uartReceiveByte();
 		if (state != NO_MSG) {
@@ -172,8 +170,6 @@ long receiveMsg(uint8_t contentBuf[])
 		byteCounter++;
 	}
 }
-
-char uartTransmitBuf[uartTransmitBufSize]; // буфер, в котором будут храниться упакованные данные
 
 long transmitMsg(uint8_t msgContent[], uint16_t contentLen)
 {
