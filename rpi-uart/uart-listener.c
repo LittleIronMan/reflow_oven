@@ -9,6 +9,7 @@
 #include <wiringSerial.h>
 
 #include "safe_uart/safe_uart_messenger.h" // receiveMsg()
+#include <stdio.h> // printf, stdout etc.
 #include "../nrc_print.h" // nrcLog?() nrcPrintf?()
 
 #include <stdlib.h> // atoi
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
 			nrcLog("Wrong message");
 		}
 		else {
-			printf("%s\n", msgContent);
+			printf("%s\n", msgContent); fflush(stdout);
 		}
 	}
 	//close(fifoDescriptor); 
