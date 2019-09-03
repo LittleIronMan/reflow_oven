@@ -39,10 +39,10 @@ http.listen(PORT, () => {
 const child_process = require('child_process');
 var uartListener;
 if (process.platform === 'linux') {
-    uartListener = child_process.spawn('../rpi-uart-listener-cpp/uart-listener');
+    uartListener = child_process.spawn('../rpi-uart/uart-listener');
 }
 else if (process.platform === 'win32') {
-    uartListener = child_process.spawn('python', ['-u', '../rpi-uart-listener-cpp/uart-listener-win32-emulate.py']);
+    uartListener = child_process.spawn('python', ['-u', '../rpi-uart/uart-listener-win32-emulate.py']);
 }
 
 uartListener.stdout.on('data', function (data) {

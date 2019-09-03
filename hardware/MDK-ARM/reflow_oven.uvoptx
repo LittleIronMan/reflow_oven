@@ -296,7 +296,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c</PathWithFileName>
+      <PathWithFileName>..\..\rpi-uart\safe_uart\safe_uart_messenger.c</PathWithFileName>
       <FilenameWithoutPath>safe_uart_messenger.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

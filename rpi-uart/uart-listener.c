@@ -1,17 +1,16 @@
-#include <string.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <fcntl.h> 
-#include <sys/stat.h> 
-#include <sys/types.h> 
-#include <unistd.h> 
+#include <string.h> // strcpy() memcpy()
+#include <stdbool.h> // bool
+#include <errno.h> // errno
+#include <fcntl.h>  // O_RDONLY, O_WRONLY, etc.
+#include <sys/stat.h> // stat() - used in isFileExists()
+//#include <sys/types.h> 
+#include <unistd.h> // read(), open(), write(), pipe() etc.
 
 #include <wiringSerial.h>
 
 #include "safe_uart/safe_uart_messenger.h"
 #include "my_software_stm32_crc.h"
 #include "../nrc_print.h"
-#include "nrc_print_conf.h"
 
 uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
 	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
@@ -40,7 +39,7 @@ int main() {
 		return 1;
 	}  
 	else {
-		nrcLog("Serial port opened successfull!");
+		nrcLog("Serial port opened successful!");
 	}
 
 	nrcLogV("Start loop");
@@ -128,11 +127,8 @@ bool isFileExists(const char *file) {
 	return (stat(file, &buf) == 0);
 }
 
-void sendToServer(char *msg, int len) {
-	
-	//для примера код чтения из FIFO, просто чтобы был
-	//fifoDescripror = open(myfifo, O_RDONLY); // Open FIFO for Read only
-	//read(fifoDescripror, arr, sizeof(arr1)); // Read from FIFO
-	//nrcLog("User2: %s", arr); // Print the read message
-	//close(fifoDescriptor); 
-}
+//для примера код чтения из FIFO, просто чтобы был
+//fifoDescripror = open(myfifo, O_RDONLY); // Open FIFO for Read only
+//read(fifoDescripror, arr, sizeof(arr1)); // Read from FIFO
+//nrcLog("User2: %s", arr); // Print the read message
+//close(fifoDescriptor); 
