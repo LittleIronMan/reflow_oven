@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 		}
 		case 'l': {
 			int tmp = atoi(optarg);
-			if (tmp < NRC_LOG_LEVEL_VERBATIM && tmp >= 0) {
+			if (tmp <= NRC_LOG_LEVEL_VERBATIM && tmp >= 0) {
 				logLevelGlobal = tmp;
 			}
 			break;
