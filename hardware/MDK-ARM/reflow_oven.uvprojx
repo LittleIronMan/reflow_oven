@@ -420,6 +420,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\nrc_print.c</FilePath>
             </File>
+            <File>
+              <FileName>uart_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\uart_config.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

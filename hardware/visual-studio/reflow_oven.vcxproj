@@ -117,7 +117,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\nrc_print.h" />
     <ClInclude Include="..\..\rpi-uart\my_software_stm32_crc.h" />
-    <ClInclude Include="..\..\rpi-uart\nrc_print_conf.h" />
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\nrc_print_config.h" />
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.h" />
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-transmitter\uart_config.h" />
     <ClInclude Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h" />
@@ -160,8 +162,10 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h" />
     <ClInclude Include="..\Inc\FreeRTOSConfig.h" />
     <ClInclude Include="..\Inc\main.h" />
+    <ClInclude Include="..\Inc\nrc_print_config.h" />
     <ClInclude Include="..\Inc\stm32f1xx_hal_conf.h" />
     <ClInclude Include="..\Inc\stm32f1xx_it.h" />
+    <ClInclude Include="..\Inc\uart_config.h" />
     <ClInclude Include="..\Inc\unix_time.h" />
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h" />
     <ClInclude Include="..\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h" />
@@ -183,6 +187,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\nrc_print.c" />
     <ClCompile Include="..\..\rpi-uart\my_software_stm32_crc.c" />
+    <ClCompile Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.c" />
+    <ClCompile Include="..\..\rpi-uart\raspberry_config\uart-transmitter\uart_config.c" />
     <ClCompile Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.c" />
     <ClCompile Include="..\..\rpi-uart\uart-listener.c" />
     <ClCompile Include="..\..\rpi-uart\uart-speaker.c" />
@@ -218,6 +224,7 @@
     <ClCompile Include="..\Src\stm32f1xx_hal_msp.c" />
     <ClCompile Include="..\Src\stm32f1xx_it.c" />
     <ClCompile Include="..\Src\system_stm32f1xx.c" />
+    <ClCompile Include="..\Src\uart_config.c" />
     <ClCompile Include="..\Src\unix_time.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

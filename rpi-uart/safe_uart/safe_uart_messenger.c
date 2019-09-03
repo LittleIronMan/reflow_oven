@@ -1,6 +1,10 @@
 #include "safe_uart_messenger.h"
 #include <string.h>
 #include "../../nrc_print.h"
+#include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
+
+uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t contentNumOfBytes);
+long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
 
 uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
 {
@@ -79,6 +83,8 @@ typedef enum {
 	CHECK_SUM
 } MessageReceiverState;
 
+uint8_t uartReceiveBuf[UART_RECEIVE_BUF_SIZE];
+
 long receiveMsg(uint8_t contentBuf[])
 {
 	uint16_t byteCounter = 0; // счетчик принятых байтов
@@ -88,7 +94,7 @@ long receiveMsg(uint8_t contentBuf[])
 		// побайтно читаем данные из потока, и ищем упакованные сообщения
 		uint8_t receivedByte = uartReceiveByte();
 		if (state != NO_MSG) {
-			if (byteCounter < uartReceiveBufSize) {
+			if (byteCounter < UART_RECEIVE_BUF_SIZE) {
 				uartReceiveBuf[byteCounter] = receivedByte;
 			}
 			else {
@@ -109,8 +115,8 @@ long receiveMsg(uint8_t contentBuf[])
 				if (receivedByte == '^') {
 					state++;
 					contentLen = *((uint16_t*)&uartReceiveBuf[1]);
-					if (contentLen > uartReceiveBufSize) {
-						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", uartReceiveBufSize, contentLen);
+					if (contentLen > UART_RECEIVE_BUF_SIZE) {
+						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", UART_RECEIVE_BUF_SIZE, contentLen);
 						return -1;
 					}
 					else {
@@ -171,11 +177,13 @@ long receiveMsg(uint8_t contentBuf[])
 	}
 }
 
+uint8_t uartTransmitBuf[UART_TRANSMIT_BUF_SIZE];
+
 long transmitMsg(uint8_t msgContent[], uint16_t contentLen)
 {
 	long msgLen = createUartMsg(uartTransmitBuf, msgContent, contentLen);
-	if (msgLen > uartTransmitBufSize) {
-		nrcLog("Error: Too large bytesCount for transmit, current uartTransmitBufSize == %d, but required ", uartTransmitBufSize, msgLen);
+	if (msgLen > UART_TRANSMIT_BUF_SIZE) {
+		nrcLog("Error: Too large bytesCount for transmit, current uartTransmitBufSize == %d, but required ", UART_TRANSMIT_BUF_SIZE, msgLen);
 		return 0;
 	}
 	return uartTransmitData(uartTransmitBuf, msgLen);

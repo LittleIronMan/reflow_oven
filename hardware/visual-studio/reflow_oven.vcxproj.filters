@@ -19,6 +19,18 @@
     <Filter Include="FreeRTOS">
       <UniqueIdentifier>{60c80415-4673-464a-a7fe-b0a8d29f8544}</UniqueIdentifier>
     </Filter>
+    <Filter Include="stm32">
+      <UniqueIdentifier>{2e5eaabe-cf90-4195-939a-4472206af1ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry">
+      <UniqueIdentifier>{7b893b75-cec1-431c-93da-4d0e64de0bed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry\uart-transmitter">
+      <UniqueIdentifier>{c71649fa-8555-483e-bb65-46695d0f41ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry\uart-receiver">
+      <UniqueIdentifier>{47ef9566-470a-4d0c-a83e-3155a6505208}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Drivers\CMSIS\Include\arm_common_tables.h">
@@ -192,9 +204,6 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h">
       <Filter>Drivers</Filter>
     </ClInclude>
-    <ClInclude Include="..\Inc\unix_time.h">
-      <Filter>Исходные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_crc.h">
       <Filter>Drivers</Filter>
     </ClInclude>
@@ -204,14 +213,29 @@
     <ClInclude Include="..\..\rpi-uart\my_software_stm32_crc.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rpi-uart\nrc_print_conf.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="..\Inc\FreeRTOSConfig.h">
       <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\unix_time.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\nrc_print_config.h">
+      <Filter>raspberry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\uart_config.h">
+      <Filter>stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\nrc_print_config.h">
+      <Filter>stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.h">
+      <Filter>raspberry\uart-receiver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-transmitter\uart_config.h">
+      <Filter>raspberry\uart-transmitter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -328,6 +352,15 @@
     </ClCompile>
     <ClCompile Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.c">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\uart_config.c">
+      <Filter>stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.c">
+      <Filter>raspberry\uart-receiver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rpi-uart\raspberry_config\uart-transmitter\uart_config.c">
+      <Filter>raspberry\uart-transmitter</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

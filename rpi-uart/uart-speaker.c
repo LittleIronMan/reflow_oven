@@ -4,37 +4,13 @@
 #include <wiringSerial.h>
 
 #include "safe_uart/safe_uart_messenger.h"
-#include "my_software_stm32_crc.h"
 #include "../nrc_print.h"
-
-uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
-	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
-}
-uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software;
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
-const uint16_t uartReceiveBufSize = 1; // не используетс¤ в этом модуле
-uint8_t uartReceiveBuf[uartReceiveBufSize];
-uint8_t uartReceiveByteRaspberry() {
-	return 0; // no action
-}
-uint8_t(*uartReceiveByte) () = uartReceiveByteRaspberry;
-
-const uint16_t uartTransmitBufSize = 1024;
-uint8_t uartTransmitBuf[uartTransmitBufSize];
-uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
-	for (uint16_t int = 0; i < bytesCount; i++) {
-		serialPutchar(uartDescriptor, data[i]);
-	}
-	return bytesCount;
-}
-uint16_t(*uartTransmitData) (uint8_t[], uint16_t) = uartTransmitDataRaspberry;
-
-
-// следующие 2 функции вз¤ты отсюда:
+// следующие 2 функции взяты отсюда:
 // https://stackoverflow.com/a/868894
 char * getCmdOption(char **begin, char **end, const std::string &option)
 {

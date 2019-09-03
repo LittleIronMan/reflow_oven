@@ -6,35 +6,14 @@
 //#include <sys/types.h> 
 #include <unistd.h> // read(), open(), write(), pipe() etc.
 
-#include <wiringSerial.h> // serialGetchar(fd)
+#include <wiringSerial.h>
 
-#include "safe_uart/safe_uart_messenger.h" // uartGetchar, receiveMsg(), crc_calc
-#include "my_software_stm32_crc.h" // stm32_sw_crc32_by_byte()
+#include "safe_uart/safe_uart_messenger.h" // receiveMsg()
 #include "../nrc_print.h" // nrcLog?() nrcPrintf?()
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
 int uartDescriptor;
-
-uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
-	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
-}
-uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software;
-
-const uint16_t uartReceiveBufSize = 1024;
-uint8_t uartReceiveBuf[uartReceiveBufSize];
-uint8_t uartReceiveByteRaspberry() {
-	return serialGetchar(uartDescriptor);
-}
-uint8_t(*uartReceiveByte) () = uartReceiveByteRaspberry;
-
-const uint16_t uartTransmitBufSize = 1; // этот буфер не используется в этом модуле, но указать нужно
-uint8_t uartTransmitBuf[uartTransmitBufSize];
-uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
-	return 0; // no action
-}
-uint16_t(*uartTransmitData) (uint8_t [], uint16_t) = uartTransmitDataRaspberry;
-
 
 bool isFileExists(const char *name);
 

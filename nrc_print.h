@@ -4,7 +4,7 @@
 #include <stdio.h> // printf
 #include <stdarg.h> // va_list
 #include <stdint.h> // uint8_t, uint16_t etc...
-#include <nrc_print_conf.h> // NRC_LOG_LEVEL, NRC_LOG_NEED_FFLUSH
+#include <nrc_print_config.h> // NRC_LOG_LEVEL, NRC_LOG_NEED_FFLUSH
 
 #define NRC_LOG_LEVEL_DEFAULT 1
 #define NRC_LOG_LEVEL_DEBUG 2

@@ -73,35 +73,6 @@ void StartBackgroundTask(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfBytes)
-{
-	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfBytes >> 2);
-}
-uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_hardware;
-
-const uint16_t uartReceiveBufSize = 512;
-uint8_t uartReceiveBuf[uartReceiveBufSize];
-uint8_t uartReceiveByteStm32() {
-	uint8_t receivedByte;
-	HAL_StatusTypeDef result;
-	do { result = HAL_UART_Receive(&huart1, &receivedByte, 1, HAL_MAX_DELAY);
-	} while (result != HAL_OK);
-	return receivedByte;
-}
-uint8_t(*uartReceiveByte) () = uartReceiveByteStm32;
-
-const uint16_t uartTransmitBufSize = 512;
-uint8_t uartTransmitBuf[uartTransmitBufSize];
-uint16_t uartTransmitDataStm32(uint8_t data[], uint16_t bytesCount) {
-	HAL_StatusTypeDef result = HAL_UART_Transmit(&huart1, data, bytesCount, HAL_MAX_DELAY);
-	if (result == HAL_OK) {
-		return bytesCount;
-	}
-	else {
-		return 0;
-	}
-}
-uint16_t(*uartTransmitData) (uint8_t[], uint16_t) = uartTransmitDataStm32;
 
 /* USER CODE END 0 */
 
@@ -406,7 +377,7 @@ void StartBackgroundTask(void const * argument)
 	for (;;) {
 		long msgLen = receiveMsg(msgBuf);
 		if (msgLen > 0) {
-			// отражаем эхом это-же сообщение
+			// РѕС‚СЂР°Р¶Р°РµРј СЌС…РѕРј СЌС‚Рѕ-Р¶Рµ СЃРѕРѕР±С‰РµРЅРёРµ
 			transmitMsg(msgBuf, msgLen);
 		}
 	}
