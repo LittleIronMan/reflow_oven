@@ -24,9 +24,8 @@ extern unsigned char logLevelGlobal;
 #define NRC_LOG_ADD_EOL 0x1
 #define NRC_LOG_ADD_COUNTER 0x2
 
-void nrcPrintfEx(uint8_t viewMode, char *fmt, ...);
-
 #if (NRC_LOG_LEVEL >= NRC_LOG_LEVEL_DEFAULT) || NRC_LOG_LEVEL_DYNAMIC
+void nrcPrintfEx(unsigned char logLevel, uint8_t viewMode, char *fmt, ...);
 #define nrcPrintf(...) nrcPrintfEx(NRC_LOG_LEVEL_DEFAULT, 0, __VA_ARGS__)
 #define nrcLog(...) nrcPrintfEx(NRC_LOG_LEVEL_DEFAULT, NRC_LOG_ADD_COUNTER | NRC_LOG_ADD_EOL, __VA_ARGS__)
 #else
