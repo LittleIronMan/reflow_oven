@@ -1,38 +1,53 @@
 #include <string.h> // strlen
-#include <algorithm> // find
 
 #include <wiringSerial.h>
 
 #include "safe_uart/safe_uart_messenger.h"
 #include "../nrc_print.h"
 
+#include <unistd.h>
+#include <getopt.h>
+
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
-// следующие 2 функции взяты отсюда:
-// https://stackoverflow.com/a/868894
-char * getCmdOption(char **begin, char **end, const std::string &option)
-{
-	char **itr = std::find(begin, end, option);
-	if (itr != end && ++itr != end) {
-		return *itr;
-	}
-	return 0;
-}
-
-bool cmdOptionExists(char **begin, char **end, const std::string &option)
-{
-	return std::find(begin, end, option) != end;
-}
 
 int main(int argc, char *argv[])
 {
-	if (cmdOptionExists(argv, argv + argc, "--send")) {
+	char *data = NULL;
 
+	static struct option long_opt[] = {
+		{"help",  0, 0, 'h'},
+		{"send", 1, 0, 's'},
+		{0,0,0,0}
+	};
+
+	while (1) {
+		int opt;
+		int optIdx;
+
+		if ((opt = getopt_long(argc, argv, "s:h", long_opt, &optIdx)) == -1) {
+			break;
+		}
+
+		switch (opt) {
+		case 'h': {
+			nrcLog("Sorry, help not ready, bye.");
+			//usage(argv[0]);
+			return(-1);
+		}
+		case 's': {
+			//printf("option 'c' selected, filename: %s\n", optarg);
+			//return(0);
+			data = optarg;
+			break;
+		}
+		default:
+			//usage(argv[0]);
+			return(-1);
+		}
 	}
-
-	char *data = getCmdOption(argv, argv + argc, "--send");
 
 	if (data) {
 		//Sends the single byte to the serial device identified by the given file descriptor.
@@ -49,7 +64,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 		else {
-			nrcLog("Serial port opened successful!");
+			nrcLogD("Serial port opened successful!");
 		}
 
 		uint16_t len = strlen(data);

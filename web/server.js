@@ -47,14 +47,15 @@ else if (process.platform === 'win32') {
 
 uartListener.stdout.on('data', function (data) {
     let str = data.toString();
-    if (str.startsWith("temp measure")) {
+    if (str.startsWith('temp measure')) {
         let words = str.match(/\S+/g) || [];
         let data = {time: parseFloat(words[2]), temp: parseFloat(words[3])};
         io.emit('temp measure', data);
     }
-    else if(str.startswith('{"type":"ping"')) {
-        let obj = JSON.parse(str);
-        console.log("Ping success: ", obj);
+    else if(str.startswith('ping')) {
+        // let obj = JSON.parse(str);
+        // console.log("Ping success: ", obj);
+        console.log("Ping success! I wan'a repeat it :))");
         setTimeout(sendPing, 500); // повторная отправка
     }
     else {
