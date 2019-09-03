@@ -52,14 +52,14 @@ uartListener.stdout.on('data', function (data) {
         let data = {time: parseFloat(words[2]), temp: parseFloat(words[3])};
         io.emit('temp measure', data);
     }
-    else if(str.startswith('ping')) {
+    else if(str.startsWith('ping')) {
         // let obj = JSON.parse(str);
         // console.log("Ping success: ", obj);
         console.log("Ping success! I wan'a repeat it :))");
         setTimeout(sendPing, 500); // повторная отправка
     }
     else {
-        console.log("Unhandled uart message: ", str);
+        //console.log("Unhandled uart message: ", data);
     }
 });
 
