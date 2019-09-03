@@ -13,7 +13,7 @@ uint8_t uartReceiveByte() {
 }
 
 uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount) {
-	for (uint16_t int = 0; i < bytesCount; i++) {
+	for (uint16_t i = 0; i < bytesCount; i++) {
 		serialPutchar(uartDescriptor, data[i]);
 	}
 	return bytesCount;
