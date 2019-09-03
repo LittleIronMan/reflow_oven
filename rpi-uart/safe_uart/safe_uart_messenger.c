@@ -70,3 +70,117 @@ long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNu
 	memcpy(msgContentBuf, &uartMsgBuf[4], contentLen);
 	return contentLen;
 }
+
+typedef enum {
+	NO_MSG = 0,
+	MSG_BEGIN,
+	CONTENT,
+	MSG_END,
+	CHECK_SUM
+} MessageReceiverState;
+
+char uartReceiveBuf[uartReceiveBufSize]; // буфер, в котором будут храниться упакованные данные
+
+long receiveMsg(uint8_t contentBuf[])
+{
+	uint16_t byteCounter = 0; // счетчик принятых байтов
+	uint16_t contentLen = 0; // ожидаемое количество байтов полезного контента в пакете
+	MessageReceiverState state = NO_MSG;
+	while (true) {
+		// побайтно читаем данные из потока, и ищем упакованные сообщения
+		uint8_t receivedByte = uartReceiveByte();
+		if (state != NO_MSG) {
+			if (byteCounter < uartReceiveBufSize) {
+				uartReceiveBuf[byteCounter] = receivedByte;
+			}
+			else {
+				nrcLog("Error: receive buffer overflow");
+				return -1;
+			}
+		}
+
+		switch (state) {
+		case NO_MSG: {
+			if (receivedByte == '^') {
+				state++;
+				byteCounter = 0; uartReceiveBuf[0] = '^';
+			}
+			break; }
+		case MSG_BEGIN: {
+			if (byteCounter == 3) {
+				if (receivedByte == '^') {
+					state++;
+					contentLen = *((uint16_t*)&uartReceiveBuf[1]);
+					if (contentLen > uartReceiveBufSize) {
+						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", uartReceiveBufSize, contentLen);
+						return -1;
+					}
+					else {
+						nrcLogV("Package begin detected: msg lenght == %d", contentLen);
+					}
+				}
+				else {
+					state = NO_MSG;
+					nrcLog("Wrong package");
+					nrcLogD("Because: bad begin");
+				}
+			}
+			break; }
+		case CONTENT: {
+			if (byteCounter == 4 + contentLen) {
+				if (receivedByte == '$') {
+					state++;
+					nrcLogV("Package end detected");
+				}
+				else {
+					nrcLog("Wrong package")
+						nrcLogD("Because: bad message end");
+				}
+			}
+			break; }
+		case MSG_END: {
+			if ((byteCounter & 0x0003) == 0) { // последняя тетрада байт
+				state++;
+				nrcLogV("Check sum detected");
+			}
+			break; }
+		case CHECK_SUM: {
+			if ((byteCounter & 0x0003) == 3) { // последний байт пакета
+				// перепроверяем пакет целиком, включая контрольную сумму
+				long validContentLen = getMsgContent(contentBuf, uartReceiveBuf, byteCounter + 1);
+				nrcLogV("Returned contentLen == %d", validContentLen);
+				for (uint16_t i = 0; i < byteCounter + 1; i++) {
+					nrcPrintfV("%02x ", uartReceiveBuf[i]);
+				}
+				nrcPrintfV("\n");
+
+				if (validContentLen < 0) {
+					nrcLog("Wrong package");
+					nrcLogD("Because: bad checksum");
+				}
+				else {
+					nrcLogD("Package received!");
+					contentBuf[validContentLen] = '\0';
+					return validContentLen;
+				}
+				state = NO_MSG;
+			}
+			break; }
+		default: break;
+		}
+
+		byteCounter++;
+	}
+}
+
+char uartTransmitBuf[uartTransmitBufSize]; // буфер, в котором будут храниться упакованные данные
+
+long transmitMsg(uint8_t msgContent[], uint16_t contentLen)
+{
+	long msgLen = createUartMsg(uartTransmitBuf, msgContent, contentLen);
+	if (msgLen > uartTransmitBufSize) {
+		nrcLog("Error: Too large bytesCount for transmit, current uartTransmitBufSize == %d, but required ", uartTransmitBufSize, msgLen);
+		return 0;
+	}
+	return uartTransmitData(uartTransmitBuf, msgLen);
+}

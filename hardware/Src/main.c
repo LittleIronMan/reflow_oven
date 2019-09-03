@@ -67,11 +67,39 @@ static void MX_CRC_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
+void backgroundTask(void const * argument);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfBytes)
+{
+	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfBytes >> 2);
+}
+uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_hardware;
+
+const uint16_t uartReceiveBufSize = 512;
+uint8_t uartReceiveByteStm32() {
+	uint8_t receivedByte;
+	HAL_StatusTypeDef result;
+	do { result = HAL_UART_Receive(&huart1, &receivedByte, 1, HAL_MAX_DELAY);
+	} while (result != HAL_OK);
+	return receivedByte;
+}
+uint8_t(*uartReceiveByte) () = uartReceiveByteStm32;
+
+const uint16_t uartTransmitBufSize = 512;
+uint16_t uartTransmitDataStm32(uint8_t data[], uint16_t bytesCount) {
+	HAL_StatusTypeDef result = HAL_UART_Transmit(&huart1, data, bytesCount, HAL_MAX_DELAY);
+	if (result == HAL_OK) {
+		return bytesCount;
+	}
+	else {
+		return 0;
+	}
+}
+uint16_t(*uartTransmitData) (uint8_t[], uint16_t) = uartTransmitDataStm32;
 
 /* USER CODE END 0 */
 
@@ -134,6 +162,9 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  osThreadDef(backgroundTask, idleTask, osPriorityIdle, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(backgroundTask), NULL);
+
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -367,14 +398,9 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-uint32_t crc_calc_hardware(uint8_t pBuffer[], uint16_t NumOfBytes)
+void backgroundTask(void const * argument)
 {
-	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfBytes >> 2);
 }
-
-uint32_t (*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_hardware;
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -418,18 +444,8 @@ void StartDefaultTask(void const * argument)
 				//myPrint("Current temperature == %f deg", temp);
 
 				char msgContentBuf[20];
-				uint16_t n1 = sprintf(msgContentBuf, "Temp %.2f\n", temp);
-				char uartMsgBuf[40];
-				uint16_t n2 = createUartMsg(uartMsgBuf, msgContentBuf, n1);
-				
-				nrcPrintfV("Uart message: ");
-				for (uint16_t i = 0; i < n2; i++) {
-					nrcPrintfV("%02x ", (uint8_t)uartMsgBuf[i]);
-				}
-				nrcPrintfV("\n");
-				
-				uartMsgBuf[n2] = '\0';
-				HAL_UART_Transmit(&huart1, uartMsgBuf, n2 + 1, HAL_MAX_DELAY);
+				uint16_t len = sprintf(msgContentBuf, "Temp %.2f\n", temp);
+				transmitMsg(msgContentBuf, len);
 			}
 		}
 	}

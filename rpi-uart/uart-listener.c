@@ -6,34 +6,38 @@
 //#include <sys/types.h> 
 #include <unistd.h> // read(), open(), write(), pipe() etc.
 
-#include <wiringSerial.h>
+#include <wiringSerial.h> // serialGetchar(fd)
 
-#include "safe_uart/safe_uart_messenger.h"
-#include "my_software_stm32_crc.h"
-#include "../nrc_print.h"
+#include "safe_uart/safe_uart_messenger.h" // uartGetchar, receiveMsg(), crc_calc
+#include "my_software_stm32_crc.h" // stm32_sw_crc32_by_byte()
+#include "../nrc_print.h" // nrcLog?() nrcPrintf?()
+
+char *serialPortName = "/dev/ttyAMA0";
+unsigned long serialBaudRate = 115200;
+int uartDescriptor;
 
 uint32_t crc_calc_software(uint8_t pBuffer[], uint16_t NumOfBytes) {
 	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
 }
 uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software;
 
-char *serialPortName = "/dev/ttyAMA0";
-unsigned long serialBaudRate = 115200;
+const uint16_t uartReceiveBufSize = 1024;
+uint8_t uartReceiveByteRaspberry() {
+	return serialGetchar(uartDescriptor);
+}
+uint8_t(*uartReceiveByte) () = uartReceiveByteRaspberry;
+
+const uint16_t uartTransmitBufSize = 1; // этот буфер не используется в этом модуле, но указать нужно
+uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
+	return 0; // no action
+}
+uint16_t(*uartTransmitData) (uint8_t [], uint16_t) = uartTransmitDataRaspberry;
+
 
 bool isFileExists(const char *name);
-void sendToServer(char *msg, int len);
-
-typedef enum {
-	NO_MSG = 0,
-	MSG_BEGIN,
-	CONTENT,
-	MSG_END,
-	CHECK_SUM
-} MessageReceiverState;
 
 int main() {
 	nrcLogV("Main func started!");
-	int uartDescriptor;
 	if ((uartDescriptor = serialOpen(serialPortName, serialBaudRate)) < 0) {
 		nrcLog("Unable to open serial port: %s", strerror(errno));
 		return 1;
@@ -43,81 +47,17 @@ int main() {
 	}
 
 	nrcLogV("Start loop");
-	char uartBuf[256]; // буфер, в котором будет храниться передаваемые из контроллера данные(упакованные в посылки)
-	uint16_t charCounter = 0; // счетчик символов в буфере
-	char contentBuf[256]; // в этом буфере будут хранится распакованные данные
-	uint16_t contentLen = 0; // количество ожидаемых символов в буфере
-	MessageReceiverState state = NO_MSG;
+
+	uint8_t msgContent[256];
+
 	while (true) {
-		// бесконечно читаем из uart'a по одному символу и передаем принятые строки серверу
-		char ch = serialGetchar(uartDescriptor);
-		if (state != NO_MSG && charCounter < 256) { uartBuf[charCounter] = ch; }
-
-		switch (state) {
-		case NO_MSG: {
-			if (ch == '^') {
-				state++;
-				charCounter = 0; uartBuf[0] = '^';
-			}
-			break; }
-		case MSG_BEGIN: {
-			if (charCounter == 3) {
-				if (ch == '^') {
-					state++;
-					contentLen = *((uint16_t*)&uartBuf[1]);
-					nrcLogV("Package begin detected: msg lenght == %d", contentLen);
-				}
-				else {
-					state = NO_MSG;
-					nrcLog("Wrong package");
-					nrcLogD("Because: bad begin");
-				}
-			}
-			break; }
-		case CONTENT: {
-			if (charCounter == 4 + contentLen) {
-				if (ch == '$') {
-					state++;
-					nrcLogV("Package end detected");
-				}
-				else {
-					nrcLog("Wrong package")
-					nrcLogD("Because: bad message end");
-				}
-			}
-			break; }
-		case MSG_END: {
-			if ((charCounter & 0x0003) == 0) { // последняя тетрада байт
-				state++;
-				nrcLogV("Check sum detected");
-			}
-			break; }
-		case CHECK_SUM: {
-			if ((charCounter & 0x0003) == 3) { // последний байт пакета
-				// перепроверяем пакет целиком, включая контрольную сумму
-				long validContentLen = getMsgContent(contentBuf, uartBuf, charCounter + 1);
-				nrcLogV("Returned contentLen == %d", validContentLen);
-				for (uint16_t i = 0; i < charCounter + 1; i++) {
-					nrcPrintfV("%02x ", uartBuf[i]);
-				}
-				nrcPrintfV("\n");
-
-				if (validContentLen < 0) {
-					nrcLog("Wrong package");
-					nrcLogD("Because: bad checksum");
-				}
-				else {
-					nrcLogD("Package received!");
-					contentBuf[validContentLen] = '\0';
-					nrcPrintf("%s", contentBuf);
-				}
-				state = NO_MSG;
-			}
-			break; }
-		default: break;
+		long msgLen = receiveMsg(msgContent);
+		if (msgLen < 0) {
+			nrcLog("Wrong message");
 		}
-
-		charCounter++;
+		else {
+			nrcLog("%s", msgContent);
+		}
 	}
 	//close(fifoDescriptor); 
 }

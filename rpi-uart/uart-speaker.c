@@ -14,6 +14,23 @@ uint32_t(*crc_calc) (uint8_t pBuffer[], uint16_t NumOfBytes) = crc_calc_software
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
+int uartDescriptor;
+
+const uint16_t uartReceiveBufSize = 1; // не используется в этом модуле
+uint8_t uartReceiveByteRaspberry() {
+	return 0; // no action
+}
+uint8_t(*uartReceiveByte) () = uartReceiveByteRaspberry;
+
+const uint16_t uartTransmitBufSize = 1024;
+uint16_t uartTransmitDataRaspberry(uint8_t data[], uint16_t bytesCount) {
+	for (uint16_t int = 0; i < bytesCount; i++) {
+		serialPutchar(uartDescriptor, data[i]);
+	}
+	return bytesCount;
+}
+uint16_t(*uartTransmitData) (uint8_t[], uint16_t) = uartTransmitDataRaspberry;
+
 
 // следующие 2 функции взяты отсюда:
 // https://stackoverflow.com/a/868894

@@ -116,9 +116,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\nrc_print.h" />
-    <ClInclude Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.h" />
-    <ClInclude Include="..\..\rpi-uart-listener-cpp\nrc_print_conf.h" />
-    <ClInclude Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.h" />
+    <ClInclude Include="..\..\rpi-uart\my_software_stm32_crc.h" />
+    <ClInclude Include="..\..\rpi-uart\nrc_print_conf.h" />
+    <ClInclude Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h" />
     <ClInclude Include="..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h" />
@@ -158,6 +158,7 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h" />
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h" />
+    <ClInclude Include="..\Inc\FreeRTOSConfig.h" />
     <ClInclude Include="..\Inc\main.h" />
     <ClInclude Include="..\Inc\stm32f1xx_hal_conf.h" />
     <ClInclude Include="..\Inc\stm32f1xx_it.h" />
@@ -181,9 +182,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\nrc_print.c" />
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\my_software_stm32_crc.c" />
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\safe_uart\safe_uart_messenger.c" />
-    <ClCompile Include="..\..\rpi-uart-listener-cpp\uart-listener.c" />
+    <ClCompile Include="..\..\rpi-uart\my_software_stm32_crc.c" />
+    <ClCompile Include="..\..\rpi-uart\safe_uart\safe_uart_messenger.c" />
+    <ClCompile Include="..\..\rpi-uart\uart-listener.c" />
+    <ClCompile Include="..\..\rpi-uart\uart-speaker.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c" />
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c" />

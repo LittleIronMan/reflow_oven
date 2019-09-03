@@ -52,6 +52,14 @@ uartListener.stdout.on('data', function (data) {
         let data = {time: parseFloat(words[2]), temp: parseFloat(words[3])};
         io.emit('temp measure', data);
     }
+    else if(str.startswith('{"type":"ping"')) {
+        let obj = JSON.parse(str);
+        console.log("Ping success: ", obj);
+        setTimeout(sendPing, 500); // повторная отправка
+    }
+    else {
+        console.log("Unhandled uart message: ", str);
+    }
 });
 
 uartListener.stderr.on('data', function (data) {
@@ -61,3 +69,19 @@ uartListener.stderr.on('data', function (data) {
 uartListener.on('close', function (code) {
     console.log('child process exited with code ' + code);
 });
+
+var pingProcess;
+function sendPing() {
+    if (pingProcess === undefined) {
+        pingProcess = child_process.exec('../rpi-uart/uart-speaker --send "ping"');
+        pingProcess.on('exit', function (code) {
+            console.log('pingProcess exited with exit code ' + code);
+            pingProcess = undefined;
+        });
+    }
+    else {
+        console.log("pingProcess busy");
+    }
+}
+
+sendPing();
