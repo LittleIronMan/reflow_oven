@@ -193,5 +193,9 @@ long transmitMsg(uint8_t msgContent[], uint16_t contentLen)
 		nrcLog("Error: Too large bytesCount for transmit, current uartTransmitBufSize == %d, but required ", UART_TRANSMIT_BUF_SIZE, msgLen);
 		return 0;
 	}
-	return uartTransmitData(uartTransmitBuf, msgLen);
+	uint16_t result = uartTransmitData(uartTransmitBuf, msgLen);
+	if (result != msgLen) {
+		nrcLogD("Transmit error");
+	}
+	return result;
 }

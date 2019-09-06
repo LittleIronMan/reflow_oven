@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <uart_config.h>
 
+#include <nrc_print.h>
 #include "main.h"
 
 uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes)
@@ -25,6 +26,7 @@ uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount)
 		return bytesCount;
 	}
 	else {
+		nrcLogD("Transmit error. HAL status == %d", result);
 		return 0;
 	}
 }

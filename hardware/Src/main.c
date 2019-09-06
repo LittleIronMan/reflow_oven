@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "safe_uart_messenger.h"
 #include "nrc_print.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,15 +52,24 @@ RTC_HandleTypeDef hrtc;
 SPI_HandleTypeDef hspi3;
 
 UART_HandleTypeDef huart1;
+DMA_HandleTypeDef hdma_usart1_rx;
 
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
+
+#define	MAX_PACKAGE_SIZE 256
+#define	NRC_UART_BUF_SIZE (256/2)
+uint8_t nrcUartDmaBuf[NRC_UART_BUF_SIZE]; // буфер с принимаемыми по uart данными
+uint16_t prevCNDTR = NRC_UART_BUF_SIZE; // предыдущая позиция для записи в буфере uartDmaBuf 
+uint8_t receivedBuf[MAX_PACKAGE_SIZE]; // буфер с уже принятыми данными
+uint16_t countReceivedBytes = 0; // количество принятых байт
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
@@ -104,11 +114,24 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI3_Init();
   MX_USART1_UART_Init();
   MX_RTC_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+
+  // настройка приема данных по uart
+  // к этому моменту UART1 и DMA уже инициализированы и связаны друг с другом(через структуру hdma_usart1_rx),
+  // все происходит в последнем вызове цепочки: 
+  //	MX_USART1_UART_Init(...) => HAL_UART_Init(...) => HAL_UART_MspInit(...)
+  // чтобы обрабатывать прерывания, нужно определить функции:
+  //	HAL_UART_RxHalfCpltCallback, и HAL_UART_RxCpltCallback
+  // притом функция HAL_UART_RxCpltCallback, будет вызываться еще и по прерыванию UART_IT_IDLE
+  //	этот вызов добавлен в функцию USART1_IRQHandler в файле stm32f1xx_it.c
+  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);   // enable idle line interrupt
+  //__HAL_DMA_DISABLE_IT(&huart1, DMA_IT_HT);  // disable uart half tx interrupt
+  HAL_UART_Receive_DMA(&huart1, nrcUartDmaBuf, NRC_UART_BUF_SIZE);
 
   /* USER CODE END 2 */
 
@@ -333,6 +356,21 @@ static void MX_USART1_UART_Init(void)
 
 }
 
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
+}
+
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -371,14 +409,75 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+// частично позаимствовано отсюда:
+// https://github.com/akospasztor/stm32-dma-uart/blob/master/Src/main.c
+
+typedef enum {
+	NRC_EVENT_HALF_BUF, // счетчик dma на середине буфера
+	NRC_EVENT_FULL_BUF, // счетчик dma в конце буфера
+	NRC_EVENT_TRANSFER_COMPLETED // передача/прием данных завершен(а) - поймано прерывание IDLE_LINE
+} NRC_UART_EventType;
+
+void NRC_UART_RxEvent(NRC_UART_EventType event)
+{
+	uint16_t start, length;
+	uint16_t currCNDTR = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
+
+	/* Determine start position in DMA buffer based on previous CNDTR value */
+	start = (prevCNDTR < NRC_UART_BUF_SIZE) ? (NRC_UART_BUF_SIZE - prevCNDTR) : 0;
+
+	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
+		length = (prevCNDTR < NRC_UART_BUF_SIZE) ? (prevCNDTR - currCNDTR) : (NRC_UART_BUF_SIZE - currCNDTR);
+		prevCNDTR = currCNDTR;
+	}
+	else if (event == NRC_EVENT_HALF_BUF) { /* DMA Rx Half event */
+		length = NRC_UART_BUF_SIZE/2 - start;
+		prevCNDTR = NRC_UART_BUF_SIZE/2;
+	}
+	else if (event == NRC_EVENT_FULL_BUF) { /* DMA Rx Complete event */
+		length = NRC_UART_BUF_SIZE - start;
+		prevCNDTR = NRC_UART_BUF_SIZE;
+	}
+
+	/* Copy and Process new data */
+	memcpy(&receivedBuf[countReceivedBytes], &nrcUartDmaBuf[start], length);
+	countReceivedBytes += length;
+
+	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
+		//receivedBuf[countReceivedBytes] = '\0';
+		nrcLog("Successful received %d bytes", countReceivedBytes);
+		//processData(data, length);
+		countReceivedBytes = 0;
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == USART1) {
+		if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
+			NRC_UART_RxEvent(NRC_EVENT_TRANSFER_COMPLETED);
+		}
+		else {
+			NRC_UART_RxEvent(NRC_EVENT_FULL_BUF);
+		}
+	}
+}
+
+void HAL_UART_RxHalfCallback(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == USART1) {
+		NRC_UART_RxEvent(NRC_EVENT_HALF_BUF);
+	}
+}
+
 void StartBackgroundTask(void const * argument)
 {
 	char msgBuf[256];
 	nrcLogD("Start background task");
 	for (;;) {
+		continue;
 		long msgLen = receiveMsg(msgBuf);
 		if (msgLen > 0) {
-			continue;
 			// отражаем эхом это-же сообщение
 			long result = transmitMsg(msgBuf, msgLen);
 			if (result == 0) {
@@ -438,7 +537,7 @@ void StartDefaultTask(void const * argument)
 				char msgContentBuf[20];
 				uint16_t len = sprintf(msgContentBuf, "Temp %.2f\n", temp);
 				//transmitMsg(msgContentBuf, len);
-				transmitMsg("ping\n", 5);
+				//transmitMsg("ping\n", 5);
 			}
 		}
 	}
