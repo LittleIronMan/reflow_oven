@@ -75,9 +75,6 @@ extern uint8_t RxArr[]; // массив с принятыми и упакова�
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 
-#define	NRC_MAX_PACKAGE_SIZE 256
-#define	NRC_UART_RX_BUF_SIZE (256/2)
-
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

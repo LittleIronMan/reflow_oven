@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "safe_uart_messenger.h"
 #include "nrc_print.h"
+#include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
 #include <string.h> // memcpy
 #include <stdbool.h>
 /* USER CODE END Includes */
@@ -63,10 +64,10 @@ NrcUartBufBeta RxBuf, // буфер данных, принятых по UART
 TxBuf; // буфер данных, передаваемых по UART
 NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
 // соответствующие массивы
-uint8_t RxArr[NRC_MAX_PACKAGE_SIZE]; // массив с принятыми и упакованными данными
-uint8_t TxArr[NRC_MAX_PACKAGE_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
-uint8_t RxDmaArr[NRC_UART_RX_BUF_SIZE]; // массив для циклического буфера ПРИЕМА данных по uart
-char msgBuf[NRC_MAX_PACKAGE_SIZE - 8]; // массив для распакованных данных
+uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
+uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
+uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
+char msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
 bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
 
 /* USER CODE END PV */
@@ -125,9 +126,9 @@ int main(void)
   MX_RTC_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-  RxBuf.arr = RxArr; RxBuf.size = NRC_MAX_PACKAGE_SIZE; RxBuf.state = NEED_UPDATE; RxBuf.countBytes = 0;
-  TxBuf.arr = TxArr; TxBuf.size = NRC_MAX_PACKAGE_SIZE; TxBuf.state = NEED_UPDATE; TxBuf.countBytes = 0;
-  dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = NRC_UART_RX_BUF_SIZE;
+  RxBuf.arr = RxArr; RxBuf.size = UART_RECEIVE_BUF_SIZE; RxBuf.state = NEED_UPDATE; RxBuf.countBytes = 0;
+  TxBuf.arr = TxArr; TxBuf.size = UART_TRANSMIT_BUF_SIZE; TxBuf.state = NEED_UPDATE; TxBuf.countBytes = 0;
+  dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = UART_RECEIVE_BUF_SIZE / 2;
   dmaRxBuf.prevCNDTR = dmaRxBuf.size;
 
   // настройка приема данных по uart
@@ -454,7 +455,7 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 
 	/* Copy and Process new data */
 	if (RxBuf.state == USED_BY_DMA) {
-		if (RxBuf.countBytes + length < dmaRxBuf.size) {
+		if (RxBuf.countBytes + length < RxBuf.size) {
 			memcpy(&RxBuf.arr[RxBuf.countBytes], &dmaRxBuf.arr[start], length);
 			RxBuf.countBytes += length;
 		}
