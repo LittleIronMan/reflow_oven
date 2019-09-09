@@ -26,7 +26,8 @@
 /* USER CODE BEGIN Includes */
 #include "safe_uart_messenger.h"
 #include "nrc_print.h"
-#include <string.h>
+#include <string.h> // memcpy
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,16 +54,20 @@ SPI_HandleTypeDef hspi3;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
 
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
-#define	MAX_PACKAGE_SIZE 256
-#define	NRC_UART_BUF_SIZE (256/2)
-uint8_t nrcUartDmaBuf[NRC_UART_BUF_SIZE]; // буфер с принимаемыми по uart данными
-uint16_t prevCNDTR = NRC_UART_BUF_SIZE; // предыдущая позиция для записи в буфере uartDmaBuf 
-uint8_t receivedBuf[MAX_PACKAGE_SIZE]; // буфер с уже принятыми данными
-uint16_t countReceivedBytes = 0; // количество принятых байт
+NrcUartBufBeta RxBuf, // буфер данных, принятых по UART
+TxBuf; // буфер данных, передаваемых по UART
+NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
+// соответствующие массивы
+uint8_t RxArr[NRC_MAX_PACKAGE_SIZE]; // массив с принятыми и упакованными данными
+uint8_t TxArr[NRC_MAX_PACKAGE_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
+uint8_t RxDmaArr[NRC_UART_RX_BUF_SIZE]; // массив для циклического буфера ПРИЕМА данных по uart
+char msgBuf[NRC_MAX_PACKAGE_SIZE - 8]; // массив для распакованных данных
+bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
 
 /* USER CODE END PV */
 
@@ -77,7 +82,7 @@ static void MX_CRC_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-void StartBackgroundTask(void const * argument);
+void StartUartMessenger(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -120,6 +125,10 @@ int main(void)
   MX_RTC_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+  RxBuf.arr = RxArr; RxBuf.size = NRC_MAX_PACKAGE_SIZE; RxBuf.state = NEED_UPDATE; RxBuf.countBytes = 0;
+  TxBuf.arr = TxArr; TxBuf.size = NRC_MAX_PACKAGE_SIZE; TxBuf.state = NEED_UPDATE; TxBuf.countBytes = 0;
+  dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = NRC_UART_RX_BUF_SIZE;
+  dmaRxBuf.prevCNDTR = dmaRxBuf.size;
 
   // настройка приема данных по uart
   // к этому моменту UART1 и DMA уже инициализированы и связаны друг с другом(через структуру hdma_usart1_rx),
@@ -131,7 +140,8 @@ int main(void)
   //	этот вызов добавлен в функцию USART1_IRQHandler в файле stm32f1xx_it.c
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);   // enable idle line interrupt
   //__HAL_DMA_DISABLE_IT(&huart1, DMA_IT_HT);  // disable uart half tx interrupt
-  HAL_UART_Receive_DMA(&huart1, nrcUartDmaBuf, NRC_UART_BUF_SIZE);
+  RxBuf.state = USED_BY_DMA;
+  HAL_UART_Receive_DMA(&huart1, dmaRxBuf.arr, dmaRxBuf.size);
 
   /* USER CODE END 2 */
 
@@ -158,8 +168,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  osThreadDef(backgroundTask, StartBackgroundTask, osPriorityIdle, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(backgroundTask), NULL);
+  osThreadDef(uartMessenger, StartUartMessenger, osPriorityIdle, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(uartMessenger), NULL);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -365,6 +375,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
   /* DMA1_Channel5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
@@ -424,30 +437,42 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 	uint16_t currCNDTR = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
 
 	/* Determine start position in DMA buffer based on previous CNDTR value */
-	start = (prevCNDTR < NRC_UART_BUF_SIZE) ? (NRC_UART_BUF_SIZE - prevCNDTR) : 0;
+	start = (dmaRxBuf.prevCNDTR < dmaRxBuf.size) ? (dmaRxBuf.size - dmaRxBuf.prevCNDTR) : 0;
 
 	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
-		length = (prevCNDTR < NRC_UART_BUF_SIZE) ? (prevCNDTR - currCNDTR) : (NRC_UART_BUF_SIZE - currCNDTR);
-		prevCNDTR = currCNDTR;
+		length = (dmaRxBuf.prevCNDTR < dmaRxBuf.size) ? (dmaRxBuf.prevCNDTR - currCNDTR) : (dmaRxBuf.size - currCNDTR);
+		dmaRxBuf.prevCNDTR = currCNDTR;
 	}
 	else if (event == NRC_EVENT_HALF_BUF) { /* DMA Rx Half event */
-		length = NRC_UART_BUF_SIZE/2 - start;
-		prevCNDTR = NRC_UART_BUF_SIZE/2;
+		length = (dmaRxBuf.size >> 1) - start;
+		dmaRxBuf.prevCNDTR = (dmaRxBuf.size >> 1);
 	}
 	else if (event == NRC_EVENT_FULL_BUF) { /* DMA Rx Complete event */
-		length = NRC_UART_BUF_SIZE - start;
-		prevCNDTR = NRC_UART_BUF_SIZE;
+		length = dmaRxBuf.size - start;
+		dmaRxBuf.prevCNDTR = dmaRxBuf.size;
 	}
 
 	/* Copy and Process new data */
-	memcpy(&receivedBuf[countReceivedBytes], &nrcUartDmaBuf[start], length);
-	countReceivedBytes += length;
+	if (RxBuf.state == USED_BY_DMA) {
+		if (RxBuf.countBytes + length < dmaRxBuf.size) {
+			memcpy(&RxBuf.arr[RxBuf.countBytes], &dmaRxBuf.arr[start], length);
+			RxBuf.countBytes += length;
+		}
+		else {
+			RxUartDmaOveflow = true;
+		}
 
-	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
-		//receivedBuf[countReceivedBytes] = '\0';
-		nrcLog("Successful received %d bytes", countReceivedBytes);
-		//processData(data, length);
-		countReceivedBytes = 0;
+		if (event == NRC_EVENT_TRANSFER_COMPLETED) {
+			if (RxUartDmaOveflow) {
+				// если по ходу передачи буфер был переполнен, то просто игнорируем принятые данные и ждем новых
+				RxBuf.countBytes = 0;
+				RxUartDmaOveflow = false;
+			}
+			else {
+				RxBuf.state = UPDATED;
+				nrcLog("Successful received %d bytes", RxBuf.countBytes);
+			}
+		}
 	}
 }
 
@@ -470,15 +495,31 @@ void HAL_UART_RxHalfCallback(UART_HandleTypeDef *huart)
 	}
 }
 
-void StartBackgroundTask(void const * argument)
+// прерывание по завершению ОТПРАВКИ сообщения
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	char msgBuf[256];
-	nrcLogD("Start background task");
+	if (huart->Instance == USART1) {
+		TxBuf.state = NEED_UPDATE;
+	}
+}
+
+void StartUartMessenger(void const * argument)
+{
+	nrcLogD("Start Messenger");
 	for (;;) {
-		continue;
+		// терпеливо дожидаемся приема сообщения
 		long msgLen = receiveMsg(msgBuf);
+
+		// сбрасываем переменные, чтобы dma смог снова обновить буфер
+		RxBuf.state = USED_BY_DMA;
+		RxBuf.countBytes = 0;
+
 		if (msgLen > 0) {
 			// отражаем эхом это-же сообщение
+			while (TxBuf.state != NEED_UPDATE) {
+				// ждем пока uart завершит передачу предыдущего сообщения
+			}
+			TxBuf.state = UPDATED;
 			long result = transmitMsg(msgBuf, msgLen);
 			if (result == 0) {
 				nrcLogD("Error sending data");
