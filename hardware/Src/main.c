@@ -456,7 +456,7 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 
 	/* Copy and Process new data */
 	if (RxBuf.state == USED_BY_DMA) {
-		if (RxBuf.countBytes + length < RxBuf.size) {
+		if (RxBuf.countBytes + length <= RxBuf.size) {
 			memcpy(&RxBuf.arr[RxBuf.countBytes], &dmaRxBuf.arr[start], length);
 			RxBuf.countBytes += length;
 		}
