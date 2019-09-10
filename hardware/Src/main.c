@@ -68,7 +68,6 @@ uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и �
 uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
 uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
 char msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
-bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
 
 /* USER CODE END PV */
 
@@ -435,6 +434,7 @@ typedef enum {
 void NRC_UART_RxEvent(NRC_UART_EventType event)
 {
 	uint16_t start, length;
+	static bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
 	uint16_t currCNDTR = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
 
 	/* Determine start position in DMA buffer based on previous CNDTR value */
@@ -452,6 +452,7 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 		length = dmaRxBuf.size - start;
 		dmaRxBuf.prevCNDTR = dmaRxBuf.size;
 	}
+	nrcPrintfV("RxBuf.countBytes == %d, length == %d\n", RxBuf.countBytes, length);
 
 	/* Copy and Process new data */
 	if (RxBuf.state == USED_BY_DMA) {
@@ -471,7 +472,7 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 			}
 			else {
 				RxBuf.state = UPDATED;
-				nrcLog("Successful received %d bytes", RxBuf.countBytes);
+				nrcLog("Received %d bytes", RxBuf.countBytes);
 			}
 		}
 	}
@@ -508,8 +509,12 @@ void StartUartMessenger(void const * argument)
 {
 	nrcLogD("Start Messenger");
 	for (;;) {
-		// терпеливо дожидаемся приема сообщения
-		long msgLen = receiveMsg(msgBuf);
+		while (RxBuf.state != UPDATED) {
+			// терпеливо дожидаемся приема сообщения
+		}
+		RxBuf.state = USED_BY_PROC; // устанавливаем флаг того что сейчас буфер будет использоваться процессором
+		long msgLen = getMsgContent(msgBuf, RxBuf.arr, RxBuf.countBytes);
+		RxBuf.state = NEED_UPDATE; // буфер можно перезаписывать
 
 		// сбрасываем переменные, чтобы dma смог снова обновить буфер
 		RxBuf.state = USED_BY_DMA;
@@ -520,8 +525,9 @@ void StartUartMessenger(void const * argument)
 			while (TxBuf.state != NEED_UPDATE) {
 				// ждем пока uart завершит передачу предыдущего сообщения
 			}
-			TxBuf.state = UPDATED;
-			long result = transmitMsg(msgBuf, msgLen);
+			TxBuf.state = USED_BY_PROC;
+			// минуем стадию UPDATED, в следующей функции данные будут паковаться и сразу начнется их передача
+			long result = transmitMsg(msgBuf, msgLen, TxBuf.arr);
 			if (result == 0) {
 				nrcLogD("Error sending data");
 			}

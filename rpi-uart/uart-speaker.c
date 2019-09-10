@@ -6,6 +6,7 @@
 
 #include "safe_uart/safe_uart_messenger.h"
 #include "../nrc_print.h"
+#include <uart_config.h> // UART_TRANSMIT_BUF_SIZE
 
 #include <stdlib.h> // atoi
 #include <unistd.h> // getopt(), getopt_long()
@@ -16,6 +17,8 @@ unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
 unsigned char logLevelGlobal = NRC_LOG_LEVEL_DEFAULT;
+
+uint8_t uartTransmitBuf[UART_TRANSMIT_BUF_SIZE];
 
 int main(int argc, char *argv[])
 {
@@ -71,10 +74,10 @@ int main(int argc, char *argv[])
 		uint16_t len = strlen(data);
 		nrcLog("Send data: %s", data);
 		if (data[0] == '\"') {
-			transmitMsg(&data[1], len - 2);
+			transmitMsg(&data[1], len - 2, uartTransmitBuf);
 		}
 		else {
-			transmitMsg(data, len);
+			transmitMsg(data, len, uartTransmitBuf);
 		}
 	}
 

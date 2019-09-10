@@ -3,9 +3,6 @@
 #include "../../nrc_print.h"
 #include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
 
-uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t contentNumOfBytes);
-long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
-
 uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
 {
 	uint16_t offset = 0;
@@ -57,12 +54,12 @@ long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNu
 		nrcLogD("Bad package begin"); return -1;
 	}
 	uint16_t contentLen = *((uint16_t*)&uartMsgBuf[1]);
-	if (uartMsgBuf[4 + contentLen] != '$') {
-		nrcLogD("Content close symbol != %02x, but %02x", '$', uartMsgBuf[4 + contentLen]); return -1;
-	}
 	int8_t dummyBytesCount = msgNumOfBytes - (4 + contentLen + 1 + 4);
 	if (dummyBytesCount < 0) {
-		nrcLogD("Bad uart package size"); return -1;
+		nrcLogD("Bad uart package size, dummyBytesCount == %d", dummyBytesCount); return -1;
+	}
+	if (uartMsgBuf[4 + contentLen] != '$') {
+		nrcLogD("Content close symbol != %02x, but %02x", '$', uartMsgBuf[4 + contentLen]); return -1;
 	}
 	uint32_t packageSum = *((uint32_t*)&uartMsgBuf[msgNumOfBytes - 4]);
 	nrcLogV("Calculate checksum"); 
@@ -75,124 +72,16 @@ long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNu
 	return contentLen;
 }
 
-typedef enum {
-	NO_MSG = 0,
-	MSG_BEGIN,
-	CONTENT,
-	MSG_END,
-	CHECK_SUM
-} MessageReceiverState;
-
-uint8_t uartReceiveBuf[UART_RECEIVE_BUF_SIZE];
-
-long receiveMsg(uint8_t contentBuf[])
+long transmitMsg(uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[])
 {
-	uint16_t byteCounter = 0; // счетчик принятых байтов
-	uint16_t contentLen = 0; // ожидаемое количество байтов полезного контента в пакете
-	MessageReceiverState state = NO_MSG;
-	while (1) {
-		// побайтно читаем данные из потока, и ищем упакованные сообщения
-		uint8_t receivedByte = uartReceiveByte();
-		if (state != NO_MSG) {
-			if (byteCounter < UART_RECEIVE_BUF_SIZE) {
-				uartReceiveBuf[byteCounter] = receivedByte;
-			}
-			else {
-				nrcLog("Error: receive buffer overflow");
-				return -1;
-			}
-		}
-
-		switch (state) {
-		case NO_MSG: {
-			if (receivedByte == '^') {
-				state++;
-				byteCounter = 0; uartReceiveBuf[0] = '^';
-			}
-			break; }
-		case MSG_BEGIN: {
-			if (byteCounter == 3) {
-				if (receivedByte == '^') {
-					state++;
-					contentLen = *((uint16_t*)&uartReceiveBuf[1]);
-					if (contentLen > UART_RECEIVE_BUF_SIZE) {
-						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", UART_RECEIVE_BUF_SIZE, contentLen);
-						return -1;
-					}
-					else {
-						//nrcLogV("Package begin detected: msg lenght == %d", contentLen);
-					}
-				}
-				else {
-					state = NO_MSG;
-					nrcLog("Wrong package");
-					nrcLogD("Because: bad begin");
-					return -1;
-				}
-			}
-			break; }
-		case CONTENT: {
-			if (byteCounter == 4 + contentLen) {
-				if (receivedByte == '$') {
-					state++;
-					//nrcLogV("Package end detected");
-				}
-				else {
-					state = NO_MSG;
-					nrcLog("Wrong package")
-					nrcLogD("Because: bad message end");
-					return -1;
-				}
-			}
-			break; }
-		case MSG_END: {
-			if ((byteCounter & 0x0003) == 0) { // последняя тетрада байт
-				state++;
-				//nrcLogV("Check sum detected");
-			}
-			break; }
-		case CHECK_SUM: {
-			if ((byteCounter & 0x0003) == 3) { // последний байт пакета
-				// перепроверяем пакет целиком, включая контрольную сумму
-				long validContentLen = getMsgContent(contentBuf, uartReceiveBuf, byteCounter + 1);
-				nrcLogV("Returned contentLen == %d", validContentLen);
-				for (uint16_t i = 0; i < byteCounter + 1; i++) {
-					nrcPrintfV("%02x ", uartReceiveBuf[i]);
-				}
-				nrcPrintfV("\n");
-
-				if (validContentLen < 0) {
-					state = NO_MSG;
-					nrcLog("Wrong package");
-					nrcLogD("Because: bad checksum");
-					return -1;
-				}
-				else {
-					nrcLogD("Package received!");					
-					contentBuf[validContentLen] = '\0';
-					nrcLogV("Received content: %s", contentBuf);
-					return validContentLen;
-				}
-				state = NO_MSG;
-			}
-			break; }
-		default: break;
-		}
-
-		byteCounter++;
-	}
-	return -1;
-}
-
-uint8_t uartTransmitBuf[UART_TRANSMIT_BUF_SIZE];
-
-long transmitMsg(uint8_t msgContent[], uint16_t contentLen)
-{
-	long msgLen = createUartMsg(uartTransmitBuf, msgContent, contentLen);
+	// проверяем что данные, будучи упакованными, "влезут" в массив uartTransmitBuf
+	uint8_t rest = ((contentLen + 1) & 0x3); // остаток от деления на 4
+	long msgLen = 4 + contentLen + 1 + (rest ? (4 - rest) : 0) + 4;
 	if (msgLen > UART_TRANSMIT_BUF_SIZE) {
 		nrcLog("Error: Too large bytesCount for transmit, current uartTransmitBufSize == %d, but required ", UART_TRANSMIT_BUF_SIZE, msgLen);
 		return 0;
 	}
+	msgLen = createUartMsg(uartTransmitBuf, msgContent, contentLen);
 	uint16_t result = uartTransmitData(uartTransmitBuf, msgLen);
 	if (result != msgLen) {
 		nrcLogD("Transmit error");
