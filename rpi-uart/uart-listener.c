@@ -9,6 +9,7 @@
 #include <wiringSerial.h>
 
 #include "safe_uart/safe_uart_messenger.h" // getMsgContent()
+#include <uart_config.h> // UART_RECEIVE_BUF_SIZE
 #include <stdio.h> // printf, stdout etc.
 #include "../nrc_print.h" // nrcLog?() nrcPrintf?()
 
