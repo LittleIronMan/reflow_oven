@@ -69,6 +69,27 @@ uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕ�
 uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
 char msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
 
+typedef struct {
+	uint16_t time; // время указывается относительно времени старта программы управления, в секундах
+	uint16_t temp; // величина температуры
+} TempMeasure;
+
+typedef enum {
+	DISABLED,
+	ENABLED,
+	SAVE_DATA
+} ControlState;
+
+typedef struct {
+	TempMeasure temperatureProfile[20]; // идеальный температурный профиль, к которому должна стремиться программа управления печью
+	uint8_t profileSize; // количество "точек" в температурном профиле
+	uint32_t startTime; // веремя начала программы
+	ControlState state; // состояние программы управления
+	uint32_t integral;
+	uint16_t prevMeasure;
+} NRC_ControlData;
+NRC_ControlData cd;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -142,6 +163,13 @@ int main(void)
   //__HAL_DMA_DISABLE_IT(&huart1, DMA_IT_HT);  // disable uart half tx interrupt
   RxBuf.state = USED_BY_DMA;
   HAL_UART_Receive_DMA(&huart1, dmaRxBuf.arr, dmaRxBuf.size);
+
+  TempMeasure *tp = &cd.temperatureProfile[0];
+  tp[0].time = 0; tp[0].temp = 26;
+  tp[1].time = 10; tp[1].temp = 40;
+  tp[2].time = 20; tp[2].temp = 60;
+  tp[3].time = 30; tp[3].temp = 60;
+  cd.profileSize = 4;
 
   /* USER CODE END 2 */
 
