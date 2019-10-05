@@ -164,6 +164,10 @@ int main(void)
   RxBuf.state = USED_BY_DMA;
   HAL_UART_Receive_DMA(&huart1, dmaRxBuf.arr, dmaRxBuf.size);
 
+  // инициализация структуры данных для управления печью
+	cd.startTime = 0; // веремя начала программы
+  cd.state = DISABLED;
+  // задаем температурный профиль
   TempMeasure *tp = &cd.temperatureProfile[0];
   tp[0].time = 0; tp[0].temp = 26;
   tp[1].time = 10; tp[1].temp = 40;
