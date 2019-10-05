@@ -29,6 +29,7 @@
 #include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
 #include <string.h> // memcpy
 #include <stdbool.h>
+#include "nrc_msg.pb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -69,11 +70,6 @@ uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕ�
 uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
 char msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
 
-typedef struct {
-	uint16_t time; // время указывается относительно времени старта программы управления, в секундах
-	uint16_t temp; // величина температуры
-} TempMeasure;
-
 typedef enum {
 	DISABLED,
 	ENABLED,
@@ -81,7 +77,7 @@ typedef enum {
 } ControlState;
 
 typedef struct {
-	TempMeasure temperatureProfile[20]; // идеальный температурный профиль, к которому должна стремиться программа управления печью
+	TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
 	uint8_t profileSize; // количество "точек" в температурном профиле
 	uint32_t startTime; // веремя начала программы
 	ControlState state; // состояние программы управления
@@ -168,12 +164,17 @@ int main(void)
 	cd.startTime = 0; // веремя начала программы
   cd.state = DISABLED;
   // задаем температурный профиль
-  TempMeasure *tp = &cd.temperatureProfile[0];
+  TempProfile_Measure *tp = &cd.tempProfile.data;
   tp[0].time = 0; tp[0].temp = 26;
   tp[1].time = 10; tp[1].temp = 40;
   tp[2].time = 20; tp[2].temp = 60;
   tp[3].time = 30; tp[3].temp = 60;
+  tp[4].time = 0;
   cd.profileSize = 4;
+  // кодируем термопрофиль с помощью Protocol Buffers(nanopb)
+  uint8_t buffer[TempProfile_size];
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+  pb_encode(&stream, TempProfile_fields, &cd.tempProfile);
 
   /* USER CODE END 2 */
 

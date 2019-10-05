@@ -1,23 +1,23 @@
 // сообщение - команда
-//syntax = "proto3";
-//import "nanopb.proto";
+syntax = "proto3";
+import "nanopb.proto";
 
 message Oven_Command {
-	enum CommandType {
+	enum Type {
 		START = 0;
 		GET_TEMP_PROFILE = 1;
 		STOP = 2;
 	}
-	required CommandType type = 1;
+	Type type = 1;
 }
 
 // структура сообщения, хранящего в себе температурный профиль
 message TempProfile {
-	message TempMeasure {
-		required uint32 time = 1;
-		required uint32 temp = 2;
+	message Measure {
+		uint32 time = 1;
+		uint32 temp = 2;
 	}
-	repeated TempMeasure data = 1 [(nanopb).max_count = 20, (nanopb).fixed_count = true];
+	repeated Measure data = 1 [(nanopb).max_count = 20, (nanopb).fixed_count = true];
 }
 
 

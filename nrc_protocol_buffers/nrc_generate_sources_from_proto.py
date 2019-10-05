@@ -1,7 +1,10 @@
 import subprocess
+import os
 
-#result1 = subprocess.Popen(["nanopb/generator-bin/protoc.exe", "-onrc_msg.pb", "nrc_msg.proto"], stdout=subprocess.PIPE).communicate()[0]
-#result1 = subprocess.run(["nanopb/generator-bin/protoc-gen-nanopb.exe", "-onrc_msg.pb", "nrc_msg.proto"])
-result1 = subprocess.run(["nanopb/generator-bin/protoc.exe", "-onrc_msg.pb", "nrc_msg.proto"])
+tmp = os.getcwd()
+os.chdir(r"C:\reflow_oven\nrc_protocol_buffers")
 
-#result2 = subprocess.run(["nanopb/generator-bin/nanopb_generator.exe", "nrc_msg.pb"])
+result1 = subprocess.run(["nanopb/generator-bin/protoc.exe", "-I.", "-Inanopb/generator/proto", "-onrc_msg.pb", "nrc_msg.proto"])
+result2 = subprocess.run(["nanopb/generator-bin/nanopb_generator.exe", "nrc_msg.pb"])
+
+os.chdir(tmp)

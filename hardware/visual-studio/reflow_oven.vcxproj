@@ -116,6 +116,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\nrc_print.h" />
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb.h" />
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_common.h" />
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_decode.h" />
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_encode.h" />
+    <ClInclude Include="..\..\nrc_protocol_buffers\nrc_msg.pb.h" />
     <ClInclude Include="..\..\rpi-uart\my_software_stm32_crc.h" />
     <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\nrc_print_config.h" />
     <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.h" />
@@ -187,6 +192,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\nrc_print.c" />
+    <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_common.c" />
+    <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_decode.c" />
+    <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_encode.c" />
+    <ClCompile Include="..\..\nrc_protocol_buffers\nrc_msg.pb.c" />
     <ClCompile Include="..\..\rpi-uart\my_software_stm32_crc.c" />
     <ClCompile Include="..\..\rpi-uart\raspberry_config\uart-receiver\uart_config.c" />
     <ClCompile Include="..\..\rpi-uart\raspberry_config\uart-transmitter\uart_config.c" />

@@ -34,6 +34,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{c4872b9b-0ca9-4ae3-abc5-98ba2fafa8d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Protobuf">
+      <UniqueIdentifier>{6949217c-3f16-4be3-80db-4cf8f96db52c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Drivers\CMSIS\Include\arm_common_tables.h">
@@ -243,6 +246,21 @@
     <ClInclude Include="..\..\rpi-uart\raspberry_config\uart-transmitter\nrc_print_config.h">
       <Filter>raspberry\uart-transmitter</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\nrc_protocol_buffers\nrc_msg.pb.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_common.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_decode.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_encode.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">
@@ -367,6 +385,18 @@
     </ClCompile>
     <ClCompile Include="..\..\rpi-uart\my_software_stm32_crc.c">
       <Filter>raspberry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nrc_protocol_buffers\nrc_msg.pb.c">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_common.c">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_decode.c">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_encode.c">
+      <Filter>Protobuf</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
