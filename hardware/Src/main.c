@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include "nrc_msg.pb.h"
 #include "pb_encode.h"
+#include "pb_decode.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -165,17 +166,21 @@ int main(void)
 	cd.startTime = 0; // веремя начала программы
   cd.state = DISABLED;
   // задаем температурный профиль
+  cd.tempProfile = (TempProfile)TempProfile_init_zero;
   TempProfile_Measure *tp = cd.tempProfile.data;
   tp[0].time = 0; tp[0].temp = 26;
   tp[1].time = 10; tp[1].temp = 40;
   tp[2].time = 20; tp[2].temp = 60;
   tp[3].time = 30; tp[3].temp = 60;
-  tp[4].time = 0;
   cd.profileSize = 4;
   // кодируем термопрофиль с помощью Protocol Buffers(nanopb)
   uint8_t buffer[TempProfile_size];
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  pb_encode(&stream, TempProfile_fields, &cd.tempProfile);
+  pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+  bool ostatus = pb_encode(&ostream, TempProfile_fields, &cd.tempProfile);
+
+  TempProfile inputMsg = TempProfile_init_zero;
+  pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
+  bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
 
   /* USER CODE END 2 */
 
