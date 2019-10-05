@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F105xC</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;..\..\rpi-uart\safe_uart;C:\reflow_oven</IncludePath>
+              <IncludePath>../Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;..\..\rpi-uart\safe_uart;C:\reflow_oven;..\..\nrc_protocol_buffers;..\..\nrc_protocol_buffers\nanopb</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -424,6 +424,26 @@
               <FileName>uart_config.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Src\uart_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrc_msg.pb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\nrc_protocol_buffers\nrc_msg.pb.c</FilePath>
+            </File>
+            <File>
+              <FileName>pb_common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\nrc_protocol_buffers\nanopb\pb_common.c</FilePath>
+            </File>
+            <File>
+              <FileName>pb_decode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\nrc_protocol_buffers\nanopb\pb_decode.c</FilePath>
+            </File>
+            <File>
+              <FileName>pb_encode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\nrc_protocol_buffers\nanopb\pb_encode.c</FilePath>
             </File>
           </Files>
         </Group>

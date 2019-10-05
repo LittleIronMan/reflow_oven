@@ -30,6 +30,7 @@
 #include <string.h> // memcpy
 #include <stdbool.h>
 #include "nrc_msg.pb.h"
+#include "pb_encode.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -164,7 +165,7 @@ int main(void)
 	cd.startTime = 0; // веремя начала программы
   cd.state = DISABLED;
   // задаем температурный профиль
-  TempProfile_Measure *tp = &cd.tempProfile.data;
+  TempProfile_Measure *tp = cd.tempProfile.data;
   tp[0].time = 0; tp[0].temp = 26;
   tp[1].time = 10; tp[1].temp = 40;
   tp[2].time = 20; tp[2].temp = 60;
