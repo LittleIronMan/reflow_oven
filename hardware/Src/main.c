@@ -70,7 +70,61 @@ NrcUartBufAlpha dmaRxBuf; // циклический буфер принимае�
 uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
 uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
 uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
-char msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
+uint8_t msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
+
+#define MAX_CMD_COUNT_IN_QUEUE 5
+typedef struct _CmdEx{
+	OvenCommand data;
+	bool isActual;
+	struct _CmdEx *next;
+} CmdEx;
+CmdEx commandQueueBuf[MAX_CMD_COUNT_IN_QUEUE];
+CmdEx *cmdQueueFront = NULL, *cmdQueueBack = NULL;
+
+bool addCommand(OvenCommand *newCmd) {
+	CmdEx *freePlace = NULL,
+		*moreImportantCmd = NULL,
+		*iter;
+	uint8_t i = 0;
+	bool success = false;
+
+	// сначала ищем в буфере свободное место для новой команды
+	for (; i < MAX_CMD_COUNT_IN_QUEUE; i++) {
+		if (!commandQueueBuf[i].isActual) { freePlace = &commandQueueBuf[i]; break; }
+	}
+	// затем ищем ближайшую команду с более высоким приоритетом
+	for (iter = cmdQueueFront; iter && iter->data.priority >= newCmd->priority; iter = iter->next) {
+		moreImportantCmd = iter;
+	}
+	// если свободного места не было найдено, а итератор еще не в конце очереди
+	if (!freePlace && iter) {
+		for (; iter && iter->next; iter = iter->next) { } // ищем конец очереди
+		freePlace = iter; // он будет перезаписан
+	}
+
+	// вставляем новую команду, с обновлением соответствующих ссылок
+	if (freePlace) {
+		freePlace->data = *newCmd;
+		if (moreImportantCmd) {
+			freePlace->next = (moreImportantCmd->next) ? (moreImportantCmd->next->next) : NULL;
+			moreImportantCmd->next = freePlace;
+		}
+		else {
+			freePlace->next = NULL;
+			// обновляем голову очереди
+			cmdQueueFront = freePlace;
+		}
+		success = true;
+	}
+	return success;
+}
+
+OvenCommand popCmdFromQueue() {
+	OvenCommand result = cmdQueueFront->data;
+	cmdQueueFront->isActual = false;
+	cmdQueueFront = cmdQueueFront->next;
+	return result;
+}
 
 typedef enum {
 	DISABLED,
@@ -80,7 +134,6 @@ typedef enum {
 
 typedef struct {
 	TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
-	uint8_t profileSize; // количество "точек" в температурном профиле
 	uint32_t startTime; // веремя начала программы
 	ControlState state; // состояние программы управления
 	uint32_t integral;
@@ -127,6 +180,32 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+  // инициализация буферов приема/передачи по uart
+  RxBuf.arr = RxArr; RxBuf.size = UART_RECEIVE_BUF_SIZE; RxBuf.state = BufState_NEED_UPDATE; RxBuf.countBytes = 0; RxBuf.sem = xSemaphoreCreateBinary();
+  TxBuf.arr = TxArr; TxBuf.size = UART_TRANSMIT_BUF_SIZE; TxBuf.state = BufState_NEED_UPDATE; TxBuf.countBytes = 0; TxBuf.sem = xSemaphoreCreateBinary();
+  dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = UART_RECEIVE_BUF_SIZE / 2;
+  dmaRxBuf.prevCNDTR = dmaRxBuf.size;
+
+  // инициализация структуры данных для управления печью
+  cd.startTime = 0; // веремя начала программы
+  cd.state = DISABLED;
+  // задаем температурный профиль
+  cd.tempProfile = (TempProfile)TempProfile_init_zero;
+  TempMeasure *tp = cd.tempProfile.data;
+  tp[0].time = 0; tp[0].temp = 26;
+  tp[1].time = 10; tp[1].temp = 40;
+  tp[2].time = 20; tp[2].temp = 60;
+  tp[3].time = 30; tp[3].temp = 60;
+  cd.tempProfile.countPoints = 4;
+  // кодируем термопрофиль с помощью Protocol Buffers(nanopb)
+  //uint8_t buffer[TempProfile_size];
+  //pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+  //bool ostatus = pb_encode(&ostream, TempProfile_fields, &cd.tempProfile);
+
+  //TempProfile inputMsg = TempProfile_init_zero;
+  //pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
+  //bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -144,10 +223,6 @@ int main(void)
   MX_RTC_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-  RxBuf.arr = RxArr; RxBuf.size = UART_RECEIVE_BUF_SIZE; RxBuf.state = NEED_UPDATE; RxBuf.countBytes = 0;
-  TxBuf.arr = TxArr; TxBuf.size = UART_TRANSMIT_BUF_SIZE; TxBuf.state = NEED_UPDATE; TxBuf.countBytes = 0;
-  dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = UART_RECEIVE_BUF_SIZE / 2;
-  dmaRxBuf.prevCNDTR = dmaRxBuf.size;
 
   // настройка приема данных по uart
   // к этому моменту UART1 и DMA уже инициализированы и связаны друг с другом(через структуру hdma_usart1_rx),
@@ -159,28 +234,8 @@ int main(void)
   //	этот вызов добавлен в функцию USART1_IRQHandler в файле stm32f1xx_it.c
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);   // enable idle line interrupt
   //__HAL_DMA_DISABLE_IT(&huart1, DMA_IT_HT);  // disable uart half tx interrupt
-  RxBuf.state = USED_BY_DMA;
+  RxBuf.state = BufState_USED_BY_DMA;
   HAL_UART_Receive_DMA(&huart1, dmaRxBuf.arr, dmaRxBuf.size);
-
-  // инициализация структуры данных для управления печью
-	cd.startTime = 0; // веремя начала программы
-  cd.state = DISABLED;
-  // задаем температурный профиль
-  cd.tempProfile = (TempProfile)TempProfile_init_zero;
-  TempProfile_Measure *tp = cd.tempProfile.data;
-  tp[0].time = 0; tp[0].temp = 26;
-  tp[1].time = 10; tp[1].temp = 40;
-  tp[2].time = 20; tp[2].temp = 60;
-  tp[3].time = 30; tp[3].temp = 60;
-  cd.profileSize = 4;
-  // кодируем термопрофиль с помощью Protocol Buffers(nanopb)
-  uint8_t buffer[TempProfile_size];
-  pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  bool ostatus = pb_encode(&ostream, TempProfile_fields, &cd.tempProfile);
-
-  TempProfile inputMsg = TempProfile_init_zero;
-  pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
-  bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
 
   /* USER CODE END 2 */
 
@@ -494,7 +549,7 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 	nrcPrintfV("RxBuf.countBytes == %d, length == %d\n", RxBuf.countBytes, length);
 
 	/* Copy and Process new data */
-	if (RxBuf.state == USED_BY_DMA) {
+	if (RxBuf.state == BufState_USED_BY_DMA) {
 		if (RxBuf.countBytes + length <= RxBuf.size) {
 			memcpy(&RxBuf.arr[RxBuf.countBytes], &dmaRxBuf.arr[start], length);
 			RxBuf.countBytes += length;
@@ -510,7 +565,8 @@ void NRC_UART_RxEvent(NRC_UART_EventType event)
 				RxUartDmaOveflow = false;
 			}
 			else {
-				RxBuf.state = UPDATED;
+				RxBuf.state = BufState_UPDATED;
+				xSemaphoreGiveFromISR(RxBuf.sem, NULL); // буфером можно пользоваться
 				nrcLog("Received %d bytes", RxBuf.countBytes);
 			}
 		}
@@ -540,7 +596,8 @@ void HAL_UART_RxHalfCallback(UART_HandleTypeDef *huart)
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == USART1) {
-		TxBuf.state = NEED_UPDATE;
+		TxBuf.state = BufState_NEED_UPDATE;
+		xSemaphoreGiveFromISR(TxBuf.sem, NULL);
 	}
 }
 
@@ -548,30 +605,39 @@ void StartUartMessenger(void const * argument)
 {
 	nrcLogD("Start Messenger");
 	for (;;) {
-		while (RxBuf.state != UPDATED) {
-			// терпеливо дожидаемся приема сообщения
+		xSemaphoreTake(RxBuf.sem, portMAX_DELAY);
+		RxBuf.state = BufState_USED_BY_PROC; // устанавливаем флаг того что сейчас буфер будет использоваться процессором
+		MsgType msgType = getMsgType(RxBuf.arr, RxBuf.countBytes);
+		if (msgType == MsgType_CMD) {
+			OvenCommand cmd = OvenCommand_init_default;
+			pb_istream_t istream = pb_istream_from_buffer(msgBuf, sizeof(msgBuf));
+			bool status = pb_decode(&istream, OvenCommand_fields, &cmd);
+			if (status) {
+				addCommand(&cmd);
+			}
 		}
-		RxBuf.state = USED_BY_PROC; // устанавливаем флаг того что сейчас буфер будет использоваться процессором
-		long msgLen = getMsgContent(msgBuf, RxBuf.arr, RxBuf.countBytes);
-		RxBuf.state = NEED_UPDATE; // буфер можно перезаписывать
+		RxBuf.state = BufState_NEED_UPDATE; // буфер можно перезаписывать
 
 		// сбрасываем переменные, чтобы dma смог снова обновить буфер
-		RxBuf.state = USED_BY_DMA;
+		RxBuf.state = BufState_USED_BY_DMA;
 		RxBuf.countBytes = 0;
 
-		if (msgLen > 0) {
-			// отражаем эхом это-же сообщение
-			while (TxBuf.state != NEED_UPDATE) {
+		if (msgType == MsgType_CMD) {
+			OvenCommand cmd = popCmdFromQueue();
+			pb_ostream_t ostream = pb_ostream_from_buffer(msgBuf, sizeof(msgBuf));
+			bool status = pb_encode(&ostream, OvenCommand_fields, &cmd);
+			if (status) {
 				// ждем пока uart завершит передачу предыдущего сообщения
-			}
-			TxBuf.state = USED_BY_PROC;
-			// минуем стадию UPDATED, в следующей функции данные будут паковаться и сразу начнется их передача
-			long result = transmitMsg(msgBuf, msgLen, TxBuf.arr);
-			if (result == 0) {
-				nrcLogD("Error sending data");
-			}
-			else {
-				nrcLogD("Message successful transmitted");
+				xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
+				TxBuf.state = BufState_USED_BY_PROC;
+				// минуем стадию UPDATED, в следующей функции данные будут паковаться и сразу начнется их передача
+				long result = transmitMsg(msgType, msgBuf, ostream.bytes_written, TxBuf.arr);
+				if (result == 0) {
+					nrcLogD("Error sending data");
+				}
+				else {
+					nrcLogD("Message successful transmitted");
+				}
 			}
 		}
 		else {

@@ -237,6 +237,10 @@
     <ClCompile Include="..\Src\uart_config.c" />
     <ClCompile Include="..\Src\unix_time.c" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\nrc_protocol_buffers\nrc_generate_sources_from_proto.py" />
+    <None Include="..\..\nrc_protocol_buffers\nrc_msg.proto" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

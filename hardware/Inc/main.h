@@ -32,7 +32,8 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "semphr.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -40,10 +41,10 @@ extern "C" {
 
 // состояния буфера, который могут раздельно использовать DMA и процессор
 typedef enum {
-	NEED_UPDATE = 0, // данные неактуальны, их нужно обновить
-	USED_BY_DMA, // данные используются DMA, процессору доступ запрещен
-	UPDATED, // данные обновлены и актуальны
-	USED_BY_PROC // данные используются процессором, DMA доступ запрещен
+	BufState_NEED_UPDATE = 0, // данные неактуальны, их нужно обновить
+	BufState_USED_BY_DMA, // данные используются DMA, процессору доступ запрещен
+	BufState_UPDATED, // данные обновлены и актуальны
+	BufState_USED_BY_PROC // данные используются процессором, DMA доступ запрещен
 } BetaBufState;
 
 // буфер, которым раздельно владеют DMA и процессор
@@ -51,6 +52,7 @@ typedef volatile struct {
 	uint8_t *arr; // указатель на массив с данными
 	uint16_t size;
 	uint16_t countBytes; // количество актуальных байт в буфере
+	xSemaphoreHandle sem; // буфер доступен для использования Операционной системой(процессором)
 	BetaBufState state;
 } NrcUartBufBeta;
 

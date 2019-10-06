@@ -11,7 +11,7 @@ uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes)
 
 uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount)
 {
-	TxBuf.state = USED_BY_DMA;
+	TxBuf.state = BufState_USED_BY_DMA;
 
 	HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(&huart1, data, bytesCount);
 

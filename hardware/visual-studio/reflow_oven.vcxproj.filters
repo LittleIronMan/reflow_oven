@@ -399,4 +399,12 @@
       <Filter>Protobuf</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\nrc_protocol_buffers\nrc_msg.proto">
+      <Filter>Protobuf</Filter>
+    </None>
+    <None Include="..\..\nrc_protocol_buffers\nrc_generate_sources_from_proto.py">
+      <Filter>Protobuf</Filter>
+    </None>
+  </ItemGroup>
 </Project>

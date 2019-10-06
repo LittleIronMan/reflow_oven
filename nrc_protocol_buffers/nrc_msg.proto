@@ -1,25 +1,83 @@
-// сообщение - команда
 syntax = "proto3";
 import "nanopb.proto";
 
-message Oven_Command {
+// Этот тип перечисляет все возможные типы сообщений, которые будут далее определены.
+// При передаче данных этот тип должен дополнять отправляемый пакет(в котором будет закодированное сообщение),
+// чтобы принимающие стороны знали каким образом это сообщение декодировать
+enum MsgType {
+	UNDEFINED = 0;
+	CMD = 1; // команда контроллеру
+	ANS_CMD_GET_TEMP_PROFILE = 2; // ответ на команду GET_TEMP_PROFILE(далее аналогично)
+	ANS_CMD_GET_STATE = 3;
+	ANS_CMD_START = 4;
+	ANS_CMD_STOP = 5;
+	TEMP_MEASURE = 6; // контроллер отправляет серверу текущее измерение температуры
+	ANS_TEMP_MEASURE = 7; // сервер отвечает что измерение было успешно принято
+	FINISH_PROGRAM = 8; // котроллер оправляет серверу команду что он успешно завершил программу
+	PLAIN_TEXT = 9; // простой текст
+}
+
+message OvenCommand {
 	enum Type {
-		START = 0;
-		GET_TEMP_PROFILE = 1;
-		STOP = 2;
+		GET_TEMP_PROFILE = 0;
+		GET_STATE = 1;
+		START = 2;
+		STOP = 3;
 	}
 	Type type = 1;
+	uint32 id = 2;
+	uint32 priority = 3 [(nanopb).int_size = IS_8]; // [default = 1]; // чем больше эта величина, тем выше приоритет
 }
 
-// структура сообщения, хранящего в себе температурный профиль
+message TempMeasure {
+	uint32 time = 1;
+	uint32 temp = 2 [(nanopb).int_size = IS_16];
+}
+
 message TempProfile {
-	message Measure {
-		uint32 time = 1;
-		uint32 temp = 2;
-	}
-	repeated Measure data = 1 [(nanopb).max_count = 20, (nanopb).fixed_count = true];
+	uint32 countPoints = 1 [(nanopb).int_size = IS_8]; // количество "точек" в термопрофиле
+	repeated TempMeasure data = 2 [(nanopb).max_count = 10, (nanopb).fixed_count = true];
 }
 
+message AnsCmdGetTempProfile {
+	bool success = 1; // [default = true];
+	TempProfile profile = 2;
+}
+
+enum OvenState {
+	STOPPED = 0;
+	LAUNCHED = 1;
+}
+
+enum OvenErrorType {
+	NONE = 0;
+	FAULTY_TEMPERATURE_SENSOR = 1;
+	FAULTY_RELAY = 2;
+	UNKNOWN_ERROR = 3;
+}
+
+message AnsCmdGetState {
+	OvenState state = 1;
+	OvenErrorType error = 2; // [default = NONE];
+}
+
+message AnsCmdStart {
+	bool success = 1; // [default = true];
+	uint32 startTime = 2;
+}
+
+message AnsCmdStop {
+	bool success = 1; // [default = true];
+	uint32 stopTime = 2;
+}
+
+message AnsTempMeasure {
+	bool success = 1; // [default = true];
+}
+
+message FinishProgram {
+	bool success = 1; // [default = true];
+}
 
 // другие примеры кода
 /*
