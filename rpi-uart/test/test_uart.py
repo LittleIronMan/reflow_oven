@@ -19,7 +19,15 @@ except:
 import sys, _thread, time
  
 if isWindows:
-	from msvcrt import getch  # try to import Windows version
+	from msvcrt import getch as _getch # try to import Windows version
+	def getch():   # define non-Windows version
+		ch = _getch()
+		try:
+			ch = ch.decode('utf-8')
+		except UnicodeDecodeError:
+			print("character can not be decoded, sorry!")
+			ch = None
+		return ch
 elif isLinux:
 	def getch():   # define non-Windows version
 		fd = sys.stdin.fileno()
@@ -45,12 +53,7 @@ def main():
  
 	while True:
 		if char is not None:
-			try:
-				char = char.decode('utf-8')
-				print("Key pressed is " + char)
-			except UnicodeDecodeError:
-				print("character can not be decoded, sorry!")
-				char = None
+			print("Key pressed is " + char)
 			if char == 'q' or char == '\x1b':  # x1b is ESC
 				exit()
 			char = None
