@@ -15,8 +15,14 @@ nanopbArgs = ["-I../nrc_protocol_buffers",
 	#"../nrc_protocol_buffers/nanopb/pb_encode.c",
 	#"../nrc_protocol_buffers/nanopb/pb_decode.c"
 ]
-listenArgs = commonArgs + nanopbArgs + ["-o", "uart-listener", "-Iraspberry_config/uart-receiver", "uart-listener.c"]
-speakArgs = commonArgs + ["-o", "uart-speaker", "-Iraspberry_config/uart-transmitter", "uart-speaker.c"]
+commonArgs += nanopbArgs
+uartConf = "raspberry_config/uart-receiver"
+listenArgs = commonArgs + ["-o", "uart-listener", "-I" + uartConf, uartConf + "/uart_config.c", "uart-listener.c"]
 
+uartConf = "raspberry_config/uart-transmitter"
+speakArgs = commonArgs + ["-o", "uart-speaker", "-I" + uartConf, uartConf + "/uart_config.c",  "uart-speaker.c"]
+
+print("--------------->>> compile uart-listener <<<-----------------")
 listenResult = subprocess.run(listenArgs)
+print("--------------->>> compile uart-speaker <<<-----------------")
 speakResult = subprocess.run(speakArgs)
