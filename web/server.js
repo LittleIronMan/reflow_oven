@@ -2,6 +2,8 @@
 const webpack = require('webpack');
 const middleware = require('webpack-dev-middleware');
 const webpackConfig = require('./webpack.config');
+const pb = require('./nrc_msg.pb.js');
+const pbUtil = require('protobufjs/minimal').util;
 let compiler = webpack(webpackConfig);
 
 const express = require('express');
@@ -74,7 +76,13 @@ uartListener.on('close', function (code) {
 var pingProcess;
 function sendPing() {
     if (pingProcess === undefined) {
-        pingProcess = child_process.exec('../rpi-uart/uart-speaker --send "ping"');
+        let cmd = pb.OvenCommand.create({type: pb.OvenCommand.GET_STATE, id: 1, priority: 1});
+        let payload = pb.OvenCommand.encode(cmd).finish();
+        console.log(payload);
+        payload = pbUtil.base64.encode(payload);
+        console.log(payload);
+
+        pingProcess = child_process.exec('../rpi-uart/uart-speaker -s ' + payload + ' -t ' + pb.MsgType.CMD + ' -b'); // translate: '<some path>/uart-speaker --send <data> --type <type> --base64'
         pingProcess.on('exit', function (code) {
             console.log('pingProcess exited with exit code ' + code);
             pingProcess = undefined;
