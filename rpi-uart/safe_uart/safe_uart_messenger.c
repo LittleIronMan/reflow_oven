@@ -3,7 +3,7 @@
 #include "../../nrc_print.h"
 #include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
 
-uint16_t createUartMsg(uint8_t uartMsgBuf[], MsgType type, uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
+uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t type, uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
 {
 	uint16_t offset = 0;
 
@@ -20,7 +20,7 @@ uint16_t createUartMsg(uint8_t uartMsgBuf[], MsgType type, uint8_t msgContentBuf
 	offset++;
 
 	// пятый байт - тип сообщения, чтобы принимающая сторона смогла его правильно декодировать
-	uartMsgBuf[offset] = (uint8_t)type;
+	uartMsgBuf[offset] = type;
 	offset++;
 
 	// копируем полезный контент
@@ -49,7 +49,7 @@ uint16_t createUartMsg(uint8_t uartMsgBuf[], MsgType type, uint8_t msgContentBuf
 	return offset;
 }
 
-MsgType getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
+uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 {
 	const MsgType errType = MsgType_UNDEFINED;
 	if (msgNumOfBytes <= 9) {
@@ -83,7 +83,7 @@ long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNu
 	return contentLen;
 }
 
-long transmitMsg(MsgType type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[])
+long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[])
 {
 	// проверяем что данные, будучи упакованными, "влезут" в массив uartTransmitBuf
 	uint8_t rest = ((contentLen + 1) & 0x3); // остаток от деления на 4

@@ -261,6 +261,9 @@
     <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb.h">
       <Filter>Protobuf</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\base64.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">

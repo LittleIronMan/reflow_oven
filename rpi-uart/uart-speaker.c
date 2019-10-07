@@ -6,6 +6,7 @@
 
 #include "safe_uart/safe_uart_messenger.h"
 #include "../nrc_print.h"
+#include "../base64.h" // base64(), unbase64()
 #include <uart_config.h> // UART_TRANSMIT_BUF_SIZE
 
 #include <stdlib.h> // atoi
@@ -25,14 +26,18 @@ int main(int argc, char *argv[])
 	static struct option long_opt[] = {
 		{"help",  0, NULL, 'h'},
 		{"send", 1, NULL, 's'},
+		{"type", 1, NULL, 't'},
+		{"base64", 0, NULL, 'b'},
 		{"log", 1, NULL, 'l'},
 		{0,0,0,0}
 	};
 
 	char *data = NULL;
+	bool isBase64 = false;
+	uint8_t dataType = 0;
 
 	int opt, optIdx;
-	while ((opt = getopt_long(argc, argv, "s:l:h", long_opt, &optIdx)) != -1) {
+	while ((opt = getopt_long(argc, argv, "s:t:bl:h", long_opt, &optIdx)) != -1) {
 		switch (opt) {
 		case 'h': {
 			nrcLog("Sorry, help not ready, bye."); return(-1);
@@ -40,6 +45,12 @@ int main(int argc, char *argv[])
 		case 's': {
 			data = optarg;
 			break;
+		}
+		case 't': {
+			dataType = atoi(optarg);
+		}
+		case 'b': {
+			isBase64 = true;
 		}
 		case 'l': {
 			int tmp = atoi(optarg);
@@ -71,13 +82,24 @@ int main(int argc, char *argv[])
 			nrcLogD("Serial port opened successful!");
 		}
 
-		uint16_t len = strlen(data);
-		nrcLog("Send data: %s", data);
-		if (data[0] == '\"') {
-			transmitMsg(TODO, &data[1], len - 2, uartTransmitBuf);
+		int len = strlen(data);
+		uint8_t *decodedData;
+		int decodedLen;
+
+		if (isBase64) {
+			decodedData = unbase64(data, len, &decodedLen);
 		}
 		else {
-			transmitMsg(TODO, data, len, uartTransmitBuf);
+			decodedLen = len;
+			decodedData = data;
+		}
+
+		nrcLog("Send data: %s", decodedData);
+		if (decodedData[0] == '\"') {
+			transmitMsg(dataType, &decodedData[1], decodedLen - 2, uartTransmitBuf);
+		}
+		else {
+			transmitMsg(dataType, decodedData, decodedLen, uartTransmitBuf);
 		}
 	}
 

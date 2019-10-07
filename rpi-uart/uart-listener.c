@@ -12,6 +12,7 @@
 #include <uart_config.h> // UART_RECEIVE_BUF_SIZE
 #include <stdio.h> // printf, stdout etc.
 #include "../nrc_print.h" // nrcLog?() nrcPrintf?()
+#include "../base64.h" // base64(), unbase64()
 
 #include <stdlib.h> // atoi
 #include <unistd.h> // getopt(), getopt_long()
@@ -82,7 +83,9 @@ int main(int argc, char *argv[])
 			nrcLog("Wrong message");
 		}
 		else {
-			printf("%s\n", msgContent); fflush(stdout);
+			int b64Len = 0;
+			char *b64encoded = base64(msgContent, msgLen, &b64Len);
+			printf("%s\n", b64encoded); fflush(stdout);
 		}
 	}
 	//close(fifoDescriptor); 

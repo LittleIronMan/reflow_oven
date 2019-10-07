@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\base64.h" />
     <ClInclude Include="..\..\nrc_print.h" />
     <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb.h" />
     <ClInclude Include="..\..\nrc_protocol_buffers\nanopb\pb_common.h" />

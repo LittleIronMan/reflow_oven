@@ -4,9 +4,9 @@
 #include <stdint.h> // uint8_t, uint16_t etc...
 #include "nrc_msg.pb.h"
 
-MsgType getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
+uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
 long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
-long transmitMsg(MsgType type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[]);
+long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[]);
 
 // функции ниже нужно определить в одном из своих модулей
 extern uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes);
