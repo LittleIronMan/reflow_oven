@@ -1,11 +1,11 @@
 import subprocess
 #import os
 
-commonArgs = ["gcc", # компилятор
-	"-lwiringPi", # библиотека для обмена данными по последовательному протоколу для rapsberry pi
-	"my_software_stm32_crc.c", # вычисление crc тем-же способом, что и в аппаратном модуле stm32
-	"safe_uart/safe_uart_messenger.c", # библиотека для безопасной упаковки данных перед их отправкой по последовательному протоколу
-	"../nrc_print.c", # логи, с возможностью их выключать совсем или делать чрезчур подробными
+commonArgs = ["gcc", # compiler
+	"-lwiringPi", # lib for use UART in raspberry pi
+	"my_software_stm32_crc.c", # calculate CRC by software identically stm32 hardware CRC
+	"safe_uart/safe_uart_messenger.c", # safe package data before transmit by UART
+	"../nrc_print.c", # logs, possible full disable or debug/verbatim modes
 	
 ]
 nanopbArgs = ["-I../nrc_protocol_buffers",
