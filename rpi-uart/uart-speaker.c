@@ -74,10 +74,10 @@ int main(int argc, char *argv[])
 		uint16_t len = strlen(data);
 		nrcLog("Send data: %s", data);
 		if (data[0] == '\"') {
-			transmitMsg(&data[1], len - 2, uartTransmitBuf);
+			transmitMsg(TODO, &data[1], len - 2, uartTransmitBuf);
 		}
 		else {
-			transmitMsg(data, len, uartTransmitBuf);
+			transmitMsg(TODO, data, len, uartTransmitBuf);
 		}
 	}
 

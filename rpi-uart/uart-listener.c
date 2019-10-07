@@ -158,20 +158,15 @@ long receiveMsg(uint8_t contentBuf[])
 		case CHECK_SUM: {
 			if ((byteCounter & 0x0003) == 3) { // последний байт пакета
 				// перепроверяем пакет целиком, включая контрольную сумму
-				long validContentLen = getMsgContent(contentBuf, uartReceiveBuf, byteCounter + 1);
-				nrcLogV("Returned contentLen == %d", validContentLen);
-				for (uint16_t i = 0; i < byteCounter + 1; i++) {
-					nrcPrintfV("%02x ", uartReceiveBuf[i]);
-				}
-				nrcPrintfV("\n");
-
-				if (validContentLen < 0) {
+				MsgType msgType = getMsgType(uartReceiveBuf, byteCounter + 1);
+				if (msgType == MsgType_UNDEFINED) {
 					state = NO_MSG;
 					nrcLog("Wrong package");
 					nrcLogD("Because: bad checksum");
 					return -1;
 				}
 				else {
+					long validContentLen = getMsgContent(contentBuf, uartReceiveBuf, byteCounter + 1);
 					nrcLogD("Package received!");
 					contentBuf[validContentLen] = '\0';
 					nrcLogV("Received content: %s", contentBuf);
