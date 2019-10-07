@@ -76,11 +76,11 @@ uartListener.on('close', function (code) {
 var pingProcess;
 function sendPing() {
     if (pingProcess === undefined) {
-        let cmd = pb.OvenCommand.create({type: pb.OvenCommand.GET_STATE, id: 1, priority: 1});
-        let payload = pb.OvenCommand.encode(cmd).finish();
-        console.log(payload);
-        payload = pbUtil.base64.encode(payload);
-        console.log(payload);
+        let cmd = pb.OvenCommand.create({type: pb.OvenCommand.Type.GET_STATE, id: 1, priority: 1});
+	    console.log(cmd);
+	    let payload = pb.OvenCommand.encode(cmd).finish();
+        payload = pbUtil.base64.encode(payload, 0, payload.length);
+        console.log('base64 payload: ' + payload);
 
         pingProcess = child_process.exec('../rpi-uart/uart-speaker -s ' + payload + ' -t ' + pb.MsgType.CMD + ' -b'); // translate: '<some path>/uart-speaker --send <data> --type <type> --base64'
         pingProcess.on('exit', function (code) {
