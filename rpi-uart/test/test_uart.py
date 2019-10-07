@@ -3,6 +3,8 @@
 
 # from __future__ import absolute_import, division, unicode_literals, print_function
  
+import nrc_msg_pb2
+
 isLinux = False
 isWindows = False
 
@@ -41,24 +43,31 @@ elif isLinux:
 else:
 	def getch():
 		return None
- 
-def keypress():
+
+def keypressThread():
 	global char
-	char = getch()
- 
+	while True:
+		char = getch()
+
+allKeys = dict()
+allKeys["r"] = ["r", "run", "Запуск программы нагревания", nrc_msg_pb2.MsgType.CMD, nrc_msg_pb2.OvenCommand]
+
+def handleKey(key):
+	if key in allKeys:
+		data = allKeys[key]
+
 def main():
 	global char
 	char = None
-	_thread.start_new_thread(keypress, ())
+	_thread.start_new_thread(keypressThread, ())
  
 	while True:
 		if char is not None:
-			print("Key pressed is " + char)
+			#print("Key pressed is " + char)
 			if char == 'q' or char == '\x1b':  # x1b is ESC
 				exit()
+			handleKey(char)
 			char = None
-			_thread.start_new_thread(keypress, ())
-		#print("Program is running")
 		time.sleep(0.1)
  
 if __name__ == "__main__":
