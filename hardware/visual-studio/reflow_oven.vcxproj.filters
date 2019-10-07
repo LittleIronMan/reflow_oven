@@ -409,5 +409,14 @@
     <None Include="..\..\nrc_protocol_buffers\nrc_generate_sources_from_proto.py">
       <Filter>Protobuf</Filter>
     </None>
+    <None Include="..\..\rpi-uart\test\test_uart.py">
+      <Filter>Protobuf</Filter>
+    </None>
+    <None Include="..\..\rpi-uart\compile.py">
+      <Filter>Protobuf</Filter>
+    </None>
+    <None Include="..\..\rpi-uart\uart-listener-win32-emulate.py">
+      <Filter>Protobuf</Filter>
+    </None>
   </ItemGroup>
 </Project>
