@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 import subprocess
+import sys
 #import os
 
-commonArgs = ["gcc", # компилятор
+commonArgs = ["gcc"] # компилятор
+if len(sys.argv) > 1:
+    commonArgs += sys.argv[1:] # передаем дополнительные аргументы для компилятора, которые были переданы скрипту
+
+commonArgs += [
 	"-lwiringPi", # библиотека для обмена данными по последовательному протоколу для rapsberry pi
 	"my_software_stm32_crc.c", # вычисление crc тем-же способом, что и в аппаратном модуле stm32
 	"safe_uart/safe_uart_messenger.c", # библиотека для безопасной упаковки данных перед их отправкой по последовательному протоколу

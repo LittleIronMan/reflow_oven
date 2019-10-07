@@ -48,9 +48,11 @@ int main(int argc, char *argv[])
 		}
 		case 't': {
 			dataType = atoi(optarg);
+			break;
 		}
 		case 'b': {
 			isBase64 = true;
+			break;
 		}
 		case 'l': {
 			int tmp = atoi(optarg);
