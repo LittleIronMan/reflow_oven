@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
 		int decodedLen;
 
 		if (isBase64) {
+			nrcLogD("Transmit %d symbols base64 str: %s", len, data);
 			decodedData = unbase64(data, len, &decodedLen);
 		}
 		else {
@@ -96,13 +97,18 @@ int main(int argc, char *argv[])
 			decodedData = data;
 		}
 
-		nrcLog("Send data: %s", decodedData);
-		if (decodedData[0] == '\"') {
-			transmitMsg(dataType, &decodedData[1], decodedLen - 2, uartTransmitBuf);
+		if (!isBase64 && decodedData[0] == '\"') {
+			decodedData++;
+			decodedLen -= 2;
 		}
-		else {
-			transmitMsg(dataType, decodedData, decodedLen, uartTransmitBuf);
+
+		nrcPrintfD("Send %d bytes:", decodedLen);
+		for (int i = 0; i < decodedLen; i++) {
+			nrcPrintfD(" %02hhX", decodedData[i]);
 		}
+		nrcPrintfD("\n");
+
+		transmitMsg(dataType, decodedData, decodedLen, uartTransmitBuf);
 	}
 
 	return 0;
