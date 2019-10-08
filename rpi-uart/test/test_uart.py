@@ -2,8 +2,10 @@
 # реакция на нажатия клавиш позаимствовано отсюда: https://rosettacode.org/wiki/Keyboard_input/Keypress_check#Python
 
 # from __future__ import absolute_import, division, unicode_literals, print_function
- 
+
+import base64
 import nrc_msg_pb2
+import subprocess
 
 isLinux = False
 isWindows = False
@@ -50,15 +52,60 @@ def keypressThread():
 		char = getch()
 
 allKeys = dict()
-allKeys["r"] = ["r", "run", "Запуск программы нагревания", nrc_msg_pb2.MsgType.CMD, nrc_msg_pb2.OvenCommand]
+
+cmdStart = nrc_msg_pb2.OvenCommand()
+cmdStart.type = nrc_msg_pb2.OvenCommand.Type.START
+cmdStart.priority = 2
+
+cmdStop = nrc_msg_pb2.OvenCommand()
+cmdStop.type = nrc_msg_pb2.OvenCommand.Type.STOP
+cmdStop.priority = 4
+
+cmdProfile = nrc_msg_pb2.OvenCommand()
+cmdProfile.type = nrc_msg_pb2.OvenCommand.Type.GET_TEMP_PROFILE
+cmdProfile.priority = 1
+
+cmdState = nrc_msg_pb2.OvenCommand()
+cmdState.type = nrc_msg_pb2.OvenCommand.Type.GET_STATE
+cmdState.priority = 1
+#cmd.ParseFromString(base64.b64decode(b64str))
+
+allKeys["r"] = ["run", "Запуск программы нагревания", nrc_msg_pb2.MsgType.CMD, cmdStart]
+allKeys["s"] = ["stop", "Остановка программы", nrc_msg_pb2.MsgType.CMD, cmdStop]
+allKeys["p"] = ["profile", "Получить от контроллера термопрофиль", nrc_msg_pb2.MsgType.CMD, cmdProfile]
+allKeys["g"] = ["get_state", "Получить от контроллера его состояние", nrc_msg_pb2.MsgType.CMD, cmdState]
+
+sendProg = "../uart-speaker"
+if isWindows:
+	sendProg += ".exe"
 
 def handleKey(key):
+	global cmdId
 	if key in allKeys:
 		data = allKeys[key]
 
+		shortName = data[0]
+		print("> " + shortName)
+
+		type = data[2]
+		cmd = data[3]
+		cmd.id = cmdId
+		cmdId += 1
+		b64str = base64.b64encode(cmd.SerializeToString()).decode("utf-8")
+
+		ls_output = subprocess.Popen([sendProg, "-s", b64str, "-t", str(type), "-b", "-l", "1"])
+		#ls_output.communicate()
+
 def main():
+	print("Все возможные команды:")
+	for key in allKeys:
+		data = allKeys[key]
+		print("> " + key + "(" + data[0] + ")" + " - " + data[1])
+
 	global char
 	char = None
+	global cmdId
+	cmdId = 0
 	_thread.start_new_thread(keypressThread, ())
  
 	while True:

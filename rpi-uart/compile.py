@@ -1,33 +1,79 @@
 #!/usr/bin/env python3
 import subprocess
 import sys
-#import os
+import os
 
-commonArgs = ["gcc"] # компилятор
+isLinux = False
+isWindows = False
+if os.name == 'nt':
+	isWindows = True
+elif os.name == 'posix':
+	isLinux = True
+if not isWindows and not isLinux:
+	print("Error: undefined platform")
+	input("Press any key to exit")
+	quit()
+
+compilerArgs = []
+compileSourceFiles = []
+compileLibs = []
+includeDirs = []
+
+compiler = "gcc"
+chDir = ""
+if isWindows:
+	compiler += ".exe"
+	chDir = r"C:\msys32\mingw32\bin" # gcc под Windows должен запускаться в своей директории, ему нужны там какие-то библиотеки
+
+compilerArgs += [compiler] # компилятор
 if len(sys.argv) > 1:
-    commonArgs += sys.argv[1:] # передаем дополнительные аргументы для компилятора, которые были переданы скрипту
+	compilerArgs += sys.argv[1:] # передаем дополнительные аргументы для компилятора, которые были переданы скрипту
 
-commonArgs += [
-	"-lwiringPi", # библиотека для обмена данными по последовательному протоколу для rapsberry pi
+compileSourceFiles += [
 	"my_software_stm32_crc.c", # вычисление crc тем-же способом, что и в аппаратном модуле stm32
 	"safe_uart/safe_uart_messenger.c", # библиотека для безопасной упаковки данных перед их отправкой по последовательному протоколу
-	"../nrc_print.c", # логи, с возможностью их выключать совсем или делать чрезчур подробными
-	
+	"../nrc_print.c" # логи, с возможностью их выключать совсем или делать чрезчур подробными
 ]
-nanopbArgs = ["-I../nrc_protocol_buffers",
-	"-I../nrc_protocol_buffers/nanopb"
-	#"../nrc_protocol_buffers/nanopb/pb_common.c",
-	#"../nrc_protocol_buffers/nanopb/pb_encode.c",
-	#"../nrc_protocol_buffers/nanopb/pb_decode.c"
+
+if isLinux:
+	compileLibs += ["-lwiringPi"] # библиотека для обмена данными по последовательному протоколу для rapsberry pi
+elif isWindows:
+	includeDirs += ["win32_fake_wiringpi"] # фейковая библиотека, имитирует uart на Windows
+	compileSourceFiles += ["win32_fake_wiringpi/wiringSerial.c"]
+
+# nanopb
+includeDirs += ["../nrc_protocol_buffers", "../nrc_protocol_buffers/nanopb"]
+
+progs = [
+	dict(src="uart-listener", uartConf="raspberry_config/uart-receiver"),
+	dict(src="uart-speaker", uartConf="raspberry_config/uart-transmitter")
 ]
-commonArgs += nanopbArgs
-uartConf = "raspberry_config/uart-receiver"
-listenArgs = commonArgs + ["-o", "uart-listener", "-I" + uartConf, uartConf + "/uart_config.c", "uart-listener.c"]
+for prog in progs:
+	# добавляем зависимые от конкретной программы файлы
+	incDirs = list(includeDirs) + [prog["uartConf"]]
+	compileSrc = list(compileSourceFiles) + [prog["uartConf"] + "/uart_config.c", prog["src"] + ".c"]
+	outFile = prog["src"]
 
-uartConf = "raspberry_config/uart-transmitter"
-speakArgs = commonArgs + ["-o", "uart-speaker", "-I" + uartConf, uartConf + "/uart_config.c",  "uart-speaker.c"]
+	# для Windows будут использоваться абсолютные пути к файлам
+	if isWindows:
+		for i in range(len(incDirs)):
+			incDirs[i] = os.path.abspath(incDirs[i])
+		for i in range(len(compileSrc)):
+			compileSrc[i] = os.path.abspath(compileSrc[i])
+		outFile = os.path.abspath(outFile) + ".exe"
 
-print("--------------->>> compile uart-listener <<<-----------------")
-listenResult = subprocess.run(listenArgs)
-print("--------------->>> compile uart-speaker <<<-----------------")
-speakResult = subprocess.run(speakArgs)
+	# добавляем префикс -I к директориям с заголовочниками файлами
+	for i in range(len(incDirs)):
+		incDirs[i] = "-I" + incDirs[i]
+
+	print("--------------->>> compile " + prog["src"] + " <<<-----------------")
+	args = compilerArgs + compileLibs + incDirs + compileSrc + ["-o", outFile]
+	if chDir != "":
+		tmpCwd = os.getcwd() # запоминаем на всякий current working directory, чтобы потом вернуть её на место
+		os.chdir(chDir)
+	listenResult = subprocess.run(args)
+	if chDir != "":
+		os.chdir(tmpCwd)
+
+print("Script completed")
+input("Press any key to exit")
