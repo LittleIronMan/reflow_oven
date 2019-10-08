@@ -4,3 +4,6 @@ hardware/MDK-ARM/reflow_oven.uvguix.mrsta
 rpi-uart-listener-cpp/.idea
 nrc_protocol_buffers/nanopb/
 nrc_protocol_buffers/nrc_msg.pb
+rpi-uart/.idea
+rpi-uart/venv
+rpi-uart/test/__pycache__
