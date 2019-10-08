@@ -264,6 +264,9 @@
     <ClInclude Include="..\..\base64.h">
       <Filter>Protobuf</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\rpi-uart\win32_fake_wiringpi\wiringSerial.h">
+      <Filter>raspberry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">
@@ -400,6 +403,9 @@
     </ClCompile>
     <ClCompile Include="..\..\nrc_protocol_buffers\nanopb\pb_encode.c">
       <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rpi-uart\win32_fake_wiringpi\wiringSerial.c">
+      <Filter>raspberry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
