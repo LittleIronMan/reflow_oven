@@ -3,6 +3,3 @@ hardware/MDK-ARM/reflow_oven
 hardware/MDK-ARM/reflow_oven.uvguix.mrsta
 nrc_protocol_buffers/nanopb/
 nrc_protocol_buffers/nrc_msg.pb
-
-hardware/Middlewares/Third_Party/FreeRTOS/Demo/WIN32-MSVC/.vs
-hardware/Middlewares/Third_Party/FreeRTOS/Demo/WIN32-MSVC/Debug
