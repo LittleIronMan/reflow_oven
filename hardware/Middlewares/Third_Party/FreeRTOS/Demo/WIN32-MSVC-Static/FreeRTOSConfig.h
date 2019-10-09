@@ -85,7 +85,7 @@
 /* Setting configSUPPORT_STATIC_ALLOCATION to 1 allows RTOS objects to be
 created using only application supplied memory.  No dynamic memory allocation
 will be performed. */
-#define configSUPPORT_STATIC_ALLOCATION			1
+#define configSUPPORT_STATIC_ALLOCATION			0
 
 /* Setting configSUPPORT_DYNAMIC_ALLOCATION to 0 results in all calls to
 pvPortMalloc() returning NULL, and all calls to vPortFree() being ignored.
@@ -93,7 +93,7 @@ Therefore the application can be built without providing an implementation of
 either of these functions (so none of the normal heap_n.c files described on
 http://www.freertos.org/a00111.html are required).  Note that
 configTOTAL_HEAP_SIZE is not defined. */
-#define configSUPPORT_DYNAMIC_ALLOCATION		0
+#define configSUPPORT_DYNAMIC_ALLOCATION		1
 
 /* Other constants as described on http://www.freertos.org/a00110.html */
 #define configUSE_PREEMPTION					1
@@ -103,6 +103,7 @@ configTOTAL_HEAP_SIZE is not defined. */
 #define configUSE_DAEMON_TASK_STARTUP_HOOK		0
 #define configTICK_RATE_HZ						( 1000 ) /* In this non-real time simulated environment the tick frequency has to be at least a multiple of the Win32 tick frequency, and therefore very slow. */
 #define configMINIMAL_STACK_SIZE				( ( unsigned short ) 50 ) /* In this simulated case, the stack only has to hold one small structure as the real stack is part of the win32 thread. */
+#define configTOTAL_HEAP_SIZE                    ((size_t)4096)
 #define configMAX_TASK_NAME_LEN					( 12 )
 #define configUSE_TRACE_FACILITY				1
 #define configUSE_16_BIT_TICKS					0
