@@ -23,7 +23,13 @@ compiler = "gcc"
 chDir = ""
 if isWindows:
 	compiler += ".exe"
-	chDir = r"C:\msys32\mingw32\bin" # gcc под Windows должен запускаться в своей директории, ему нужны там какие-то библиотеки
+	chDir = r"C:\MinGW\bin" # gcc под Windows должен запускаться в своей директории, ему нужны там какие-то библиотеки
+	if not os.path.exists(chDir):
+		chDir = r"C:\msys32\mingw32\bin"
+	if not os.path.exists(chDir):
+		print("Error: mingw compiler not found")
+		input("Press any key to exit")
+		quit()
 
 compilerArgs += [compiler] # компилятор
 if len(sys.argv) > 1:
