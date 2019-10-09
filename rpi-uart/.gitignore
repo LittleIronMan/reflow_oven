@@ -1,2 +1,7 @@
 uart-listener
 uart-speaker
+uart-speaker.exe
+uart-listener.exe
+.idea
+venv
+test/__pycache__
