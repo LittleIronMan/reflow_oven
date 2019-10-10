@@ -267,6 +267,9 @@
     <ClInclude Include="..\..\rpi-uart\win32_fake_wiringpi\wiringSerial.h">
       <Filter>raspberry</Filter>
     </ClInclude>
+    <ClInclude Include="..\Inc\money_logic.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">
@@ -406,6 +409,9 @@
     </ClCompile>
     <ClCompile Include="..\..\rpi-uart\win32_fake_wiringpi\wiringSerial.c">
       <Filter>raspberry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\money_logic.c">
+      <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

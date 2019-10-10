@@ -170,6 +170,7 @@
     <ClInclude Include="..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h" />
     <ClInclude Include="..\Inc\FreeRTOSConfig.h" />
     <ClInclude Include="..\Inc\main.h" />
+    <ClInclude Include="..\Inc\money_logic.h" />
     <ClInclude Include="..\Inc\nrc_print_config.h" />
     <ClInclude Include="..\Inc\stm32f1xx_hal_conf.h" />
     <ClInclude Include="..\Inc\stm32f1xx_it.h" />
@@ -234,6 +235,7 @@
     <ClCompile Include="..\Middlewares\Third_Party\FreeRTOS\Source\timers.c" />
     <ClCompile Include="..\Src\freertos.c" />
     <ClCompile Include="..\Src\main.c" />
+    <ClCompile Include="..\Src\money_logic.c" />
     <ClCompile Include="..\Src\stm32f1xx_hal_msp.c" />
     <ClCompile Include="..\Src\stm32f1xx_it.c" />
     <ClCompile Include="..\Src\system_stm32f1xx.c" />

@@ -42,7 +42,7 @@
     <ClCompile Include="..\..\Source\portable\MemMang\heap_4.c">
       <Filter>FreeRTOS Source\Source\Portable</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Src\main_logic.c" />
+    <ClCompile Include="..\..\..\..\..\Src\money_logic.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\include\croutine.h">
@@ -79,6 +79,6 @@
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
     <ClInclude Include="FreeRTOSConfig.h" />
-    <ClInclude Include="..\..\..\..\..\Inc\main_logic.h" />
+    <ClInclude Include="..\..\..\..\..\Inc\money_logic.h" />
   </ItemGroup>
 </Project>
