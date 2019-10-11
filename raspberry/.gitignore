@@ -1,7 +1,7 @@
-uart-listener
-uart-speaker
-uart-speaker.exe
-uart-listener.exe
+uart-Rx
+uart-Tx
+uart-Rx.exe
+uart-Tx.exe
 .idea
 venv
 test/__pycache__
