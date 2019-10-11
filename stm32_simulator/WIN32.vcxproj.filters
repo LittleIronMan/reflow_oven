@@ -29,77 +29,63 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\list.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\list.c">
       <Filter>FreeRTOS Source\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\queue.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\queue.c">
       <Filter>FreeRTOS Source\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\tasks.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\tasks.c">
       <Filter>FreeRTOS Source\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\portable\MSVC-MingW\port.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\port.c">
       <Filter>FreeRTOS Source\Source\Portable</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\timers.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\timers.c">
       <Filter>FreeRTOS Source\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\event_groups.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c">
       <Filter>FreeRTOS Source\Source</Filter>
     </ClCompile>
     <ClCompile Include="main.c" />
-    <ClCompile Include="..\..\Source\portable\MemMang\heap_4.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c">
       <Filter>FreeRTOS Source\Source\Portable</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\money_logic\money_logic.c" />
-    <ClCompile Include="..\..\..\..\..\..\nrc_protocol_buffers\nrc_msg.pb.c">
-      <Filter>protobuf</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\nrc_print.c">
-      <Filter>nrc_log</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\include\croutine.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\FreeRTOS.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\list.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\list.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\portable.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\projdefs.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\queue.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\semphr.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\task.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\task.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\portable\MSVC-MingW\portmacro.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\timers.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\include\event_groups.h">
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
     <ClInclude Include="FreeRTOSConfig.h" />
-    <ClInclude Include="..\..\..\..\..\money_logic\money_logic.h" />
-    <ClInclude Include="..\..\..\..\..\..\nrc_protocol_buffers\nrc_msg.pb.h">
-      <Filter>protobuf</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\nrc_print.h">
-      <Filter>nrc_log</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

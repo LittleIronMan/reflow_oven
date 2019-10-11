@@ -74,7 +74,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\Source\include;..\..\Source\portable\MSVC-MingW;..\..\..\..\..\money_logic;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -116,7 +116,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\Source\include;..\..\Source\portable\MSVC-MingW;..\Common\Include;..\..\..\FreeRTOS-Plus\Source\FreeRTOS-Plus-Trace\Include;.\Trace_Recorder_Configuration;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -169,7 +169,7 @@
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalIncludeDirectories>..\..\Source\include;..\..\Source\portable\MSVC-MingW;..\Common\Include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -188,12 +188,9 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\nrc_print.c" />
-    <ClCompile Include="..\..\..\..\..\..\nrc_protocol_buffers\nrc_msg.pb.c" />
-    <ClCompile Include="..\..\..\..\..\money_logic\money_logic.c" />
-    <ClCompile Include="..\..\Source\event_groups.c" />
-    <ClCompile Include="..\..\Source\portable\MemMang\heap_4.c" />
-    <ClCompile Include="..\..\Source\timers.c" />
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c" />
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c" />
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\timers.c" />
     <ClCompile Include="main.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -201,28 +198,28 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\Source\list.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\list.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\Source\portable\MSVC-MingW\port.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\port.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\Source\queue.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\queue.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\Source\tasks.c">
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\tasks.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -231,21 +228,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\nrc_print.h" />
-    <ClInclude Include="..\..\..\..\..\..\nrc_protocol_buffers\nrc_msg.pb.h" />
-    <ClInclude Include="..\..\..\..\..\money_logic\money_logic.h" />
-    <ClInclude Include="..\..\Source\include\event_groups.h" />
-    <ClInclude Include="..\..\Source\include\timers.h" />
-    <ClInclude Include="..\..\Source\portable\MSVC-MingW\portmacro.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h" />
     <ClInclude Include="FreeRTOSConfig.h" />
-    <ClInclude Include="..\..\Source\include\croutine.h" />
-    <ClInclude Include="..\..\Source\include\FreeRTOS.h" />
-    <ClInclude Include="..\..\Source\include\list.h" />
-    <ClInclude Include="..\..\Source\include\portable.h" />
-    <ClInclude Include="..\..\Source\include\projdefs.h" />
-    <ClInclude Include="..\..\Source\include\queue.h" />
-    <ClInclude Include="..\..\Source\include\semphr.h" />
-    <ClInclude Include="..\..\Source\include\task.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\list.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h" />
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\task.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
