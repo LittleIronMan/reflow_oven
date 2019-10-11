@@ -40,6 +40,7 @@ compileSourceFiles += [
 	"../nrc-safe-uart/nrc-safe-uart.c", # библиотека для безопасной упаковки данных перед их отправкой по последовательному протоколу
 	"../nrc-print/nrc-print.c" # логи, с возможностью их выключать совсем или делать чрезчур подробными
 ]
+includeDirs += ["../nrc-print"]
 
 if isLinux:
 	compileLibs += ["-lwiringPi"] # библиотека для обмена данными по последовательному протоколу для rapsberry pi
@@ -53,7 +54,7 @@ includeDirs += ["../protobuf", "../protobuf/nanopb"]
 progs = ["uart-Rx", "uart-Tx"]
 for prog in progs:
 	# добавляем зависимые от конкретной программы файлы
-	incDirs = list(includeDirs) + [prog, "../nrc-print/config_rpi_" + prog]
+	incDirs = list(includeDirs) + [prog, "../nrc-print/config_rpi_" + prog, "../nrc-safe-uart/config_rpi_" + prog]
 	compileSrc = list(compileSourceFiles) + [prog + "/" + prog + ".c", "../nrc-safe-uart/config_rpi_" + prog + "/nrc-safe-uart_config.c"]
 	outFile = prog
 
