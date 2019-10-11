@@ -2,7 +2,6 @@
 #define safe_uart_messenger_hpp
 
 #include <stdint.h> // uint8_t, uint16_t etc...
-#include "nrc_msg.pb.h"
 
 uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
 long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);

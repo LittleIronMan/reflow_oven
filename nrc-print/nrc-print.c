@@ -1,4 +1,4 @@
-#include "nrc_print.h"
+#include "nrc-print.h"
 
 void nrcPrintfEx(unsigned char logLevel, uint8_t viewMode, char *fmt, ...)
 {

@@ -1,13 +1,12 @@
-#include "money_logic.h"
-
-#include "safe_uart_messenger.h"
-#include "nrc_print.h"
-#include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
+#include "nrc-money-logic.h"
+#include "nrc-safe-uart.h"
+#include "nrc-safe-uart_config.h" // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
+#include "nrc-print.h"
 #include <string.h> // memcpy
 #include <stdbool.h>
 
 // protocol buffers
-#include "nrc_msg.pb.h"
+#include "reflow_oven.pb.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
 

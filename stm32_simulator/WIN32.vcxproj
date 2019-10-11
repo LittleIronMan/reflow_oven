@@ -17,26 +17,26 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C686325E-3261-42F7-AEB1-DDE5280E1CEB}</ProjectGuid>
     <ProjectName>RTOSDemo</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Optimised|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -74,7 +74,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\other;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -188,6 +188,16 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c" />
+    <ClCompile Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.c" />
+    <ClCompile Include="..\nrc-print\nrc-print.c" />
+    <ClCompile Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.c" />
+    <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
+    <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
+    <ClCompile Include="..\protobuf\nanopb\pb_common.c" />
+    <ClCompile Include="..\protobuf\nanopb\pb_decode.c" />
+    <ClCompile Include="..\protobuf\nanopb\pb_encode.c" />
+    <ClCompile Include="..\protobuf\reflow_oven.pb.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\timers.c" />
@@ -228,6 +238,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h" />
+    <ClInclude Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.h" />
+    <ClInclude Include="..\nrc-print\config_windows\nrc-print_config.h" />
+    <ClInclude Include="..\nrc-print\nrc-print.h" />
+    <ClInclude Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.h" />
+    <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h" />
+    <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
+    <ClInclude Include="..\protobuf\nanopb\pb.h" />
+    <ClInclude Include="..\protobuf\nanopb\pb_common.h" />
+    <ClInclude Include="..\protobuf\nanopb\pb_decode.h" />
+    <ClInclude Include="..\protobuf\nanopb\pb_encode.h" />
+    <ClInclude Include="..\protobuf\reflow_oven.pb.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h" />

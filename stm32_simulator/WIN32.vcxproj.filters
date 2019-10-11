@@ -18,14 +18,17 @@
     <Filter Include="FreeRTOS Source\Source\Portable">
       <UniqueIdentifier>{88f409e6-d396-4ac5-94bd-7a99c914be46}</UniqueIdentifier>
     </Filter>
-    <Filter Include="nrc_log">
-      <UniqueIdentifier>{f9e2db76-b74b-4f5e-b85e-8f0580692153}</UniqueIdentifier>
-    </Filter>
     <Filter Include="protobuf">
       <UniqueIdentifier>{ace6c1be-f3b5-43c8-af30-234a48e33e0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="uart_config">
+    <Filter Include="nrc-print">
+      <UniqueIdentifier>{f9e2db76-b74b-4f5e-b85e-8f0580692153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-safe-uart">
       <UniqueIdentifier>{b6d5c6f4-d006-4835-8d24-4c56671b2e73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-money-logic">
+      <UniqueIdentifier>{672618b4-da23-453a-8d33-4c1887960fa5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +53,36 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c">
       <Filter>FreeRTOS Source\Source\Portable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-print\nrc-print.c">
+      <Filter>nrc-print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\reflow_oven.pb.c">
+      <Filter>protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\nanopb\pb_common.c">
+      <Filter>protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\nanopb\pb_decode.c">
+      <Filter>protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\nanopb\pb_encode.c">
+      <Filter>protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c">
+      <Filter>nrc-safe-uart</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c">
+      <Filter>nrc-money-logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.c">
+      <Filter>nrc-money-logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.c">
+      <Filter>nrc-safe-uart</Filter>
+    </ClCompile>
+    <ClCompile Include="..\other\crc_software_as_stm32_hardware.c">
+      <Filter>nrc-safe-uart</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,5 +120,41 @@
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
     <ClInclude Include="FreeRTOSConfig.h" />
+    <ClInclude Include="..\nrc-print\nrc-print.h">
+      <Filter>nrc-print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\reflow_oven.pb.h">
+      <Filter>protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb.h">
+      <Filter>protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb_common.h">
+      <Filter>protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb_decode.h">
+      <Filter>protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb_encode.h">
+      <Filter>protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h">
+      <Filter>nrc-safe-uart</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h">
+      <Filter>nrc-money-logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.h">
+      <Filter>nrc-money-logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.h">
+      <Filter>nrc-safe-uart</Filter>
+    </ClInclude>
+    <ClInclude Include="..\other\crc_software_as_stm32_hardware.h">
+      <Filter>nrc-safe-uart</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-print\config_windows\nrc-print_config.h">
+      <Filter>nrc-print</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

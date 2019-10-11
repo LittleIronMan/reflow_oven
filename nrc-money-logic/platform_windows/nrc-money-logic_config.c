@@ -1,1 +1,1 @@
-"пустой utf-8 файл"
+#include "nrc-money-logic_config.h"

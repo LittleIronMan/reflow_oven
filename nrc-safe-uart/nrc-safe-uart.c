@@ -1,7 +1,9 @@
-#include "safe_uart_messenger.h"
+#include "nrc-safe-uart.h"
+#include "nrc-safe-uart_config.h" // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
+#include "nrc-print.h"
+#include "reflow_oven.pb.h"
+
 #include <string.h>
-#include "../../nrc_print.h"
-#include <uart_config.h> // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
 
 uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t type, uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
 {

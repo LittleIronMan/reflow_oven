@@ -1,4 +1,4 @@
-#include "my_software_stm32_crc.h"
+#include "crc_software_as_stm32_hardware.h"
 
 const uint32_t POLY_USED_IN_STM32 = 0x04C11DB7;
 const uint32_t CRC_INITIALVALUE = 0xFFFFFFFF;
