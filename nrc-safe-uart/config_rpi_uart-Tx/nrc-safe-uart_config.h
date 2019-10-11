@@ -1,7 +1,7 @@
 #ifndef nrc_safe_uart_config_h
 #define nrc_safe_uart_config_h
 
-#define UART_RECEIVE_BUF_SIZE 1 // не используется в этом модуле
+#define UART_RECEIVE_BUF_SIZE 1 // РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ СЌС‚РѕРј РјРѕРґСѓР»Рµ
 #define UART_TRANSMIT_BUF_SIZE 1024
 
 extern int uartDescriptor;
