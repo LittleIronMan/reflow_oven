@@ -8,11 +8,12 @@
 
 #include <wiringSerial.h>
 
-#include "safe_uart/safe_uart_messenger.h" // getMsgContent()
-#include <uart_config.h> // UART_RECEIVE_BUF_SIZE
+#include "nrc-safe-uart.h" // getMsgContent()
+#include "nrc-safe-uart_config.h" // UART_RECEIVE_BUF_SIZE
 #include <stdio.h> // printf, stdout etc.
-#include "../nrc_print.h" // nrcLog?() nrcPrintf?()
-#include "../base64.h" // base64(), unbase64()
+#include "nrc-print.h" // nrcLog?() nrcPrintf?()
+#include "base64.h" // base64(), unbase64()
+#include "reflow_oven.pb.h"
 
 #include <stdlib.h> // atoi
 #include <unistd.h> // getopt(), getopt_long()

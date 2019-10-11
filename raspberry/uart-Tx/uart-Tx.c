@@ -4,10 +4,10 @@
 
 #include <wiringSerial.h>
 
-#include "safe_uart/safe_uart_messenger.h"
-#include "../nrc_print.h"
-#include "../base64.h" // base64(), unbase64()
-#include <uart_config.h> // UART_TRANSMIT_BUF_SIZE
+#include "nrc-safe-uart.h"
+#include "nrc-print.h"
+#include "base64.h" // base64(), unbase64()
+#include "nrc-safe-uart_config.h" // UART_TRANSMIT_BUF_SIZE
 
 #include <stdlib.h> // atoi
 #include <unistd.h> // getopt(), getopt_long()

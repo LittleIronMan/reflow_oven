@@ -1,5 +1,5 @@
-#ifndef safe_uart_messenger_hpp
-#define safe_uart_messenger_hpp
+#ifndef nrc_safe_uart_h
+#define nrc_safe_uart_h
 
 #include <stdint.h> // uint8_t, uint16_t etc...
 
@@ -11,4 +11,4 @@ long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_
 extern uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes);
 extern uint16_t uartTransmitData(uint8_t[], uint16_t);
 
-#endif // safe_uart_messenger_hpp
+#endif // nrc_safe_uart_h

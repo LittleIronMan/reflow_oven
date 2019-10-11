@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <uart_config.h>
+#include "nrc-safe-uart_config.h"
 
-#include <nrc_print.h>
+#include "nrc-print.h"
 #include "main.h"
 
 uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes)

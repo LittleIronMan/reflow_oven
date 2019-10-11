@@ -24,7 +24,7 @@
 #include "cmsis_os.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "nrc_print.h"
+#include "nrc-print.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

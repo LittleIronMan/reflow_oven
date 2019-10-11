@@ -40,7 +40,7 @@ compileSourceFiles += [
 	"../nrc-safe-uart/nrc-safe-uart.c", # библиотека для безопасной упаковки данных перед их отправкой по последовательному протоколу
 	"../nrc-print/nrc-print.c" # логи, с возможностью их выключать совсем или делать чрезчур подробными
 ]
-includeDirs += ["../nrc-print"]
+includeDirs += ["../nrc-print", "../nrc-safe-uart", "../other"]
 
 if isLinux:
 	compileLibs += ["-lwiringPi"] # библиотека для обмена данными по последовательному протоколу для rapsberry pi
