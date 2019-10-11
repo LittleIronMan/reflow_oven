@@ -1,17 +1,519 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Исходные файлы">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Файлы заголовков">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Файлы ресурсов">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="stm32">
+      <UniqueIdentifier>{79bda367-f3e2-469a-971d-cf4a4cbab4a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry">
+      <UniqueIdentifier>{585be641-b2ab-4b01-918b-58d175e7a4f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="protobuf">
+      <UniqueIdentifier>{b068a5ed-2120-41c5-9a12-0187057f20d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="other">
+      <UniqueIdentifier>{3db49059-1bbe-44d8-9d32-cb37db10571e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-money-logic">
+      <UniqueIdentifier>{f9b15ed1-3e45-4377-a13b-f328173525cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-print">
+      <UniqueIdentifier>{108ffded-327d-4bd0-8d98-620eddd93eb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-safe-uart">
+      <UniqueIdentifier>{c2d01b52-fa84-4ad1-93a0-126a1beaae30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-money-logic\windows">
+      <UniqueIdentifier>{fa4105c8-1191-4321-944f-e68218028266}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-money-logic\stm32">
+      <UniqueIdentifier>{f3918f66-4b60-4a13-bd93-c78a5ca939d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-print\stm32">
+      <UniqueIdentifier>{49a80fbf-e947-4f01-8664-56092ffcfae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-print\rpi_Rx">
+      <UniqueIdentifier>{c0d15eb2-cfeb-407a-be39-6343770d9e63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-print\rpi_Tx">
+      <UniqueIdentifier>{8f2d5138-50a2-425f-826c-94452dd7c44a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-print\windows">
+      <UniqueIdentifier>{68ee08b8-dfdb-4d14-90db-e649362ffcdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-safe-uart\windows">
+      <UniqueIdentifier>{c00477d2-2615-4331-a2de-bea75ac688ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-safe-uart\stm32">
+      <UniqueIdentifier>{c0fec50b-49b8-4ebb-a62a-6c246e14f56f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-safe-uart\rpi_Rx">
+      <UniqueIdentifier>{674f3d83-5720-4816-82a7-47610f506f02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-safe-uart\rpi_Tx">
+      <UniqueIdentifier>{6111dfd2-ad58-45c4-8b63-d910831331f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="protobuf\nanopb">
+      <UniqueIdentifier>{bf11f96c-ada2-48cc-b92b-795801044ef0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry\Rx">
+      <UniqueIdentifier>{87590f8a-a84f-4336-b8e8-eb2e539bc3ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry\Tx">
+      <UniqueIdentifier>{65a8bde5-942b-4867-a208-b0fbbe98464a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry\wiringpi_simulator_for_windows">
+      <UniqueIdentifier>{2d204595-0b75-4d2e-89f2-01497818dee4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stm32\FreeRTOS">
+      <UniqueIdentifier>{d2e5c0c5-3e5f-4204-bef1-2c39db8aa282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stm32\Drivers">
+      <UniqueIdentifier>{8005d1f2-32cb-4fe7-b7c9-70a708b991dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stm32\Drivers\HAL">
+      <UniqueIdentifier>{4ae1f926-deec-437b-badf-51c29cc801e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stm32\Drivers\CMSIS">
+      <UniqueIdentifier>{d1d04527-6b81-479f-9ac1-4d085c97d496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stm32\FreeRTOS\windows">
+      <UniqueIdentifier>{3a37721b-120f-4c41-bc31-4e3ff7989427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stm32\FreeRTOS\stm32">
+      <UniqueIdentifier>{bf3cb0c2-011d-4d72-9966-d268d55903d4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c">
+      <Filter>nrc-money-logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-money-logic\platform_stm32\nrc-money-logic_config.c">
+      <Filter>nrc-money-logic\stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.c">
+      <Filter>nrc-money-logic\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-print\nrc-print.c">
+      <Filter>nrc-print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\config_rpi_uart-Rx\nrc-safe-uart_config.c">
+      <Filter>nrc-safe-uart\rpi_Rx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\config_rpi_uart-Tx\nrc-safe-uart_config.c">
+      <Filter>nrc-safe-uart\rpi_Tx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\config_stm32\nrc-safe-uart_config.c">
+      <Filter>nrc-safe-uart\stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.c">
+      <Filter>nrc-safe-uart\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c">
+      <Filter>nrc-safe-uart</Filter>
+    </ClCompile>
+    <ClCompile Include="..\other\crc_software_as_stm32_hardware.c">
+      <Filter>other</Filter>
+    </ClCompile>
+    <ClCompile Include="..\other\crc_software_as_stm32_hardware_original.c">
+      <Filter>other</Filter>
+    </ClCompile>
+    <ClCompile Include="..\other\unix-time\unix_time.c">
+      <Filter>other</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\nanopb\pb_common.c">
+      <Filter>protobuf\nanopb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\nanopb\pb_decode.c">
+      <Filter>protobuf\nanopb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\nanopb\pb_encode.c">
+      <Filter>protobuf\nanopb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\protobuf\reflow_oven.pb.c">
+      <Filter>protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\uart-Rx\uart-Rx.c">
+      <Filter>raspberry\Rx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\uart-Tx\uart-Tx.c">
+      <Filter>raspberry\Tx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\wiringpi_simulator_for_windows\wiringSerial.c">
+      <Filter>raspberry\wiringpi_simulator_for_windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dma.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash_ex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio_ex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_pwr.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rcc.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rcc_ex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rtc.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rtc_ex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi_ex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_tim.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_tim_ex.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_uart.c">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\croutine.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\list.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\queue.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\tasks.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\timers.c">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\port.c">
+      <Filter>stm32\FreeRTOS\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM3\port.c">
+      <Filter>stm32\FreeRTOS\stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Src\freertos.c">
+      <Filter>stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Src\main.c">
+      <Filter>stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Src\stm32f1xx_hal_msp.c">
+      <Filter>stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Src\stm32f1xx_it.c">
+      <Filter>stm32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stm32\Src\system_stm32f1xx.c">
+      <Filter>stm32</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h">
+      <Filter>nrc-money-logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-money-logic\platform_stm32\nrc-money-logic_config.h">
+      <Filter>nrc-money-logic\stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.h">
+      <Filter>nrc-money-logic\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-print\nrc-print.h">
+      <Filter>nrc-print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-print\config_windows\nrc-print_config.h">
+      <Filter>nrc-print\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-print\config_stm32\nrc-print_config.h">
+      <Filter>nrc-print\stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-print\config_rpi_uart-Tx\nrc-print_config.h">
+      <Filter>nrc-print\rpi_Tx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-print\config_rpi_uart-Rx\nrc-print_config.h">
+      <Filter>nrc-print\rpi_Rx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\config_rpi_uart-Rx\nrc-safe-uart_config.h">
+      <Filter>nrc-safe-uart\rpi_Rx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\config_rpi_uart-Tx\nrc-safe-uart_config.h">
+      <Filter>nrc-safe-uart\rpi_Tx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\config_stm32\nrc-safe-uart_config.h">
+      <Filter>nrc-safe-uart\stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.h">
+      <Filter>nrc-safe-uart\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h">
+      <Filter>nrc-safe-uart</Filter>
+    </ClInclude>
+    <ClInclude Include="..\other\base64.h">
+      <Filter>other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\other\crc_software_as_stm32_hardware.h">
+      <Filter>other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\other\unix-time\unix_time.h">
+      <Filter>other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb.h">
+      <Filter>protobuf\nanopb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb_common.h">
+      <Filter>protobuf\nanopb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb_decode.h">
+      <Filter>protobuf\nanopb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\nanopb\pb_encode.h">
+      <Filter>protobuf\nanopb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protobuf\reflow_oven.pb.h">
+      <Filter>protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raspberry\wiringpi_simulator_for_windows\wiringSerial.h">
+      <Filter>raspberry\wiringpi_simulator_for_windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_crc.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rtc.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rtc_ex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_spi.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h">
+      <Filter>stm32\Drivers\HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\arm_common_tables.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\arm_const_structs.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\arm_math.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\cmsis_armcc.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\cmsis_armcc_V6.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\cmsis_gcc.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cm0.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cm0plus.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cm3.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cm4.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cm7.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cmFunc.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cmInstr.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_cmSimd.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_sc000.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Drivers\CMSIS\Include\core_sc300.h">
+      <Filter>stm32\Drivers\CMSIS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\list.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_prototypes.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\StackMacros.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\task.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h">
+      <Filter>stm32\FreeRTOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h">
+      <Filter>stm32\FreeRTOS\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h">
+      <Filter>stm32\FreeRTOS\stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Inc\FreeRTOSConfig.h">
+      <Filter>stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Inc\main.h">
+      <Filter>stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Inc\stm32f1xx_hal_conf.h">
+      <Filter>stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Inc\stm32f1xx_it.h">
+      <Filter>stm32</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\protobuf\reflow_oven_pb2.py">
+      <Filter>protobuf</Filter>
+    </None>
+    <None Include="..\protobuf\generate_code.py">
+      <Filter>protobuf</Filter>
+    </None>
+    <None Include="..\protobuf\reflow_oven.pb.js">
+      <Filter>protobuf</Filter>
+    </None>
+    <None Include="..\protobuf\reflow_oven.proto">
+      <Filter>protobuf</Filter>
+    </None>
+    <None Include="..\raspberry\uart-Tx\uart-Tx_test.py">
+      <Filter>raspberry\Tx</Filter>
+    </None>
+    <None Include="..\raspberry\uart-Rx\rand_temp_generator.py">
+      <Filter>raspberry\Rx</Filter>
+    </None>
+    <None Include="..\raspberry\compile_all.py">
+      <Filter>raspberry</Filter>
+    </None>
   </ItemGroup>
 </Project>
