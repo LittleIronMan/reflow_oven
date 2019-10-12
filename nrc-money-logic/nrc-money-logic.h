@@ -53,6 +53,6 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
 void money_initReceiverIRQ();
 void money_initSender();
-uint16_t oven_getTemp(uint8_t *err);
+float oven_getTemp(uint16_t *receivedData, uint8_t *err);
 
 #endif // main_logic_h

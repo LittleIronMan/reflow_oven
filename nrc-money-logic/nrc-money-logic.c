@@ -129,11 +129,12 @@ void money_defaultTask(void const *argument)
 		osDelay(500);
 		counter++;
 
-		uint8_t err2 = 0;
-		uint16_t receivedData = oven_getTemp(err2);
+		uint16_t receivedData = 0;
+		uint8_t err = 0;
+		float temp = oven_getTemp(&receivedData, &err);
 		
-		if (err2) {
-			nrcLog("Receive error, errcode == %u", err2);
+		if (err) {
+			nrcLog("Receive error, errcode == %u", err);
 		}
 		else {
 			//myPrint("Received data == %x", receivedData);
@@ -142,15 +143,7 @@ void money_defaultTask(void const *argument)
 				nrcLog("Disconnected termocouple");
 			}
 			else {
-				float temp = 0.0f;
-				//temp = ((receivedData >> 3) & 0xfff) * 0.25;
-				temp = ((receivedData >> 3) & 0xfff) * 0.25f;
-				//myPrint("Current temperature == %f deg", temp);
-
-				char msgContentBuf[20];
-				uint16_t len = sprintf(msgContentBuf, "Temp %.2f\n", temp);
-				//transmitMsg(msgContentBuf, len);
-				//transmitMsg("ping\n", 5);
+				nrcLogD("Temp %.2f", temp);
 			}
 		}
 	}
@@ -258,13 +251,21 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 			}
 		}
 	}
+	else {
+		// в этом месте данные безвовзратно теряются... такая вот драма
+	}
 }
 
 
-#ifdef NRC_WINDOWS_SIMULATOR // Windows - specific code
+// -------->>>> Windows - specific code <<<<--------
+#ifdef NRC_WINDOWS_SIMULATOR
 
 const uint32_t kReceiveIRQ_No = 31;
 const uint32_t kTransmitIRQ_No = 30;
+
+// этот флаг запрещает IRQ_generator'у обновлять DMA-буфер,
+// до тех пор пока не отработает IRQ_handler
+bool dmaIRQ_lock = false;
 
 DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 {
@@ -292,15 +293,20 @@ DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 		nrcLogD("Named pipe succesfull created");
 	}
 
-	while (hPipe != INVALID_HANDLE_VALUE)
-	{
-		if (ConnectNamedPipe(hPipe, NULL) != FALSE)   // wait for someone to connect to the pipe
-		{
+	while (hPipe != INVALID_HANDLE_VALUE) {
+		if (ConnectNamedPipe(hPipe, NULL) != FALSE) { // wait for someone to connect to the pipe
 			// заполняем псевдо-DMA - буфер
-			while (ReadFile(hPipe, dmaRxBuf.arr, dmaRxBuf.size, &dmaRxBuf.curCNDTR, NULL) != FALSE)
-			{
+			BOOL readResult = TRUE;
+			while (readResult) {
+				if (dmaIRQ_lock) continue;
+				readResult = ReadFile(hPipe, dmaRxBuf.arr, dmaRxBuf.size, &dmaRxBuf.curCNDTR, NULL);
 				nrcLogD("receiverIRQ_generator - Received %d bytes", dmaRxBuf.curCNDTR);
+				dmaIRQ_lock = true;
 				vPortGenerateSimulatedInterrupt(kReceiveIRQ_No);
+				// выходим из этого цикла, если буфер заполнен неполностью(т.е. найден конец сообщения)
+				if (dmaRxBuf.curCNDTR < dmaRxBuf.size) {
+					break;
+				}
 			}
 		}
 		DisconnectNamedPipe(hPipe);
@@ -318,6 +324,7 @@ uint32_t receiverIRQ_handler()
 	if (dmaRxBuf.curCNDTR == dmaRxBuf.size) { type = NRC_EVENT_FULL_BUF; }
 	NRC_UART_RxEvent(type, dmaRxBuf.curCNDTR);
 	dmaRxBuf.curCNDTR = 0; // это делается только для windows
+	dmaIRQ_lock = false;
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
@@ -328,22 +335,23 @@ void money_initReceiverIRQ()
 	vPortSetInterruptHandler(kReceiveIRQ_No, receiverIRQ_handler);
 }
 
-uint16_t oven_getTemp(uint8_t *err)
+float oven_getTemp(uint16_t* receivedData, uint8_t *err)
 {
-	return 0;
+	*err = 0;
+	*receivedData = 0;
+	return 0.0f;
 }
 
-#else // далее следует реальный код для микроконтроллера
+// ----->>>> реальный код для микроконтроллера <<<<-----
+#else
 
-uint16_t oven_getTemp(uint8_t *err)
+float oven_getTemp(uint16_t *receivedData, uint8_t *err)
 {
-	if (!err) return 0;
-	uint16_t receivedData = 0;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-	*err = (uint8_t)HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
-	//err3 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
-	return receivedData;
+	*err = (uint8_t)HAL_SPI_Receive(&hspi3, (uint8_t*)receivedData, 1, HAL_MAX_DELAY);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+	float temp = ((*receivedData >> 3) & 0xfff) * 0.25f;
+	return temp;
 }
 
 #endif

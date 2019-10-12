@@ -17,11 +17,12 @@ if isLinux:
 	tmp = os.getcwd()
 	os.chdir(os.path.expanduser("~/reflow_oven/rpi-uart"))
 
-if "--release" not in sys.argv:
+if "--debug" in sys.argv:
     args = ["gdb", "--args"] + args
 else:
     args[0] = "./" + args[0] # линукс почему-то не дает запустить команду просто, без префикса ./
 
+print(args[0])
 result = subprocess.run(args)
 print(result)
 
