@@ -76,7 +76,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\windows_specific_code;..\..\..\other;..\..\..\nrc-print;..\..\..\nrc-safe-uart;..\..\..\nrc-safe-uart\config_rpi_uart-Tx;..\..\uart-Tx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NRC_WINDOWS_SIMULATOR;NRC_RPI_UART_TX</PreprocessorDefinitions>
     </ClCompile>
     <Link>
