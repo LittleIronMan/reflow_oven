@@ -56,7 +56,7 @@ for prog in progs:
 	# добавляем зависимые от конкретной программы файлы
 	incDirs = list(includeDirs) + [prog, "../nrc-print/config_rpi_" + prog, "../nrc-safe-uart/config_rpi_" + prog]
 	compileSrc = list(compileSourceFiles) + [prog + "/" + prog + ".c", "../nrc-safe-uart/config_rpi_" + prog + "/nrc-safe-uart_config.c"]
-	outFile = prog
+	outFile = prog + ".exe" # даже для линукса исполняемый файл будет иметь расширение exe, это сделано только для того чтобы в других программах меньше if(linux) писать
 
 	# для Windows будут использоваться абсолютные пути к файлам
 	if isWindows:
@@ -64,7 +64,7 @@ for prog in progs:
 			incDirs[i] = os.path.abspath(incDirs[i])
 		for i in range(len(compileSrc)):
 			compileSrc[i] = os.path.abspath(compileSrc[i])
-		outFile = os.path.abspath(outFile) + ".exe"
+		outFile = os.path.abspath(outFile)
 
 	# добавляем префикс -I к директориям с заголовочниками файлами
 	for i in range(len(incDirs)):
