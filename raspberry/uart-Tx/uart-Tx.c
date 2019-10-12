@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 		transmitMsg(dataType, decodedData, decodedLen, uartTransmitBuf);
 	}
 
-#ifdef NRC_WINDOWS_SIMULATOR
+#if (defined(NRC_WINDOWS_SIMULATOR) && defined(_DEBUG))
 	printf("Press Any Key to Continue\n");
 	getch();
 #endif

@@ -5,10 +5,17 @@ import os
 
 sendData = "CAEQARgB"
 msgType = "1"
-args = ["uart-speaker", "-s", sendData, "-t", msgType, "-b", "-l", "2"]
+isLinux = False
+if os.name == 'nt': # windows
+	prog = "windows_simulator/Release/uart-Tx_simulator.exe"
+else: # linux
+	isLinux = True
+	prog = "uart-Tx.exe"
+args = [prog, "-s", sendData, "-t", msgType, "-b", "-l", "2"]
 
-tmp = os.getcwd()
-os.chdir(os.path.expanduser("~/reflow_oven/rpi-uart"))
+if isLinux:
+	tmp = os.getcwd()
+	os.chdir(os.path.expanduser("~/reflow_oven/rpi-uart"))
 
 if "--release" not in sys.argv:
     args = ["gdb", "--args"] + args
@@ -18,4 +25,5 @@ else:
 result = subprocess.run(args)
 print(result)
 
-os.chdir(tmp)
+if isLinux:
+	os.chdir(tmp)

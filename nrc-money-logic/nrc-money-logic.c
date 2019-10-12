@@ -263,8 +263,8 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 
 #ifdef NRC_WINDOWS_SIMULATOR // Windows - specific code
 
-const uint32_t kReceiveIRQ_No = 1;
-const uint32_t kTransmitIRQ_No = 2;
+const uint32_t kReceiveIRQ_No = 31;
+const uint32_t kTransmitIRQ_No = 30;
 
 DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 {
@@ -301,8 +301,6 @@ DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 			{
 				nrcLogD("receiverIRQ_generator - Received %d bytes", dmaRxBuf.curCNDTR);
 				vPortGenerateSimulatedInterrupt(kReceiveIRQ_No);
-				nrcLogD("receiverIRQ_handler exit");
-				dmaRxBuf.curCNDTR = 0;
 			}
 		}
 		DisconnectNamedPipe(hPipe);
@@ -313,10 +311,15 @@ DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 
 uint32_t receiverIRQ_handler()
 {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
 	nrcLogD("receiverIRQ_handler start");
 	NRC_UART_EventType type = NRC_EVENT_TRANSFER_COMPLETED;
 	if (dmaRxBuf.curCNDTR == dmaRxBuf.size) { type = NRC_EVENT_FULL_BUF; }
 	NRC_UART_RxEvent(type, dmaRxBuf.curCNDTR);
+	dmaRxBuf.curCNDTR = 0; // это делается только для windows
+
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void money_initReceiverIRQ()
