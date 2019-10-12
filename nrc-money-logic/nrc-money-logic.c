@@ -4,20 +4,20 @@
 #include "nrc-print.h"
 #include <string.h> // memcpy
 #include <stdbool.h>
+#include "FreeRTOS.h"
 
 // protocol buffers
 #include "reflow_oven.pb.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
 
-NrcUartBufBeta RxBuf, // буфер данных, принятых по UART
-TxBuf; // буфер данных, передаваемых по UART
-NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
+NrcUartBufBeta RxBuf, TxBuf;
+NrcUartBufAlpha dmaRxBuf;
 // соответствующие массивы
-uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
-uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
-uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
-uint8_t msgBuf[UART_RECEIVE_BUF_SIZE - 8]; // массив для распакованных данных
+uint8_t RxArr[UART_RECEIVE_BUF_SIZE];
+uint8_t TxArr[UART_TRANSMIT_BUF_SIZE];
+uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2];
+uint8_t msgBuf[UART_RECEIVE_BUF_SIZE - 8];
 
 #define MAX_CMD_COUNT_IN_QUEUE 5
 typedef struct _CmdEx {
@@ -94,7 +94,7 @@ void money_init()
 	RxBuf.arr = RxArr; RxBuf.size = UART_RECEIVE_BUF_SIZE; RxBuf.state = BufState_NEED_UPDATE; RxBuf.countBytes = 0; RxBuf.sem = xSemaphoreCreateBinary();
 	TxBuf.arr = TxArr; TxBuf.size = UART_TRANSMIT_BUF_SIZE; TxBuf.state = BufState_NEED_UPDATE; TxBuf.countBytes = 0; TxBuf.sem = xSemaphoreCreateBinary();
 	dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = UART_RECEIVE_BUF_SIZE / 2;
-	dmaRxBuf.prevCNDTR = dmaRxBuf.size;
+	dmaRxBuf.curCNDTR = dmaRxBuf.size;
 
 	// инициализация структуры данных для управления печью
 	cd.startTime = 0; // веремя начала программы
@@ -204,6 +204,58 @@ void money_taskMsgReceiver(void const * argument)
 void money_taskMsgSender(void const * argument)
 {
 	for(;;) {
+		// ждем новых данных
+		xSemaphoreTake(RxBuf.sem, portMAX_DELAY);
+		// распаковываем данные
+	}
+}
 
+// обработчик прерывания по приему очередной порции байт
+// частично позаимствовано отсюда:
+// https://github.com/akospasztor/stm32-dma-uart/blob/master/Src/main.c
+uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
+{
+	uint16_t start, length;
+	static bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
+
+	/* Determine start position in DMA buffer based on previous CNDTR value */
+	start = (dmaRxBuf.curCNDTR < dmaRxBuf.size) ? (dmaRxBuf.size - dmaRxBuf.curCNDTR) : 0;
+
+	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
+		length = (dmaRxBuf.curCNDTR < dmaRxBuf.size) ? (dmaRxBuf.curCNDTR - curCNDTR) : (dmaRxBuf.size - curCNDTR);
+		dmaRxBuf.curCNDTR = curCNDTR;
+	}
+	else if (event == NRC_EVENT_HALF_BUF) { /* DMA Rx Half event */
+		length = (dmaRxBuf.size >> 1) - start;
+		dmaRxBuf.curCNDTR = (dmaRxBuf.size >> 1);
+	}
+	else if (event == NRC_EVENT_FULL_BUF) { /* DMA Rx Complete event */
+		length = dmaRxBuf.size - start;
+		dmaRxBuf.curCNDTR = dmaRxBuf.size;
+	}
+	nrcPrintfV("RxBuf.countBytes == %d, length == %d\n", RxBuf.countBytes, length);
+
+	/* Copy and Process new data */
+	if (RxBuf.state == BufState_USED_BY_HARDWARE) {
+		if (RxBuf.countBytes + length <= RxBuf.size) {
+			memcpy(&RxBuf.arr[RxBuf.countBytes], &dmaRxBuf.arr[start], length);
+			RxBuf.countBytes += length;
+		}
+		else {
+			RxUartDmaOveflow = true;
+		}
+
+		if (event == NRC_EVENT_TRANSFER_COMPLETED) {
+			if (RxUartDmaOveflow) {
+				// если по ходу передачи буфер был переполнен, то просто игнорируем принятые данные и ждем новых
+				RxBuf.countBytes = 0;
+				RxUartDmaOveflow = false;
+			}
+			else {
+				RxBuf.state = BufState_UPDATED;
+				xSemaphoreGiveFromISR(RxBuf.sem, NULL); // буфером можно пользоваться
+				nrcLog("Received %d bytes", RxBuf.countBytes);
+			}
+		}
 	}
 }

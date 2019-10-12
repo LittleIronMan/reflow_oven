@@ -25,11 +25,16 @@ typedef volatile struct {
 typedef struct {
 	uint8_t *arr; // указатель на массив с данными
 	uint16_t size;
-	uint16_t prevCNDTR; // предыдущая позиция DMA-указателя в буфере
+	uint16_t curCNDTR; // предыдущая позиция DMA-указателя в буфере
 } NrcUartBufAlpha;
 
-extern NrcUartBufBeta RxBuf, TxBuf;
-extern uint8_t RxArr[]; // массив с принятыми и упакованными данными
+extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
+						TxBuf; // буфер данных, передаваемых по UART
+extern NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
+extern uint8_t	RxArr[], // массив с принятыми и упакованными данными
+				TxArr[], // массив для буфера ПЕРЕДАЧИ данных
+				RxDmaArr[], // массив для циклического буфера ПРИЕМА данных по uart
+				msgBuf[]; // массив для распакованных данных
 
 void money_init();
 
@@ -37,8 +42,16 @@ void money_defaultTask(void const *argument);
 void money_taskMsgReceiver(void const * argument);
 void money_taskMsgSender(void const * argument);
 
+typedef enum {
+	NRC_EVENT_HALF_BUF, // счетчик dma на середине буфера
+	NRC_EVENT_FULL_BUF, // счетчик dma в конце буфера
+	NRC_EVENT_TRANSFER_COMPLETED // передача/прием данных завершен(а) - поймано прерывание IDLE_LINE
+} NRC_UART_EventType;
+
+uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
+
 // платформозависимые функции, которые должны быть определены вне модуля money_logic
-void money_initReceiver();
+void money_initReceiverIRQ();
 void money_initSender();
 
 #endif // main_logic_h

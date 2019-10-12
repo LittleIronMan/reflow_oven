@@ -24,6 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "nrc-money-logic.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -414,71 +415,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-// частично позаимствовано отсюда:
-// https://github.com/akospasztor/stm32-dma-uart/blob/master/Src/main.c
-
-typedef enum {
-	NRC_EVENT_HALF_BUF, // счетчик dma на середине буфера
-	NRC_EVENT_FULL_BUF, // счетчик dma в конце буфера
-	NRC_EVENT_TRANSFER_COMPLETED // передача/прием данных завершен(а) - поймано прерывание IDLE_LINE
-} NRC_UART_EventType;
-
-void NRC_UART_RxEvent(NRC_UART_EventType event)
-{
-	uint16_t start, length;
-	static bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
-	uint16_t currCNDTR = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
-
-	/* Determine start position in DMA buffer based on previous CNDTR value */
-	start = (dmaRxBuf.prevCNDTR < dmaRxBuf.size) ? (dmaRxBuf.size - dmaRxBuf.prevCNDTR) : 0;
-
-	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
-		length = (dmaRxBuf.prevCNDTR < dmaRxBuf.size) ? (dmaRxBuf.prevCNDTR - currCNDTR) : (dmaRxBuf.size - currCNDTR);
-		dmaRxBuf.prevCNDTR = currCNDTR;
-	}
-	else if (event == NRC_EVENT_HALF_BUF) { /* DMA Rx Half event */
-		length = (dmaRxBuf.size >> 1) - start;
-		dmaRxBuf.prevCNDTR = (dmaRxBuf.size >> 1);
-	}
-	else if (event == NRC_EVENT_FULL_BUF) { /* DMA Rx Complete event */
-		length = dmaRxBuf.size - start;
-		dmaRxBuf.prevCNDTR = dmaRxBuf.size;
-	}
-	nrcPrintfV("RxBuf.countBytes == %d, length == %d\n", RxBuf.countBytes, length);
-
-	/* Copy and Process new data */
-	if (RxBuf.state == BufState_USED_BY_HARDWARE) {
-		if (RxBuf.countBytes + length <= RxBuf.size) {
-			memcpy(&RxBuf.arr[RxBuf.countBytes], &dmaRxBuf.arr[start], length);
-			RxBuf.countBytes += length;
-		}
-		else {
-			RxUartDmaOveflow = true;
-		}
-
-		if (event == NRC_EVENT_TRANSFER_COMPLETED) {
-			if (RxUartDmaOveflow) {
-				// если по ходу передачи буфер был переполнен, то просто игнорируем принятые данные и ждем новых
-				RxBuf.countBytes = 0;
-				RxUartDmaOveflow = false;
-			}
-			else {
-				RxBuf.state = BufState_UPDATED;
-				xSemaphoreGiveFromISR(RxBuf.sem, NULL); // буфером можно пользоваться
-				nrcLog("Received %d bytes", RxBuf.countBytes);
-			}
-		}
-	}
-}
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == USART1) {
+		const uint16_t countNewBytes = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
 		if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
-			NRC_UART_RxEvent(NRC_EVENT_TRANSFER_COMPLETED);
+			NRC_UART_RxEvent(NRC_EVENT_TRANSFER_COMPLETED, countNewBytes);
 		}
 		else {
-			NRC_UART_RxEvent(NRC_EVENT_FULL_BUF);
+			NRC_UART_RxEvent(NRC_EVENT_FULL_BUF, countNewBytes);
 		}
 	}
 }
@@ -486,7 +431,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxHalfCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == USART1) {
-		NRC_UART_RxEvent(NRC_EVENT_HALF_BUF);
+		NRC_UART_RxEvent(NRC_EVENT_HALF_BUF, __HAL_DMA_GET_COUNTER(&hdma_usart1_rx));
 	}
 }
 
