@@ -189,9 +189,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c" />
-    <ClCompile Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.c" />
     <ClCompile Include="..\nrc-print\nrc-print.c" />
-    <ClCompile Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.c" />
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_common.c" />
@@ -239,10 +237,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h" />
-    <ClInclude Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.h" />
-    <ClInclude Include="..\nrc-print\config_windows\nrc-print_config.h" />
     <ClInclude Include="..\nrc-print\nrc-print.h" />
-    <ClInclude Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.h" />
     <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h" />
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
     <ClInclude Include="..\protobuf\nanopb\pb.h" />
