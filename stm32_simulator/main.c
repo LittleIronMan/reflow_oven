@@ -126,12 +126,17 @@ static void prvCheckTask( void *pvParameters );
 
 int main(void)
 {
+	// ------->>>> MONEY START <<<<-------
+	money_init();
 	TaskHandle_t defaultTask;
 	xTaskCreate(money_defaultTask, "defaultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &defaultTask);
 	TaskHandle_t receiverTask;
 	xTaskCreate(money_taskMsgReceiver, "receiverTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &receiverTask);
 	TaskHandle_t senderTask;
-	xTaskCreate(money_taskMsgReceiver, "receiverTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &senderTask);
+	xTaskCreate(money_taskMsgSender, "senderTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &senderTask);
+
+	money_initReceiverIRQ();
+	// ------->>>> MONEY FINISH <<<<-------
 
 	vTaskStartScheduler();
 

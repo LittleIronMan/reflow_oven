@@ -12,8 +12,7 @@
 
 #ifdef NRC_WINDOWS_SIMULATOR
 #include <windows.h>
-const uint32_t kReceiveIRQ_No = 1;
-const uint32_t kTransmitIRQ_No = 2;
+#define osDelay(millisec) vTaskDelay(millisec)
 #endif
 
 typedef enum {
@@ -130,15 +129,11 @@ void money_defaultTask(void const *argument)
 		osDelay(500);
 		counter++;
 
-		uint16_t receivedData = 0;
-		HAL_StatusTypeDef err2;
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-		err2 = HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
-		//err3 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
+		uint8_t err2 = 0;
+		uint16_t receivedData = oven_getTemp(err2);
 		
-		if (err2 != HAL_OK) {
-			nrcLog("Receive error, errcode == %u", (uint8_t)err2);
+		if (err2) {
+			nrcLog("Receive error, errcode == %u", err2);
 		}
 		else {
 			//myPrint("Received data == %x", receivedData);
@@ -265,7 +260,12 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 	}
 }
 
-#ifdef NRC_WINDOWS_SIMULATOR
+
+#ifdef NRC_WINDOWS_SIMULATOR // Windows - specific code
+
+const uint32_t kReceiveIRQ_No = 1;
+const uint32_t kTransmitIRQ_No = 2;
+
 DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 {
 	nrcLogD("Run receiverIRQ_generator");
@@ -324,5 +324,24 @@ void money_initReceiverIRQ()
 	SetThreadPriority(CreateThread(NULL, 0, receiverIRQ_generator, NULL, 0, NULL), THREAD_PRIORITY_ABOVE_NORMAL);
 	vPortSetInterruptHandler(kReceiveIRQ_No, receiverIRQ_handler);
 }
+
+uint16_t oven_getTemp(uint8_t *err)
+{
+	return 0;
+}
+
+#else // далее следует реальный код для микроконтроллера
+
+uint16_t oven_getTemp(uint8_t *err)
+{
+	if (!err) return 0;
+	uint16_t receivedData = 0;
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+	*err = (uint8_t)HAL_SPI_Receive(&hspi3, (uint8_t*)&receivedData, 1, HAL_MAX_DELAY);
+	//err3 = HAL_SPI_Receive(&hspi3, arr, 1, HAL_MAX_DELAY);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);			
+	return receivedData;
+}
+
 #endif
 

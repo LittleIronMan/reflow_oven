@@ -99,15 +99,15 @@ long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_
 	return result;
 }
 
+#if defined(NRC_RPI_UART_TX) || defined(NRC_RPI_UART_RX) || (defined(NRC_STM32) && defined(NRC_WINDOWS_SIMULATOR))
 #include <wiringSerial.h>
-#if defined(NRC_RPI_UART_TX) || defined(NRC_RPI_UART_RX)
 #include "crc_software_as_stm32_hardware.h"
 #elif defined(NRC_STM32)
 #include "main.h"
 #endif
 
 uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes) {
-#if defined(NRC_RPI_UART_TX) || defined(NRC_RPI_UART_RX)
+#if defined(NRC_RPI_UART_TX) || defined(NRC_RPI_UART_RX) || (defined(NRC_STM32) && defined(NRC_WINDOWS_SIMULATOR))
 	return stm32_sw_crc32_by_byte(CRC_INITIALVALUE, pBuffer, NumOfBytes);
 #elif defined(NRC_STM32)
 	return HAL_CRC_Calculate(&hcrc, (uint32_t*)&pBuffer[0], NumOfBytes >> 2);
@@ -123,16 +123,20 @@ uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount) {
 #elif NRC_RPI_UART_RX
 	return 0; // no action
 #elif NRC_STM32
-	TxBuf.state = BufState_USED_BY_HARDWARE;
-
-	HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(&huart1, data, bytesCount);
-
-	if (result == HAL_OK) {
-		return bytesCount;
-	}
-	else {
-		nrcLogD("Transmit error. HAL status == %d", result);
+	#ifdef NRC_WINDOWS_SIMULATOR
 		return 0;
-	}
+	#else
+		TxBuf.state = BufState_USED_BY_HARDWARE;
+
+		HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(&huart1, data, bytesCount);
+
+		if (result == HAL_OK) {
+			return bytesCount;
+		}
+		else {
+			nrcLogD("Transmit error. HAL status == %d", result);
+			return 0;
+		}
+	#endif
 #endif
 }

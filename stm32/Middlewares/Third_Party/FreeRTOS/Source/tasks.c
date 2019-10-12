@@ -1260,7 +1260,8 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 			mtCOVERAGE_TEST_MARKER();
 		}
 	}
-
+#else 
+#error TaskDelay not defined
 #endif /* INCLUDE_vTaskDelay */
 /*-----------------------------------------------------------*/
 

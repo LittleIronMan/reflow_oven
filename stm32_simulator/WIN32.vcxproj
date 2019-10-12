@@ -74,8 +74,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\other;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\raspberry\windows_specific_code;..\other;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;NRC_STM32;NRC_WINDOWS_SIMULATOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
