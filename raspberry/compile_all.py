@@ -45,8 +45,8 @@ includeDirs += ["../nrc-print", "../nrc-safe-uart", "../other"]
 if isLinux:
 	compileLibs += ["-lwiringPi"] # библиотека для обмена данными по последовательному протоколу для rapsberry pi
 elif isWindows:
-	includeDirs += ["wiringpi_simulator_for_windows"] # фейковая библиотека, имитирует uart на Windows
-	compileSourceFiles += ["wiringpi_simulator_for_windows/wiringSerial.c"]
+	includeDirs += ["windows_specific_code"]
+	compileSourceFiles += ["windows_specific_code/wiringSerial.c"] # фейковая библиотека, имитирует uart на Windows
 
 # nanopb
 includeDirs += ["../protobuf", "../protobuf/nanopb"]

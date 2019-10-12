@@ -418,12 +418,12 @@ static void MX_GPIO_Init(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == USART1) {
-		const uint16_t countNewBytes = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
+		const uint16_t curCNDTR = __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
 		if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
-			NRC_UART_RxEvent(NRC_EVENT_TRANSFER_COMPLETED, countNewBytes);
+			NRC_UART_RxEvent(NRC_EVENT_TRANSFER_COMPLETED, curCNDTR);
 		}
 		else {
-			NRC_UART_RxEvent(NRC_EVENT_FULL_BUF, countNewBytes);
+			NRC_UART_RxEvent(NRC_EVENT_FULL_BUF, curCNDTR);
 		}
 	}
 }

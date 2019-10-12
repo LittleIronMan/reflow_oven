@@ -1,7 +1,6 @@
 #include "nrc-safe-uart.h"
 #include "nrc-safe-uart_config.h" // UART_RECEIVE_BUF_SIZE, UART_TRANSMIT_BUF_SIZE
 #include "nrc-print.h"
-#include "reflow_oven.pb.h"
 
 #include <string.h>
 
@@ -53,7 +52,7 @@ uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t type, uint8_t msgContentBuf
 
 uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 {
-	const MsgType errType = MsgType_UNDEFINED;
+	const uint8_t errType = 0; // MsgType_UNDEFINED
 	if (msgNumOfBytes <= 9) {
 		nrcLogD("Too little bytes count: %d", msgNumOfBytes); return errType;
 	}
@@ -75,7 +74,7 @@ uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 		nrcLogD("Check sum's are not equal: in package %x, but calculated %x", packageSum, checkSum);
 		return errType;
 	}
-	return (MsgType)uartMsgBuf[4];
+	return uartMsgBuf[4];
 }
 
 long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)

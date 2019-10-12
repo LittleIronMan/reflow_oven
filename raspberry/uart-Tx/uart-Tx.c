@@ -10,8 +10,10 @@
 #include "nrc-safe-uart_config.h" // UART_TRANSMIT_BUF_SIZE
 
 #include <stdlib.h> // atoi
-#include <unistd.h> // getopt(), getopt_long()
-#include <getopt.h> // ^
+#include <getopt.h> // getopt(), getopt_long() + если проект компилируется под windows, то еще и переменные optarg, optind, opterr, optopt. Для linux эти переменные определены в unistd.h
+#ifndef _MSC_VER
+#include <unistd.h> // optarg, optind, opterr, optopt - для linux
+#endif
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
 		// void serialPrintf(int fd, char *message, Е);
 
 		if ((uartDescriptor = serialOpen(serialPortName, serialBaudRate)) < 0) {
-			nrcLog("Unable to open serial port: %s", strerror(errno));
+			nrcLog("Unable to open serial port: %s", strerror(errno, ""));
 			return 1;
 		}
 		else {

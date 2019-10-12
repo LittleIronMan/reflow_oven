@@ -65,9 +65,6 @@
     <Filter Include="raspberry\Tx">
       <UniqueIdentifier>{65a8bde5-942b-4867-a208-b0fbbe98464a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="raspberry\wiringpi_simulator_for_windows">
-      <UniqueIdentifier>{2d204595-0b75-4d2e-89f2-01497818dee4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="stm32\FreeRTOS">
       <UniqueIdentifier>{d2e5c0c5-3e5f-4204-bef1-2c39db8aa282}</UniqueIdentifier>
     </Filter>
@@ -85,6 +82,9 @@
     </Filter>
     <Filter Include="stm32\FreeRTOS\stm32">
       <UniqueIdentifier>{bf3cb0c2-011d-4d72-9966-d268d55903d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="raspberry\windows_specific_code">
+      <UniqueIdentifier>{2d204595-0b75-4d2e-89f2-01497818dee4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -141,9 +141,6 @@
     </ClCompile>
     <ClCompile Include="..\raspberry\uart-Tx\uart-Tx.c">
       <Filter>raspberry\Tx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\raspberry\wiringpi_simulator_for_windows\wiringSerial.c">
-      <Filter>raspberry\wiringpi_simulator_for_windows</Filter>
     </ClCompile>
     <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c">
       <Filter>stm32\Drivers\HAL</Filter>
@@ -244,6 +241,15 @@
     <ClCompile Include="..\stm32\Src\system_stm32f1xx.c">
       <Filter>stm32</Filter>
     </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt.c">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_long.c">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringSerial.c">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h">
@@ -308,9 +314,6 @@
     </ClInclude>
     <ClInclude Include="..\protobuf\reflow_oven.pb.h">
       <Filter>protobuf</Filter>
-    </ClInclude>
-    <ClInclude Include="..\raspberry\wiringpi_simulator_for_windows\wiringSerial.h">
-      <Filter>raspberry\wiringpi_simulator_for_windows</Filter>
     </ClInclude>
     <ClInclude Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h">
       <Filter>stm32\Drivers\HAL</Filter>
@@ -491,6 +494,12 @@
     </ClInclude>
     <ClInclude Include="..\stm32\Inc\stm32f1xx_it.h">
       <Filter>stm32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raspberry\windows_specific_code\getopt.h">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringSerial.h">
+      <Filter>raspberry\windows_specific_code</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
