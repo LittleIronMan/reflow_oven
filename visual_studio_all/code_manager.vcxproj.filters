@@ -26,36 +26,6 @@
     <Filter Include="nrc-safe-uart">
       <UniqueIdentifier>{c2d01b52-fa84-4ad1-93a0-126a1beaae30}</UniqueIdentifier>
     </Filter>
-    <Filter Include="nrc-money-logic\windows">
-      <UniqueIdentifier>{fa4105c8-1191-4321-944f-e68218028266}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-money-logic\stm32">
-      <UniqueIdentifier>{f3918f66-4b60-4a13-bd93-c78a5ca939d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-print\stm32">
-      <UniqueIdentifier>{49a80fbf-e947-4f01-8664-56092ffcfae1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-print\rpi_Rx">
-      <UniqueIdentifier>{c0d15eb2-cfeb-407a-be39-6343770d9e63}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-print\rpi_Tx">
-      <UniqueIdentifier>{8f2d5138-50a2-425f-826c-94452dd7c44a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-print\windows">
-      <UniqueIdentifier>{68ee08b8-dfdb-4d14-90db-e649362ffcdb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-safe-uart\windows">
-      <UniqueIdentifier>{c00477d2-2615-4331-a2de-bea75ac688ce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-safe-uart\stm32">
-      <UniqueIdentifier>{c0fec50b-49b8-4ebb-a62a-6c246e14f56f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-safe-uart\rpi_Rx">
-      <UniqueIdentifier>{674f3d83-5720-4816-82a7-47610f506f02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="nrc-safe-uart\rpi_Tx">
-      <UniqueIdentifier>{6111dfd2-ad58-45c4-8b63-d910831331f4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="protobuf\nanopb">
       <UniqueIdentifier>{bf11f96c-ada2-48cc-b92b-795801044ef0}</UniqueIdentifier>
     </Filter>
@@ -91,26 +61,8 @@
     <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c">
       <Filter>nrc-money-logic</Filter>
     </ClCompile>
-    <ClCompile Include="..\nrc-money-logic\platform_stm32\nrc-money-logic_config.c">
-      <Filter>nrc-money-logic\stm32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.c">
-      <Filter>nrc-money-logic\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\nrc-print\nrc-print.c">
       <Filter>nrc-print</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nrc-safe-uart\config_rpi_uart-Rx\nrc-safe-uart_config.c">
-      <Filter>nrc-safe-uart\rpi_Rx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nrc-safe-uart\config_rpi_uart-Tx\nrc-safe-uart_config.c">
-      <Filter>nrc-safe-uart\rpi_Tx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nrc-safe-uart\config_stm32\nrc-safe-uart_config.c">
-      <Filter>nrc-safe-uart\stm32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.c">
-      <Filter>nrc-safe-uart\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c">
       <Filter>nrc-safe-uart</Filter>
@@ -255,38 +207,8 @@
     <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h">
       <Filter>nrc-money-logic</Filter>
     </ClInclude>
-    <ClInclude Include="..\nrc-money-logic\platform_stm32\nrc-money-logic_config.h">
-      <Filter>nrc-money-logic\stm32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-money-logic\platform_windows\nrc-money-logic_config.h">
-      <Filter>nrc-money-logic\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\nrc-print\nrc-print.h">
       <Filter>nrc-print</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-print\config_windows\nrc-print_config.h">
-      <Filter>nrc-print\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-print\config_stm32\nrc-print_config.h">
-      <Filter>nrc-print\stm32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-print\config_rpi_uart-Tx\nrc-print_config.h">
-      <Filter>nrc-print\rpi_Tx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-print\config_rpi_uart-Rx\nrc-print_config.h">
-      <Filter>nrc-print\rpi_Rx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-safe-uart\config_rpi_uart-Rx\nrc-safe-uart_config.h">
-      <Filter>nrc-safe-uart\rpi_Rx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-safe-uart\config_rpi_uart-Tx\nrc-safe-uart_config.h">
-      <Filter>nrc-safe-uart\rpi_Tx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-safe-uart\config_stm32\nrc-safe-uart_config.h">
-      <Filter>nrc-safe-uart\stm32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nrc-safe-uart\config_windows\nrc-safe-uart_config.h">
-      <Filter>nrc-safe-uart\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h">
       <Filter>nrc-safe-uart</Filter>

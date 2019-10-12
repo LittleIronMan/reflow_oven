@@ -76,8 +76,8 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\windows_specific_code;..\..\..\other;..\..\..\nrc-print;..\..\..\nrc-print\config_rpi_uart-Tx;..\..\..\nrc-safe-uart;..\..\..\nrc-safe-uart\config_rpi_uart-Tx;..\..\uart-Tx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\windows_specific_code;..\..\..\other;..\..\..\nrc-print;..\..\..\nrc-safe-uart;..\..\..\nrc-safe-uart\config_rpi_uart-Tx;..\..\uart-Tx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NRC_WINDOWS_SIMULATOR;NRC_RPI_UART_TX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +126,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\nrc-print\nrc-print.c" />
-    <ClCompile Include="..\..\..\nrc-safe-uart\config_rpi_uart-Tx\nrc-safe-uart_config.c" />
     <ClCompile Include="..\..\..\nrc-safe-uart\nrc-safe-uart.c" />
     <ClCompile Include="..\..\..\other\crc_software_as_stm32_hardware.c" />
     <ClCompile Include="..\..\windows_specific_code\getopt.c" />
@@ -135,9 +134,7 @@
     <ClCompile Include="..\uart-Tx.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\nrc-print\config_rpi_uart-Tx\nrc-print_config.h" />
     <ClInclude Include="..\..\..\nrc-print\nrc-print.h" />
-    <ClInclude Include="..\..\..\nrc-safe-uart\config_rpi_uart-Tx\nrc-safe-uart_config.h" />
     <ClInclude Include="..\..\..\nrc-safe-uart\nrc-safe-uart.h" />
     <ClInclude Include="..\..\..\other\base64.h" />
     <ClInclude Include="..\..\..\other\crc_software_as_stm32_hardware.h" />

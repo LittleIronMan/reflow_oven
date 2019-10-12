@@ -4,12 +4,30 @@
 #include <stdio.h> // printf
 #include <stdarg.h> // va_list
 #include <stdint.h> // uint8_t, uint16_t etc...
-#include <nrc-print_config.h> // NRC_LOG_LEVEL, NRC_LOG_NEED_FFLUSH
 
 #define NRC_LOG_DISABLED 0
 #define NRC_LOG_LEVEL_DEFAULT 1
 #define NRC_LOG_LEVEL_DEBUG 2
 #define NRC_LOG_LEVEL_VERBATIM 3
+// NRC_LOG_LEVEL_DYNAMIC - если этот макрос определен и равен 1, то логи фильтруются программно глобальной переменной logLevelGlobal
+
+// здесь определены все настройки логов для C-программ в проекте NRC
+#ifdef NRC_RPI_UART_TX
+	//#ifdef NRC_WINDOWS_SIMULATOR
+	#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEFAULT
+	#define NRC_LOG_LEVEL_DYNAMIC 1
+	#define NRC_LOG_NEED_FFLUSH
+#elif NRC_RPI_UART_RX
+	//#ifdef NRC_WINDOWS_SIMULATOR
+	#define NRC_LOG_LEVEL NRC_LOG_DISABLED
+	#define NRC_LOG_LEVEL_DYNAMIC 1
+	#define NRC_LOG_NEED_FFLUSH
+#elif NRC_STM32
+	//#ifdef NRC_WINDOWS_SIMULATOR
+	#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEBUG
+#else
+	#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEFAULT
+#endif
 
 #ifndef NRC_LOG_LEVEL
 #define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEFAULT

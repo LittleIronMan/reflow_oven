@@ -7,7 +7,7 @@
 #include "nrc-safe-uart.h"
 #include "nrc-print.h"
 #include "base64.h" // base64(), unbase64()
-#include "nrc-safe-uart_config.h" // UART_TRANSMIT_BUF_SIZE
+#include "nrc-safe-uart.h" // UART_TRANSMIT_BUF_SIZE
 
 #include <stdlib.h> // atoi
 #include <getopt.h> // getopt(), getopt_long() + если проект компилируется под windows, то еще и переменные optarg, optind, opterr, optopt. Для linux эти переменные определены в unistd.h
@@ -112,6 +112,11 @@ int main(int argc, char *argv[])
 
 		transmitMsg(dataType, decodedData, decodedLen, uartTransmitBuf);
 	}
+
+#ifdef NRC_WINDOWS_SIMULATOR
+	printf("Press Any Key to Continue\n");
+	getch();
+#endif
 
 	return 0;
 }
