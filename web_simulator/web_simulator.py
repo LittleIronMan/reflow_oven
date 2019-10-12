@@ -4,8 +4,12 @@
 # from __future__ import absolute_import, division, unicode_literals, print_function
 
 import base64
-import reflow_oven_pb2
 import subprocess
+
+import importlib.util
+spec = importlib.util.spec_from_file_location("reflow_oven_pb2", "../protobuf/reflow_oven_pb2.py")
+reflow_oven_pb2 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(reflow_oven_pb2)
 
 isLinux = False
 isWindows = False
@@ -77,7 +81,7 @@ allKeys["g"] = ["get_state", "Получить от контроллера ег�
 
 sendProg = "../uart-speaker"
 if isWindows:
-	sendProg += ".exe"
+	sendProg = "../raspberry/uarr-Tx/Release/uart-Tx_simulator.exe"
 
 def handleKey(key):
 	global cmdId
