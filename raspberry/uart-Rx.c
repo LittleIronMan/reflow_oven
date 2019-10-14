@@ -17,21 +17,25 @@
 #include <unistd.h> // optarg
 #endif
 
+const uint8_t errMsgType = 0; // PB_MsgType_UNDEFINED
+
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
 int uartDescriptor;
 
 unsigned char logLevelGlobal = NRC_LOG_LEVEL_DEFAULT;
 
-long receiveMsg(uint8_t contentBuf[]);
+uint8_t receiveMsg(uint8_t contentBuf[], uint16_t *contentLen);
 bool isFileExists(const char *name);
 
 typedef enum {
 	NO_MSG = 0,
 	MSG_BEGIN,
+	MSG_TYPE,
 	CONTENT,
 	MSG_END,
-	CHECK_SUM
+	CHECK_SUM,
+	MSG_SUCCESFULL_RECEIVED
 } MessageReceiverState;
 
 uint8_t uartReceiveBuf[UART_RECEIVE_BUF_SIZE];
@@ -74,28 +78,32 @@ int main(int argc, char *argv[])
 
 	nrcLogV("Start loop");
 
-	uint8_t msgContent[256];
+	uint8_t pbEncodedMsgContent[UART_RECEIVE_BUF_SIZE];
+	uint8_t msgType = errMsgType;
+	uint16_t msgLen = 0;
 
 	while (true) {
-		long msgLen = receiveMsg(msgContent);
-		if (msgLen < 0) {
+		msgType = receiveMsg(pbEncodedMsgContent, &msgLen);
+		if (msgType == errMsgType) {
 			nrcLog("Wrong message");
 		}
 		else {
+			nrcLogD("Received message with type %d and length %d bytes!", msgType, msgLen);
 			int b64Len = 0;
-			char *b64encoded = base64(msgContent, msgLen, &b64Len);
-			printf("%s\n", b64encoded); fflush(stdout);
+			char *b64encoded = base64(pbEncodedMsgContent, msgLen, &b64Len);
+			nrcLogD("base64 content: %s", b64encoded);
 		}
 	}
 	//close(fifoDescriptor); 
 }
 
-long receiveMsg(uint8_t contentBuf[])
+uint8_t receiveMsg(uint8_t contentBuf[], uint16_t *contentLen)
 {
 	uint16_t byteCounter = 0; // счетчик принятых байтов
-	uint16_t contentLen = 0; // ожидаемое количество байтов полезного контента в пакете
 	uint8_t receivedByte;
 	MessageReceiverState state = NO_MSG;
+	uint8_t msgType = errMsgType;
+
 	while (1) {
 		// побайтно читаем данные из потока, и ищем упакованные сообщения
 		receivedByte = serialGetchar(uartDescriptor);
@@ -105,8 +113,8 @@ long receiveMsg(uint8_t contentBuf[])
 				uartReceiveBuf[byteCounter] = receivedByte;
 			}
 			else {
-				nrcLog("Error: receive buffer overflow");
-				return -1;
+				nrcLogD("Error: receive buffer overflow");
+				return errMsgType;
 			}
 		}
 
@@ -121,33 +129,42 @@ long receiveMsg(uint8_t contentBuf[])
 			if (byteCounter == 3) {
 				if (receivedByte == '^') {
 					state++;
-					contentLen = *((uint16_t*)&uartReceiveBuf[1]);
-					if (contentLen > UART_RECEIVE_BUF_SIZE) {
-						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", UART_RECEIVE_BUF_SIZE, contentLen);
-						return -1;
+					*contentLen = *((uint16_t*)&uartReceiveBuf[1]);
+					if (*contentLen > UART_RECEIVE_BUF_SIZE) {
+						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", UART_RECEIVE_BUF_SIZE, *contentLen);
+						return errMsgType;
 					}
 					else {
 						//nrcLogV("Package begin detected: msg lenght == %d", contentLen);
 					}
 				}
 				else {
-					nrcLog("Wrong package");
-					nrcLogD("Because: bad begin");
-					return -1;
+					nrcLogD("Wrong package: bad begin");
+					return errMsgType;
+				}
+			}
+			break; }
+		case MSG_TYPE: {
+			if (byteCounter == 4) {
+				if (receivedByte != errMsgType) {
+					state++;
+				}
+				else {
+					nrcLogD("Wrong package: undefined message type");
+					return errMsgType;
 				}
 			}
 			break; }
 		case CONTENT: {
-			if (byteCounter == 4 + contentLen) {
+			if (byteCounter == 5 + *contentLen) {
 				if (receivedByte == '$') {
 					state++;
 					//nrcLogV("Package end detected");
 				}
 				else {
 					state = NO_MSG;
-					nrcLog("Wrong package")
-						nrcLogD("Because: bad message end");
-					return -1;
+					nrcLogD("Wrong package: bad message end");
+					return errMsgType;
 				}
 			}
 			break; }
@@ -158,30 +175,31 @@ long receiveMsg(uint8_t contentBuf[])
 			}
 			break; }
 		case CHECK_SUM: {
-			if ((byteCounter & 0x0003) == 3) { // последний байт пакета
+			if ((byteCounter & 0x0003) == 3) { // последний байт всего пакета
 				// перепроверяем пакет целиком, включая контрольную сумму
-				uint8_t msgType = getMsgType(uartReceiveBuf, byteCounter + 1);
-				if (msgType == 0 /* PB_MsgType_UNDEFINED */) {
+				msgType = getMsgType(uartReceiveBuf, byteCounter + 1);
+				if (msgType == errMsgType) {
 					state = NO_MSG;
-					nrcLog("Wrong package");
-					nrcLogD("Because: bad checksum");
-					return -1;
+					nrcLogD("Wrong package: bad checksum... or something else");
+					return errMsgType;
 				}
 				else {
-					long validContentLen = getMsgContent(contentBuf, uartReceiveBuf, byteCounter + 1);
-					nrcLogD("Package received!");
-					contentBuf[validContentLen] = '\0';
-					nrcLogV("Received content: %s", contentBuf);
-					return validContentLen;
+					state++; // MSG_SUCCESFULL_RECEIVED
 				}
 			}
 			break; }
 		default: break;
 		}
 
+		if (state == MSG_SUCCESFULL_RECEIVED) {
+			uint8_t *dataBegin = getMsgContent(uartReceiveBuf, contentLen);
+			memcpy(contentBuf, dataBegin, *contentLen);
+			return msgType;
+		}
+
 		byteCounter++;
 	}
-	return -1;
+	return errMsgType;
 }
 
 bool isFileExists(const char *file)

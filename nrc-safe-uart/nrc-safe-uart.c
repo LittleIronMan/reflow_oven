@@ -84,8 +84,8 @@ uint8_t* getMsgContent(uint8_t uartMsgBuf[], uint16_t *contentLen)
 long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[])
 {
 	// проверяем что данные, будучи упакованными, "влезут" в массив uartTransmitBuf
-	uint8_t rest = ((contentLen + 1) & 0x3); // остаток от деления на 4
-	long msgLen = 4 + contentLen + 1 + (rest ? (4 - rest) : 0) + 4;
+	uint8_t rest = ((5 + contentLen + 1) & 0x3); // остаток от деления на 4
+	long msgLen = 5 + contentLen + 1 + (rest ? (4 - rest) : 0) + 4;
 	if (msgLen > UART_TRANSMIT_BUF_SIZE) {
 		nrcLog("Error: Too large bytesCount for transmit, current uartTransmitBufSize == %d, but required ", UART_TRANSMIT_BUF_SIZE, msgLen);
 		return 0;
