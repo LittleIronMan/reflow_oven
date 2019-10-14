@@ -3,21 +3,19 @@
 #include <errno.h> // errno
 #include <fcntl.h>  // O_RDONLY, O_WRONLY, etc.
 #include <sys/stat.h> // stat() - used in isFileExists()
-//#include <sys/types.h> 
-#include <unistd.h> // read(), open(), write(), pipe() etc.
 
 #include <wiringSerial.h>
 
 #include "nrc-safe-uart.h" // getMsgContent()
-#include "nrc-safe-uart_config.h" // UART_RECEIVE_BUF_SIZE
 #include <stdio.h> // printf, stdout etc.
 #include "nrc-print.h" // nrcLog?() nrcPrintf?()
 #include "base64.h" // base64(), unbase64()
-#include "reflow_oven.pb.h"
 
 #include <stdlib.h> // atoi
-#include <unistd.h> // getopt(), getopt_long()
-#include <getopt.h> // ^
+#include <getopt.h> // getopt(), getopt_long()
+#ifndef NRC_WINDOWS_SIMULATOR
+#include <unistd.h> // optarg
+#endif
 
 char *serialPortName = "/dev/ttyAMA0";
 unsigned long serialBaudRate = 115200;
@@ -162,8 +160,8 @@ long receiveMsg(uint8_t contentBuf[])
 		case CHECK_SUM: {
 			if ((byteCounter & 0x0003) == 3) { // последний байт пакета
 				// перепроверяем пакет целиком, включая контрольную сумму
-				MsgType msgType = getMsgType(uartReceiveBuf, byteCounter + 1);
-				if (msgType == MsgType_UNDEFINED) {
+				uint8_t msgType = getMsgType(uartReceiveBuf, byteCounter + 1);
+				if (msgType == 0 /* PB_MsgType_UNDEFINED */) {
 					state = NO_MSG;
 					nrcLog("Wrong package");
 					nrcLogD("Because: bad checksum");
