@@ -86,7 +86,7 @@ void money_defaultTask(void const *argument)
 void money_taskMsgReceiver(void const * argument)
 {
 	PB_Command RxCmd;
-	nrcLogD("Start Messenger");
+	nrcLogD("Start msgReceiver");
 	for (;;) {
 		xSemaphoreTake(RxBuf.sem, portMAX_DELAY);
 		RxBuf.state = BufState_USED_BY_PROC; // устанавливаем флаг того что сейчас буфер будет использоваться процессором
@@ -130,6 +130,7 @@ void money_taskMsgReceiver(void const * argument)
 // задача которая сериализует данные для отправки, упаковывает их для последовательного протокола и, собственно, отправляет их с помощью DMA
 void money_taskMsgSender(void const * argument)
 {
+	nrcLogD("Start msgSender");
 	uint8_t pbEncodedTxData[PB_Response_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
 	PB_Response response;
 	for(;;) {
@@ -142,12 +143,17 @@ void money_taskMsgSender(void const * argument)
 			xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
 			TxBuf.state = BufState_USED_BY_PROC;
 			long result = transmitMsg(PB_MsgType_RESPONSE, pbEncodedTxData, ostream.bytes_written, TxBuf.arr);
-			if (result == -2) {
+			if (result == 0) {
 				nrcLogD("Error sending data");
 			}
 			else {
 				nrcLogD("Message successful transmitted");
 			}
+#ifdef NRC_WINDOWS_SIMULATOR
+			xSemaphoreGive(TxBuf.sem);
+#else
+			// семафор освобождается в прерывании
+#endif
 		}
 	}
 }
@@ -335,6 +341,7 @@ void money_init()
 	// инициализация буферов приема/передачи по uart
 	RxBuf.sem = xSemaphoreCreateBinary();
 	TxBuf.sem = xSemaphoreCreateBinary();
+	xSemaphoreGive(TxBuf.sem); // семафор для буфера передачи по умолчанию не занят
 
 	// задаем температурный профиль
 	PB_TempMeasure *tp = cd.tempProfile.data;
