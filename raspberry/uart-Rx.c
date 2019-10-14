@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}  
 	else {
-		nrcLog("Serial port opened successful!");
+		nrcLogD("Serial port opened successful!");
 	}
 
 	nrcLogV("Start loop");
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	while (true) {
 		msgType = receiveMsg(pbEncodedMsgContent, &msgLen);
 		if (msgType == errMsgType) {
-			nrcLog("Wrong message");
+			nrcLogD("Wrong message");
 		}
 		else {
 			nrcLogD("Received message with type %d and length %d bytes!", msgType, msgLen);
@@ -131,7 +131,7 @@ uint8_t receiveMsg(uint8_t contentBuf[], uint16_t *contentLen)
 					state++;
 					*contentLen = *((uint16_t*)&uartReceiveBuf[1]);
 					if (*contentLen > UART_RECEIVE_BUF_SIZE) {
-						nrcLog("Error: too large packet, uartReceiveBufSize == %d, but required %d", UART_RECEIVE_BUF_SIZE, *contentLen);
+						nrcLogD("Error: too large packet, uartReceiveBufSize == %d, but required %d", UART_RECEIVE_BUF_SIZE, *contentLen);
 						return errMsgType;
 					}
 					else {
@@ -209,7 +209,7 @@ bool isFileExists(const char *file)
 }
 
 
-//для примера код чтения из FIFO, просто чтобы был
+//для примера код чтения из FIFO для linux, просто чтобы был
 //fifoDescripror = open(myfifo, O_RDONLY); // Open FIFO for Read only
 //read(fifoDescripror, arr, sizeof(arr1)); // Read from FIFO
 //nrcLog("User2: %s", arr); // Print the read message

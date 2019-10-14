@@ -229,7 +229,7 @@ DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 		PIPE_WAIT |					// blocking mode
 		(false ? FILE_FLAG_FIRST_PIPE_INSTANCE : 0), // is not needed but forces CreateNamedPipe(..) to fail if the pipe already exists...
 		1,							// max. instances
-		UART_RECEIVE_BUF_SIZE,		// output buffer size
+		0,							// output buffer size
 		UART_RECEIVE_BUF_SIZE,		// input buffer size
 		NMPWAIT_USE_DEFAULT_WAIT,	// client time-out
 		NULL);						// default security attribute

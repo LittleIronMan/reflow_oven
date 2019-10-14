@@ -133,8 +133,8 @@
     <ClCompile Include="..\protobuf\nanopb\pb_decode.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_encode.c" />
     <ClCompile Include="..\protobuf\reflow_oven.pb.c" />
-    <ClCompile Include="..\raspberry\uart-Rx\uart-Rx.c" />
-    <ClCompile Include="..\raspberry\uart-Tx\uart-Tx.c" />
+    <ClCompile Include="..\raspberry\uart-Rx.c" />
+    <ClCompile Include="..\raspberry\uart-Tx.c" />
     <ClCompile Include="..\raspberry\windows_specific_code\getopt.c" />
     <ClCompile Include="..\raspberry\windows_specific_code\getopt_long.c" />
     <ClCompile Include="..\raspberry\windows_specific_code\wiringSerial.c" />
@@ -171,6 +171,7 @@
     <ClCompile Include="..\stm32\Src\stm32f1xx_hal_msp.c" />
     <ClCompile Include="..\stm32\Src\stm32f1xx_it.c" />
     <ClCompile Include="..\stm32\Src\system_stm32f1xx.c" />
+    <ClCompile Include="..\stm32_simulator\main.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h" />
@@ -246,6 +247,7 @@
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h" />
+    <ClInclude Include="..\stm32_simulator\FreeRTOSConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\protobuf\generate_code.py" />
@@ -253,8 +255,8 @@
     <None Include="..\protobuf\reflow_oven.proto" />
     <None Include="..\protobuf\reflow_oven_pb2.py" />
     <None Include="..\raspberry\compile_all.py" />
-    <None Include="..\raspberry\uart-Rx\rand_temp_generator.py" />
-    <None Include="..\raspberry\uart-Tx\uart-Tx_test.py" />
+    <None Include="..\raspberry\rand_temp_generator.py" />
+    <None Include="..\raspberry\uart-Tx_test.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

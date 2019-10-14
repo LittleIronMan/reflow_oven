@@ -125,54 +125,7 @@ uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount) {
 		}
 		return bytesCount;
 	#else // windows
-		HANDLE hPipe;
 		LPTSTR pipename = TEXT("\\\\.\\pipe\\nrc_rx_pipe");
-		while (1)
-		{
-			hPipe = CreateFile(
-				pipename,   // pipe name 
-				GENERIC_WRITE,	// write access
-				0,              // no sharing 
-				NULL,           // default security attributes
-				OPEN_EXISTING,  // opens existing pipe 
-				0,              // default attributes 
-				NULL);          // no template file 
-
-			// Break if the pipe handle is valid. 
-			if (hPipe != INVALID_HANDLE_VALUE) {
-				break;
-			}
-			// Exit if an error other than ERROR_PIPE_BUSY occurs. 
-			if (GetLastError() != ERROR_PIPE_BUSY) {
-				nrcLogD("Could not open pipe. GLE=%d", GetLastError());
-				return 0;
-			}
-			// All pipe instances are busy, so wait for 5 seconds. 
-			uint16_t timeout = 5;
-			if (!WaitNamedPipe(pipename, timeout * 1000))
-			{
-				nrcLogD("Could not open pipe: %d second wait timed out.", timeout);
-				return 0;
-			}
-		}
-
-		// Send a message to the pipe server. 
-		DWORD countWrittenBytes = 0;
-		nrcLogD("Sending %d byte message", bytesCount);
-		BOOL fSuccess = WriteFile(
-			hPipe, // pipe handle 
-			data, // message 
-			bytesCount, // message length 
-			&countWrittenBytes, // bytes written 
-			NULL); // not overlapped 
-		if (!fSuccess)
-		{
-			nrcLog("WriteFile to pipe failed. GLE=%d", GetLastError());
-			return 0;
-		}
-		CloseHandle(hPipe);
-
-		return (uint16_t)countWrittenBytes;
 	#endif
 #elif NRC_RPI_UART_RX
 	return 0; // no action
@@ -190,7 +143,58 @@ uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount) {
 			return 0;
 		}
 	#else // windows
-		return 0;
+		LPTSTR pipename = TEXT("\\\\.\\pipe\\nrc_tx_pipe");
 	#endif
+#endif
+
+// windows simulator - transmit
+#if (defined(NRC_WINDOWS_SIMULATOR) && (defined(NRC_STM32) || defined(NRC_RPI_UART_TX)))
+	HANDLE hPipe;
+	while (1)
+	{
+		hPipe = CreateFile(
+			pipename,   // pipe name 
+			GENERIC_WRITE,	// write access
+			0,              // no sharing 
+			NULL,           // default security attributes
+			OPEN_EXISTING,  // opens existing pipe 
+			0,              // default attributes 
+			NULL);          // no template file 
+
+		// Break if the pipe handle is valid. 
+		if (hPipe != INVALID_HANDLE_VALUE) {
+			break;
+		}
+		// Exit if an error other than ERROR_PIPE_BUSY occurs. 
+		if (GetLastError() != ERROR_PIPE_BUSY) {
+			nrcLogD("Could not open pipe. GLE=%d", GetLastError());
+			return 0;
+		}
+		// All pipe instances are busy, so wait for 5 seconds. 
+		uint16_t timeout = 5;
+		if (!WaitNamedPipe(pipename, timeout * 1000))
+		{
+			nrcLogD("Could not open pipe: %d second wait timed out.", timeout);
+			return 0;
+		}
+	}
+
+	// Send a message to the pipe server. 
+	DWORD countWrittenBytes = 0;
+	nrcLogD("Sending %d byte message", bytesCount);
+	BOOL fSuccess = WriteFile(
+		hPipe, // pipe handle 
+		data, // message 
+		bytesCount, // message length 
+		&countWrittenBytes, // bytes written 
+		NULL); // not overlapped 
+	if (!fSuccess)
+	{
+		nrcLogD("WriteFile to pipe failed. GLE=%d", GetLastError());
+		return 0;
+	}
+	CloseHandle(hPipe);
+
+	return (uint16_t)countWrittenBytes;
 #endif
 }
