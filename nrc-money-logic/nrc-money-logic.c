@@ -13,6 +13,8 @@
 #ifdef NRC_WINDOWS_SIMULATOR
 #include <windows.h>
 #define osDelay(millisec) vTaskDelay(millisec)
+#elif NRC_STM32
+#include "main.h"
 #endif
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, 0, 0 };
@@ -45,11 +47,11 @@ void money_cmdManagerTask(void const *argument)
 	nrcLogD("Start cmdManagerTask");
 	PB_Command cmd;
 	for(;;) {
-		popItemFromQueue(&commandQueue, &cmd);
+		popItemFromQueue(&commandQueue, (uint8_t*)&cmd);
 		nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
 		// сразу посылаем ответ на команду
 		PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
-		addItemToQueue(&responseQueue, &response, cmd.priority);
+		addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority);
 	}
 }
 
@@ -115,7 +117,7 @@ void money_taskMsgReceiver(void const * argument)
 		// добавляем новую команду в очередь команд
 		if (decodeStatus) {
 			if (msgType == PB_MsgType_CMD) {
-				bool success = addItemToQueue(&commandQueue, &RxCmd, RxCmd.priority);
+				bool success = addItemToQueue(&commandQueue, (uint8_t*)&RxCmd, RxCmd.priority);
 				if (!success){
 					nrcLogD("Error: Failed to add command to queue");
 				}
@@ -134,7 +136,7 @@ void money_taskMsgSender(void const * argument)
 	uint8_t pbEncodedTxData[PB_Response_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
 	PB_Response response;
 	for(;;) {
-		popItemFromQueue(&responseQueue, &response);
+		popItemFromQueue(&responseQueue, (uint8_t*)&response);
 
 		pb_ostream_t ostream = pb_ostream_from_buffer(pbEncodedTxData, sizeof(pbEncodedTxData));
 		bool status = pb_encode(&ostream, PB_Response_fields, &response);
@@ -161,7 +163,7 @@ void money_taskMsgSender(void const * argument)
 // обработчик прерывания по приему очередной порции байт
 // частично позаимствовано отсюда:
 // https://github.com/akospasztor/stm32-dma-uart/blob/master/Src/main.c
-uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
+void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 {
 	uint16_t start, length;
 	static bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер

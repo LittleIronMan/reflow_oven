@@ -2,6 +2,10 @@
 #include "nrc-print.h"
 #include <string.h>
 
+#if (defined(NRC_STM32) && !defined(NRC_WINDOWS_SIMULATOR))
+#include "nrc-money-logic.h" // TxBuf
+#endif
+
 uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t type, uint8_t msgContentBuf[], uint16_t contentNumOfBytes)
 {
 	uint16_t offset = 0;

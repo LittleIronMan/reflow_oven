@@ -439,7 +439,7 @@ void HAL_UART_RxHalfCallback(UART_HandleTypeDef *huart)
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == USART1) {
-		TxBuf.state = BufState_NEED_UPDATE;
+		TxBuf.state = BufState_USED_BY_PROC;
 		xSemaphoreGiveFromISR(TxBuf.sem, NULL);
 	}
 }

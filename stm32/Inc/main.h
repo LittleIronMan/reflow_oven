@@ -32,7 +32,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "money_logic.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -43,6 +42,7 @@ extern "C" {
 /* USER CODE BEGIN EC */
 extern CRC_HandleTypeDef hcrc;
 extern UART_HandleTypeDef huart1;
+extern SPI_HandleTypeDef hspi3;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

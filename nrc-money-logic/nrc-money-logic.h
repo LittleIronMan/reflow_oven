@@ -64,18 +64,18 @@ extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по U
 						TxBuf; // буфер данных, передаваемых по UART
 extern NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
 
-void money_init();
+void money_init(void);
 void money_cmdManagerTask(void const* argument);
 void money_defaultTask(void const *argument);
 void money_taskMsgReceiver(void const * argument);
 void money_taskMsgSender(void const * argument);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
-void money_initReceiverIRQ();
-void money_initSender();
+void money_initReceiverIRQ(void);
+void money_initSender(void);
 float oven_getTemp(uint16_t *receivedData, uint8_t *err);
-uint32_t getCurrentTime();
+uint32_t getCurrentTime(void);
 
-uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
+void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 
 bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
