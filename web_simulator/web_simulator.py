@@ -57,27 +57,27 @@ def keypressThread():
 
 allKeys = dict()
 
-cmdStart = reflow_oven_pb2.OvenCommand()
-cmdStart.type = reflow_oven_pb2.OvenCommand.Type.START
+cmdStart = reflow_oven_pb2.PB_Command()
+cmdStart.cmdType = reflow_oven_pb2.PB_CmdType.START
 cmdStart.priority = 2
 
-cmdStop = reflow_oven_pb2.OvenCommand()
-cmdStop.type = reflow_oven_pb2.OvenCommand.Type.STOP
+cmdStop = reflow_oven_pb2.PB_Command()
+cmdStop.cmdType = reflow_oven_pb2.PB_CmdType.STOP
 cmdStop.priority = 4
 
-cmdProfile = reflow_oven_pb2.OvenCommand()
-cmdProfile.type = reflow_oven_pb2.OvenCommand.Type.GET_TEMP_PROFILE
+cmdProfile = reflow_oven_pb2.PB_Command()
+cmdProfile.cmdType = reflow_oven_pb2.PB_CmdType.GET_TEMP_PROFILE
 cmdProfile.priority = 1
 
-cmdState = reflow_oven_pb2.OvenCommand()
-cmdState.type = reflow_oven_pb2.OvenCommand.Type.GET_STATE
+cmdState = reflow_oven_pb2.PB_Command()
+cmdState.cmdType = reflow_oven_pb2.PB_CmdType.GET_STATE
 cmdState.priority = 1
 #cmd.ParseFromString(base64.b64decode(b64str))
 
-allKeys["r"] = ["run", "Запуск программы нагревания", reflow_oven_pb2.MsgType.CMD, cmdStart]
-allKeys["s"] = ["stop", "Остановка программы", reflow_oven_pb2.MsgType.CMD, cmdStop]
-allKeys["p"] = ["profile", "Получить от контроллера термопрофиль", reflow_oven_pb2.MsgType.CMD, cmdProfile]
-allKeys["g"] = ["get_state", "Получить от контроллера его состояние", reflow_oven_pb2.MsgType.CMD, cmdState]
+allKeys["r"] = ["run", "Запуск программы нагревания", reflow_oven_pb2.PB_MsgType.CMD, cmdStart]
+allKeys["s"] = ["stop", "Остановка программы", reflow_oven_pb2.PB_MsgType.CMD, cmdStop]
+allKeys["p"] = ["profile", "Получить от контроллера термопрофиль", reflow_oven_pb2.PB_MsgType.CMD, cmdProfile]
+allKeys["g"] = ["get_state", "Получить от контроллера его состояние", reflow_oven_pb2.PB_MsgType.CMD, cmdState]
 
 sendProg = "../uart-speaker"
 if isWindows:

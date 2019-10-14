@@ -195,7 +195,7 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 			}
 			else {
 				xSemaphoreGiveFromISR(RxBuf.sem, NULL); // буфером можно пользоваться
-				nrcLog("Received %d bytes", RxBuf.countBytes);
+				nrcLogD("NRC_UART_RxEvent: Received %d bytes", RxBuf.countBytes);
 			}
 		}
 	}
@@ -359,13 +359,13 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
 		*moreImportantItem = NULL,
 		*iter;
 	uint8_t i = 0;
-	bool success = false;
+	bool success = false, needUpdateCounter = false;
 
 	xSemaphoreTake(queue->mutex, portMAX_DELAY); // очередь блокируется пока добавляется новый элемент
 
 	// сначала ищем в буфере свободное место для нового элемента
 	for (; i < queue->maxItemsCount; i++) {
-		if (!queue->items[i].isActual) { freePlace = &queue->items[i]; break; }
+		if (!queue->items[i].isActual) { freePlace = &queue->items[i]; needUpdateCounter = true; break; }
 	}
 	// затем ищем ближайший элемент с более высоким приоритетом
 	for (iter = queue->front; iter && iter->priority >= newPriority; iter = iter->next) {
@@ -389,6 +389,10 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
 			freePlace->next = NULL;
 			// обновляем голову очереди
 			queue->front = freePlace;
+		}
+		freePlace->isActual = true;
+		if (needUpdateCounter) {
+			xSemaphoreGive(queue->semCounter); // увеличиваем количество актуальных элементов в очереди
 		}
 		success = true;
 	}
