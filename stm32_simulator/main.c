@@ -129,13 +129,13 @@ int main(void)
 	// ------->>>> MONEY START <<<<-------
 	money_init();
 	TaskHandle_t defaultTask;
-	xTaskCreate(money_defaultTask, "defaultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &defaultTask);
+	xTaskCreate(money_defaultTask, "defaultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &defaultTask);
 	TaskHandle_t cmdManagerTask;
-	xTaskCreate(money_cmdManagerTask, "cmdManagerTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 4, &cmdManagerTask);
+	xTaskCreate(money_cmdManagerTask, "cmdManagerTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &cmdManagerTask);
 	TaskHandle_t receiverTask;
-	xTaskCreate(money_taskMsgReceiver, "receiverTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &receiverTask);
+	xTaskCreate(money_taskMsgReceiver, "receiverTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &receiverTask);
 	TaskHandle_t senderTask;
-	xTaskCreate(money_taskMsgSender, "senderTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &senderTask);
+	xTaskCreate(money_taskMsgSender, "senderTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, &senderTask);
 
 	money_initReceiverIRQ();
 	// ------->>>> MONEY FINISH <<<<-------

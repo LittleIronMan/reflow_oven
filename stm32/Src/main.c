@@ -159,9 +159,11 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  osThreadDef(receiverTask, money_taskMsgReceiver, osPriorityIdle, 0, 128);
+  osThreadDef(cmdManagerTask, money_cmdManagerTask, osPriorityBelowNormal, 0, 128);
+  osThreadId cmdManagerTaskHandle = osThreadCreate(osThread(cmdManagerTask), NULL);
+  osThreadDef(receiverTask, money_taskMsgReceiver, osPriorityNormal, 0, 128);
   osThreadId receiverTaskHandle = osThreadCreate(osThread(receiverTask), NULL);
-  osThreadDef(senderTask, money_taskMsgSender, osPriorityIdle, 0, 128);
+  osThreadDef(senderTask, money_taskMsgSender, osPriorityLow, 0, 128);
   osThreadId senderTaskHandle = osThreadCreate(osThread(senderTask), NULL);
 
   /* USER CODE END RTOS_THREADS */
