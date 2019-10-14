@@ -21,7 +21,7 @@
 #endif
 
 uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
-long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes);
+uint8_t* getMsgContent(uint8_t uartMsgBuf[]);
 long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[]);
 
 uint32_t crc_calc(uint8_t pBuffer[], uint16_t NumOfBytes);

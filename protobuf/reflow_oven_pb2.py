@@ -13,10 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import importlib.util
-spec = importlib.util.spec_from_file_location("nanopb_pb2", "../protobuf/nanopb/generator/proto/nanopb_pb2.py")
-nanopb__pb2 = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(nanopb__pb2)
+import nanopb_pb2 as nanopb__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -24,13 +21,13 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x11reflow_oven.proto\x1a\x0cnanopb.proto\"\x95\x01\n\x0bOvenCommand\x12\x1f\n\x04type\x18\x01 \x01(\x0e\x32\x11.OvenCommand.Type\x12\n\n\x02id\x18\x02 \x01(\r\x12\x17\n\x08priority\x18\x03 \x01(\rB\x05\x92?\x02\x38\x08\"@\n\x04Type\x12\x14\n\x10GET_TEMP_PROFILE\x10\x00\x12\r\n\tGET_STATE\x10\x01\x12\t\n\x05START\x10\x02\x12\x08\n\x04STOP\x10\x03\"0\n\x0bTempMeasure\x12\x0c\n\x04time\x18\x01 \x01(\r\x12\x13\n\x04temp\x18\x02 \x01(\rB\x05\x92?\x02\x38\x10\"R\n\x0bTempProfile\x12\x1a\n\x0b\x63ountPoints\x18\x01 \x01(\rB\x05\x92?\x02\x38\x08\x12\'\n\x04\x64\x61ta\x18\x02 \x03(\x0b\x32\x0c.TempMeasureB\x0b\x92?\x02\x10\n\x92?\x03\x80\x01\x01\"F\n\x14\x41nsCmdGetTempProfile\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x1d\n\x07profile\x18\x02 \x01(\x0b\x32\x0c.TempProfile\"J\n\x0e\x41nsCmdGetState\x12\x19\n\x05state\x18\x01 \x01(\x0e\x32\n.OvenState\x12\x1d\n\x05\x65rror\x18\x02 \x01(\x0e\x32\x0e.OvenErrorType\"1\n\x0b\x41nsCmdStart\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x11\n\tstartTime\x18\x02 \x01(\r\"/\n\nAnsCmdStop\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08stopTime\x18\x02 \x01(\r\"!\n\x0e\x41nsTempMeasure\x12\x0f\n\x07success\x18\x01 \x01(\x08\" \n\rFinishProgram\x12\x0f\n\x07success\x18\x01 \x01(\x08*\xc7\x01\n\x07MsgType\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x43MD\x10\x01\x12\x1c\n\x18\x41NS_CMD_GET_TEMP_PROFILE\x10\x02\x12\x15\n\x11\x41NS_CMD_GET_STATE\x10\x03\x12\x11\n\rANS_CMD_START\x10\x04\x12\x10\n\x0c\x41NS_CMD_STOP\x10\x05\x12\x10\n\x0cTEMP_MEASURE\x10\x06\x12\x14\n\x10\x41NS_TEMP_MEASURE\x10\x07\x12\x12\n\x0e\x46INISH_PROGRAM\x10\x08\x12\x0e\n\nPLAIN_TEXT\x10\t*&\n\tOvenState\x12\x0b\n\x07STOPPED\x10\x00\x12\x0c\n\x08LAUNCHED\x10\x01*]\n\rOvenErrorType\x12\x08\n\x04NONE\x10\x00\x12\x1d\n\x19\x46\x41ULTY_TEMPERATURE_SENSOR\x10\x01\x12\x10\n\x0c\x46\x41ULTY_RELAY\x10\x02\x12\x11\n\rUNKNOWN_ERROR\x10\x03\x62\x06proto3')
+  serialized_pb=_b('\n\x11reflow_oven.proto\x1a\x0cnanopb.proto\"O\n\nPB_Command\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\n\n\x02id\x18\x02 \x01(\r\x12\x17\n\x08priority\x18\x03 \x01(\rB\x05\x92?\x02\x38\x08\"3\n\x0ePB_TempMeasure\x12\x0c\n\x04time\x18\x01 \x01(\r\x12\x13\n\x04temp\x18\x02 \x01(\rB\x05\x92?\x02\x38\x10\"X\n\x0ePB_TempProfile\x12\x1a\n\x0b\x63ountPoints\x18\x01 \x01(\rB\x05\x92?\x02\x38\x08\x12*\n\x04\x64\x61ta\x18\x02 \x03(\x0b\x32\x0f.PB_TempMeasureB\x0b\x92?\x02\x10\n\x92?\x03\x80\x01\x01\"N\n\x19PB_ResponseGetTempProfile\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12 \n\x07profile\x18\x02 \x01(\x0b\x32\x0f.PB_TempProfile\"\x91\x01\n\x0bPB_Response\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\r\n\x05\x63mdId\x18\x02 \x01(\r\x12\x0f\n\x07success\x18\x03 \x01(\x08\x12\x18\n\x05state\x18\x04 \x01(\x0e\x32\t.PB_State\x12\x1c\n\x05\x65rror\x18\x05 \x01(\x0e\x32\r.PB_ErrorType\x12\x0c\n\x04time\x18\x06 \x01(\r*\xa2\x01\n\nPB_MsgType\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x43MD\x10\x01\x12\x0c\n\x08RESPONSE\x10\x02\x12\x1d\n\x19RESPONSE_GET_TEMP_PROFILE\x10\x03\x12\x10\n\x0cTEMP_MEASURE\x10\x04\x12\x19\n\x15RESPONSE_TEMP_MEASURE\x10\x05\x12\x12\n\x0e\x46INISH_PROGRAM\x10\x06\x12\x0e\n\nPLAIN_TEXT\x10\x07*F\n\nPB_CmdType\x12\x14\n\x10GET_TEMP_PROFILE\x10\x00\x12\r\n\tGET_STATE\x10\x01\x12\t\n\x05START\x10\x02\x12\x08\n\x04STOP\x10\x03*%\n\x08PB_State\x12\x0b\n\x07STOPPED\x10\x00\x12\x0c\n\x08LAUNCHED\x10\x01*\\\n\x0cPB_ErrorType\x12\x08\n\x04NONE\x10\x00\x12\x1d\n\x19\x46\x41ULTY_TEMPERATURE_SENSOR\x10\x01\x12\x10\n\x0c\x46\x41ULTY_RELAY\x10\x02\x12\x11\n\rUNKNOWN_ERROR\x10\x03\x62\x06proto3')
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,])
 
-_MSGTYPE = _descriptor.EnumDescriptor(
-  name='MsgType',
-  full_name='MsgType',
+_PB_MSGTYPE = _descriptor.EnumDescriptor(
+  name='PB_MsgType',
+  full_name='PB_MsgType',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -43,121 +40,41 @@ _MSGTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ANS_CMD_GET_TEMP_PROFILE', index=2, number=2,
+      name='RESPONSE', index=2, number=2,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ANS_CMD_GET_STATE', index=3, number=3,
+      name='RESPONSE_GET_TEMP_PROFILE', index=3, number=3,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ANS_CMD_START', index=4, number=4,
+      name='TEMP_MEASURE', index=4, number=4,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ANS_CMD_STOP', index=5, number=5,
+      name='RESPONSE_TEMP_MEASURE', index=5, number=5,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='TEMP_MEASURE', index=6, number=6,
+      name='FINISH_PROGRAM', index=6, number=6,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ANS_TEMP_MEASURE', index=7, number=7,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='FINISH_PROGRAM', index=8, number=8,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='PLAIN_TEXT', index=9, number=9,
+      name='PLAIN_TEXT', index=7, number=7,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=639,
-  serialized_end=838,
+  serialized_start=488,
+  serialized_end=650,
 )
-_sym_db.RegisterEnumDescriptor(_MSGTYPE)
+_sym_db.RegisterEnumDescriptor(_PB_MSGTYPE)
 
-MsgType = enum_type_wrapper.EnumTypeWrapper(_MSGTYPE)
-_OVENSTATE = _descriptor.EnumDescriptor(
-  name='OvenState',
-  full_name='OvenState',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='STOPPED', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='LAUNCHED', index=1, number=1,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=840,
-  serialized_end=878,
-)
-_sym_db.RegisterEnumDescriptor(_OVENSTATE)
-
-OvenState = enum_type_wrapper.EnumTypeWrapper(_OVENSTATE)
-_OVENERRORTYPE = _descriptor.EnumDescriptor(
-  name='OvenErrorType',
-  full_name='OvenErrorType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='NONE', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='FAULTY_TEMPERATURE_SENSOR', index=1, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='FAULTY_RELAY', index=2, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='UNKNOWN_ERROR', index=3, number=3,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=880,
-  serialized_end=973,
-)
-_sym_db.RegisterEnumDescriptor(_OVENERRORTYPE)
-
-OvenErrorType = enum_type_wrapper.EnumTypeWrapper(_OVENERRORTYPE)
-UNDEFINED = 0
-CMD = 1
-ANS_CMD_GET_TEMP_PROFILE = 2
-ANS_CMD_GET_STATE = 3
-ANS_CMD_START = 4
-ANS_CMD_STOP = 5
-TEMP_MEASURE = 6
-ANS_TEMP_MEASURE = 7
-FINISH_PROGRAM = 8
-PLAIN_TEXT = 9
-STOPPED = 0
-LAUNCHED = 1
-NONE = 0
-FAULTY_TEMPERATURE_SENSOR = 1
-FAULTY_RELAY = 2
-UNKNOWN_ERROR = 3
-
-
-_OVENCOMMAND_TYPE = _descriptor.EnumDescriptor(
-  name='Type',
-  full_name='OvenCommand.Type',
+PB_MsgType = enum_type_wrapper.EnumTypeWrapper(_PB_MSGTYPE)
+_PB_CMDTYPE = _descriptor.EnumDescriptor(
+  name='PB_CmdType',
+  full_name='PB_CmdType',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -180,35 +97,110 @@ _OVENCOMMAND_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=121,
-  serialized_end=185,
+  serialized_start=652,
+  serialized_end=722,
 )
-_sym_db.RegisterEnumDescriptor(_OVENCOMMAND_TYPE)
+_sym_db.RegisterEnumDescriptor(_PB_CMDTYPE)
+
+PB_CmdType = enum_type_wrapper.EnumTypeWrapper(_PB_CMDTYPE)
+_PB_STATE = _descriptor.EnumDescriptor(
+  name='PB_State',
+  full_name='PB_State',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='STOPPED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LAUNCHED', index=1, number=1,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=724,
+  serialized_end=761,
+)
+_sym_db.RegisterEnumDescriptor(_PB_STATE)
+
+PB_State = enum_type_wrapper.EnumTypeWrapper(_PB_STATE)
+_PB_ERRORTYPE = _descriptor.EnumDescriptor(
+  name='PB_ErrorType',
+  full_name='PB_ErrorType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='NONE', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FAULTY_TEMPERATURE_SENSOR', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FAULTY_RELAY', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN_ERROR', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=763,
+  serialized_end=855,
+)
+_sym_db.RegisterEnumDescriptor(_PB_ERRORTYPE)
+
+PB_ErrorType = enum_type_wrapper.EnumTypeWrapper(_PB_ERRORTYPE)
+UNDEFINED = 0
+CMD = 1
+RESPONSE = 2
+RESPONSE_GET_TEMP_PROFILE = 3
+TEMP_MEASURE = 4
+RESPONSE_TEMP_MEASURE = 5
+FINISH_PROGRAM = 6
+PLAIN_TEXT = 7
+GET_TEMP_PROFILE = 0
+GET_STATE = 1
+START = 2
+STOP = 3
+STOPPED = 0
+LAUNCHED = 1
+NONE = 0
+FAULTY_TEMPERATURE_SENSOR = 1
+FAULTY_RELAY = 2
+UNKNOWN_ERROR = 3
 
 
-_OVENCOMMAND = _descriptor.Descriptor(
-  name='OvenCommand',
-  full_name='OvenCommand',
+
+_PB_COMMAND = _descriptor.Descriptor(
+  name='PB_Command',
+  full_name='PB_Command',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='type', full_name='OvenCommand.type', index=0,
+      name='cmdType', full_name='PB_Command.cmdType', index=0,
       number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='id', full_name='OvenCommand.id', index=1,
+      name='id', full_name='PB_Command.id', index=1,
       number=2, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='priority', full_name='OvenCommand.priority', index=2,
+      name='priority', full_name='PB_Command.priority', index=2,
       number=3, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -219,7 +211,6 @@ _OVENCOMMAND = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _OVENCOMMAND_TYPE,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -227,27 +218,27 @@ _OVENCOMMAND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=36,
-  serialized_end=185,
+  serialized_start=35,
+  serialized_end=114,
 )
 
 
-_TEMPMEASURE = _descriptor.Descriptor(
-  name='TempMeasure',
-  full_name='TempMeasure',
+_PB_TEMPMEASURE = _descriptor.Descriptor(
+  name='PB_TempMeasure',
+  full_name='PB_TempMeasure',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='time', full_name='TempMeasure.time', index=0,
+      name='time', full_name='PB_TempMeasure.time', index=0,
       number=1, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='temp', full_name='TempMeasure.temp', index=1,
+      name='temp', full_name='PB_TempMeasure.temp', index=1,
       number=2, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -265,27 +256,27 @@ _TEMPMEASURE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=187,
-  serialized_end=235,
+  serialized_start=116,
+  serialized_end=167,
 )
 
 
-_TEMPPROFILE = _descriptor.Descriptor(
-  name='TempProfile',
-  full_name='TempProfile',
+_PB_TEMPPROFILE = _descriptor.Descriptor(
+  name='PB_TempProfile',
+  full_name='PB_TempProfile',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='countPoints', full_name='TempProfile.countPoints', index=0,
+      name='countPoints', full_name='PB_TempProfile.countPoints', index=0,
       number=1, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=_b('\222?\0028\010'), file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='data', full_name='TempProfile.data', index=1,
+      name='data', full_name='PB_TempProfile.data', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -303,27 +294,27 @@ _TEMPPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=237,
-  serialized_end=319,
+  serialized_start=169,
+  serialized_end=257,
 )
 
 
-_ANSCMDGETTEMPPROFILE = _descriptor.Descriptor(
-  name='AnsCmdGetTempProfile',
-  full_name='AnsCmdGetTempProfile',
+_PB_RESPONSEGETTEMPPROFILE = _descriptor.Descriptor(
+  name='PB_ResponseGetTempProfile',
+  full_name='PB_ResponseGetTempProfile',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='success', full_name='AnsCmdGetTempProfile.success', index=0,
+      name='success', full_name='PB_ResponseGetTempProfile.success', index=0,
       number=1, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='profile', full_name='AnsCmdGetTempProfile.profile', index=1,
+      name='profile', full_name='PB_ResponseGetTempProfile.profile', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -341,104 +332,56 @@ _ANSCMDGETTEMPPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=321,
-  serialized_end=391,
+  serialized_start=259,
+  serialized_end=337,
 )
 
 
-_ANSCMDGETSTATE = _descriptor.Descriptor(
-  name='AnsCmdGetState',
-  full_name='AnsCmdGetState',
+_PB_RESPONSE = _descriptor.Descriptor(
+  name='PB_Response',
+  full_name='PB_Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='state', full_name='AnsCmdGetState.state', index=0,
+      name='cmdType', full_name='PB_Response.cmdType', index=0,
       number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='error', full_name='AnsCmdGetState.error', index=1,
-      number=2, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=393,
-  serialized_end=467,
-)
-
-
-_ANSCMDSTART = _descriptor.Descriptor(
-  name='AnsCmdStart',
-  full_name='AnsCmdStart',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='success', full_name='AnsCmdStart.success', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='startTime', full_name='AnsCmdStart.startTime', index=1,
+      name='cmdId', full_name='PB_Response.cmdId', index=1,
       number=2, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=469,
-  serialized_end=518,
-)
-
-
-_ANSCMDSTOP = _descriptor.Descriptor(
-  name='AnsCmdStop',
-  full_name='AnsCmdStop',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
     _descriptor.FieldDescriptor(
-      name='success', full_name='AnsCmdStop.success', index=0,
-      number=1, type=8, cpp_type=7, label=1,
+      name='success', full_name='PB_Response.success', index=2,
+      number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='stopTime', full_name='AnsCmdStop.stopTime', index=1,
-      number=2, type=13, cpp_type=3, label=1,
+      name='state', full_name='PB_Response.state', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='PB_Response.error', index=4,
+      number=5, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='time', full_name='PB_Response.time', index=5,
+      number=6, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -455,158 +398,65 @@ _ANSCMDSTOP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=520,
-  serialized_end=567,
+  serialized_start=340,
+  serialized_end=485,
 )
 
-
-_ANSTEMPMEASURE = _descriptor.Descriptor(
-  name='AnsTempMeasure',
-  full_name='AnsTempMeasure',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='success', full_name='AnsTempMeasure.success', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=569,
-  serialized_end=602,
-)
-
-
-_FINISHPROGRAM = _descriptor.Descriptor(
-  name='FinishProgram',
-  full_name='FinishProgram',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='success', full_name='FinishProgram.success', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=604,
-  serialized_end=636,
-)
-
-_OVENCOMMAND.fields_by_name['type'].enum_type = _OVENCOMMAND_TYPE
-_OVENCOMMAND_TYPE.containing_type = _OVENCOMMAND
-_TEMPPROFILE.fields_by_name['data'].message_type = _TEMPMEASURE
-_ANSCMDGETTEMPPROFILE.fields_by_name['profile'].message_type = _TEMPPROFILE
-_ANSCMDGETSTATE.fields_by_name['state'].enum_type = _OVENSTATE
-_ANSCMDGETSTATE.fields_by_name['error'].enum_type = _OVENERRORTYPE
-DESCRIPTOR.message_types_by_name['OvenCommand'] = _OVENCOMMAND
-DESCRIPTOR.message_types_by_name['TempMeasure'] = _TEMPMEASURE
-DESCRIPTOR.message_types_by_name['TempProfile'] = _TEMPPROFILE
-DESCRIPTOR.message_types_by_name['AnsCmdGetTempProfile'] = _ANSCMDGETTEMPPROFILE
-DESCRIPTOR.message_types_by_name['AnsCmdGetState'] = _ANSCMDGETSTATE
-DESCRIPTOR.message_types_by_name['AnsCmdStart'] = _ANSCMDSTART
-DESCRIPTOR.message_types_by_name['AnsCmdStop'] = _ANSCMDSTOP
-DESCRIPTOR.message_types_by_name['AnsTempMeasure'] = _ANSTEMPMEASURE
-DESCRIPTOR.message_types_by_name['FinishProgram'] = _FINISHPROGRAM
-DESCRIPTOR.enum_types_by_name['MsgType'] = _MSGTYPE
-DESCRIPTOR.enum_types_by_name['OvenState'] = _OVENSTATE
-DESCRIPTOR.enum_types_by_name['OvenErrorType'] = _OVENERRORTYPE
+_PB_COMMAND.fields_by_name['cmdType'].enum_type = _PB_CMDTYPE
+_PB_TEMPPROFILE.fields_by_name['data'].message_type = _PB_TEMPMEASURE
+_PB_RESPONSEGETTEMPPROFILE.fields_by_name['profile'].message_type = _PB_TEMPPROFILE
+_PB_RESPONSE.fields_by_name['cmdType'].enum_type = _PB_CMDTYPE
+_PB_RESPONSE.fields_by_name['state'].enum_type = _PB_STATE
+_PB_RESPONSE.fields_by_name['error'].enum_type = _PB_ERRORTYPE
+DESCRIPTOR.message_types_by_name['PB_Command'] = _PB_COMMAND
+DESCRIPTOR.message_types_by_name['PB_TempMeasure'] = _PB_TEMPMEASURE
+DESCRIPTOR.message_types_by_name['PB_TempProfile'] = _PB_TEMPPROFILE
+DESCRIPTOR.message_types_by_name['PB_ResponseGetTempProfile'] = _PB_RESPONSEGETTEMPPROFILE
+DESCRIPTOR.message_types_by_name['PB_Response'] = _PB_RESPONSE
+DESCRIPTOR.enum_types_by_name['PB_MsgType'] = _PB_MSGTYPE
+DESCRIPTOR.enum_types_by_name['PB_CmdType'] = _PB_CMDTYPE
+DESCRIPTOR.enum_types_by_name['PB_State'] = _PB_STATE
+DESCRIPTOR.enum_types_by_name['PB_ErrorType'] = _PB_ERRORTYPE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-OvenCommand = _reflection.GeneratedProtocolMessageType('OvenCommand', (_message.Message,), dict(
-  DESCRIPTOR = _OVENCOMMAND,
+PB_Command = _reflection.GeneratedProtocolMessageType('PB_Command', (_message.Message,), dict(
+  DESCRIPTOR = _PB_COMMAND,
   __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:OvenCommand)
+  # @@protoc_insertion_point(class_scope:PB_Command)
   ))
-_sym_db.RegisterMessage(OvenCommand)
+_sym_db.RegisterMessage(PB_Command)
 
-TempMeasure = _reflection.GeneratedProtocolMessageType('TempMeasure', (_message.Message,), dict(
-  DESCRIPTOR = _TEMPMEASURE,
+PB_TempMeasure = _reflection.GeneratedProtocolMessageType('PB_TempMeasure', (_message.Message,), dict(
+  DESCRIPTOR = _PB_TEMPMEASURE,
   __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:TempMeasure)
+  # @@protoc_insertion_point(class_scope:PB_TempMeasure)
   ))
-_sym_db.RegisterMessage(TempMeasure)
+_sym_db.RegisterMessage(PB_TempMeasure)
 
-TempProfile = _reflection.GeneratedProtocolMessageType('TempProfile', (_message.Message,), dict(
-  DESCRIPTOR = _TEMPPROFILE,
+PB_TempProfile = _reflection.GeneratedProtocolMessageType('PB_TempProfile', (_message.Message,), dict(
+  DESCRIPTOR = _PB_TEMPPROFILE,
   __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:TempProfile)
+  # @@protoc_insertion_point(class_scope:PB_TempProfile)
   ))
-_sym_db.RegisterMessage(TempProfile)
+_sym_db.RegisterMessage(PB_TempProfile)
 
-AnsCmdGetTempProfile = _reflection.GeneratedProtocolMessageType('AnsCmdGetTempProfile', (_message.Message,), dict(
-  DESCRIPTOR = _ANSCMDGETTEMPPROFILE,
+PB_ResponseGetTempProfile = _reflection.GeneratedProtocolMessageType('PB_ResponseGetTempProfile', (_message.Message,), dict(
+  DESCRIPTOR = _PB_RESPONSEGETTEMPPROFILE,
   __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:AnsCmdGetTempProfile)
+  # @@protoc_insertion_point(class_scope:PB_ResponseGetTempProfile)
   ))
-_sym_db.RegisterMessage(AnsCmdGetTempProfile)
+_sym_db.RegisterMessage(PB_ResponseGetTempProfile)
 
-AnsCmdGetState = _reflection.GeneratedProtocolMessageType('AnsCmdGetState', (_message.Message,), dict(
-  DESCRIPTOR = _ANSCMDGETSTATE,
+PB_Response = _reflection.GeneratedProtocolMessageType('PB_Response', (_message.Message,), dict(
+  DESCRIPTOR = _PB_RESPONSE,
   __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:AnsCmdGetState)
+  # @@protoc_insertion_point(class_scope:PB_Response)
   ))
-_sym_db.RegisterMessage(AnsCmdGetState)
-
-AnsCmdStart = _reflection.GeneratedProtocolMessageType('AnsCmdStart', (_message.Message,), dict(
-  DESCRIPTOR = _ANSCMDSTART,
-  __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:AnsCmdStart)
-  ))
-_sym_db.RegisterMessage(AnsCmdStart)
-
-AnsCmdStop = _reflection.GeneratedProtocolMessageType('AnsCmdStop', (_message.Message,), dict(
-  DESCRIPTOR = _ANSCMDSTOP,
-  __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:AnsCmdStop)
-  ))
-_sym_db.RegisterMessage(AnsCmdStop)
-
-AnsTempMeasure = _reflection.GeneratedProtocolMessageType('AnsTempMeasure', (_message.Message,), dict(
-  DESCRIPTOR = _ANSTEMPMEASURE,
-  __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:AnsTempMeasure)
-  ))
-_sym_db.RegisterMessage(AnsTempMeasure)
-
-FinishProgram = _reflection.GeneratedProtocolMessageType('FinishProgram', (_message.Message,), dict(
-  DESCRIPTOR = _FINISHPROGRAM,
-  __module__ = 'reflow_oven_pb2'
-  # @@protoc_insertion_point(class_scope:FinishProgram)
-  ))
-_sym_db.RegisterMessage(FinishProgram)
+_sym_db.RegisterMessage(PB_Response)
 
 
-_OVENCOMMAND.fields_by_name['priority']._options = None
-_TEMPMEASURE.fields_by_name['temp']._options = None
-_TEMPPROFILE.fields_by_name['countPoints']._options = None
-_TEMPPROFILE.fields_by_name['data']._options = None
+_PB_COMMAND.fields_by_name['priority']._options = None
+_PB_TEMPMEASURE.fields_by_name['temp']._options = None
+_PB_TEMPPROFILE.fields_by_name['countPoints']._options = None
+_PB_TEMPPROFILE.fields_by_name['data']._options = None
 # @@protoc_insertion_point(module_scope)

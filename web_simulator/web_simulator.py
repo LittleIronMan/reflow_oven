@@ -81,7 +81,7 @@ allKeys["g"] = ["get_state", "Получить от контроллера ег�
 
 sendProg = "../uart-speaker"
 if isWindows:
-	sendProg = "../raspberry/uarr-Tx/Release/uart-Tx_simulator.exe"
+	sendProg = "../raspberry/uart-Tx/windows_simulator/Release/uart-Tx_simulator.exe"
 
 def handleKey(key):
 	global cmdId

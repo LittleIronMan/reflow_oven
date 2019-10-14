@@ -4,79 +4,64 @@ import "nanopb.proto";
 // Этот тип перечисляет все возможные типы сообщений, которые будут далее определены.
 // При передаче данных этот тип должен дополнять отправляемый пакет(в котором будет закодированное сообщение),
 // чтобы принимающие стороны знали каким образом это сообщение декодировать
-enum MsgType {
+enum PB_MsgType {
 	UNDEFINED = 0;
-	CMD = 1; // команда контроллеру
-	ANS_CMD_GET_TEMP_PROFILE = 2; // ответ на команду GET_TEMP_PROFILE(далее аналогично)
-	ANS_CMD_GET_STATE = 3;
-	ANS_CMD_START = 4;
-	ANS_CMD_STOP = 5;
-	TEMP_MEASURE = 6; // контроллер отправляет серверу текущее измерение температуры
-	ANS_TEMP_MEASURE = 7; // сервер отвечает что измерение было успешно принято
-	FINISH_PROGRAM = 8; // котроллер оправляет серверу команду что он успешно завершил программу
-	PLAIN_TEXT = 9; // простой текст
+	CMD = 1; // команда
+	RESPONSE = 2; // ответ на команду
+	RESPONSE_GET_TEMP_PROFILE = 3; // ответ на команду GET_TEMP_PROFILE(большого размера, поэтому рассматривается особняком)
+	TEMP_MEASURE = 4; // контроллер отправляет серверу текущее измерение температуры
+	RESPONSE_TEMP_MEASURE = 5; // сервер отвечает что измерение было успешно принято
+	FINISH_PROGRAM = 6; // котроллер оправляет серверу команду что он успешно завершил программу
+	PLAIN_TEXT = 7; // простой текст
 }
 
-message OvenCommand {
-	enum Type {
-		GET_TEMP_PROFILE = 0;
-		GET_STATE = 1;
-		START = 2;
-		STOP = 3;
-	}
-	Type type = 1;
+enum PB_CmdType {
+	GET_TEMP_PROFILE = 0;
+	GET_STATE = 1;
+	START = 2;
+	STOP = 3;
+}
+
+message PB_Command {
+	PB_CmdType cmdType = 1;
 	uint32 id = 2;
 	uint32 priority = 3 [(nanopb).int_size = IS_8]; // [default = 1]; // чем больше эта величина, тем выше приоритет
 }
 
-message TempMeasure {
+message PB_TempMeasure {
 	uint32 time = 1;
 	uint32 temp = 2 [(nanopb).int_size = IS_16];
 }
 
-message TempProfile {
+message PB_TempProfile {
 	uint32 countPoints = 1 [(nanopb).int_size = IS_8]; // количество "точек" в термопрофиле
-	repeated TempMeasure data = 2 [(nanopb).max_count = 10, (nanopb).fixed_count = true];
+	repeated PB_TempMeasure data = 2 [(nanopb).max_count = 10, (nanopb).fixed_count = true];
 }
 
-message AnsCmdGetTempProfile {
+message PB_ResponseGetTempProfile {
 	bool success = 1; // [default = true];
-	TempProfile profile = 2;
+	PB_TempProfile profile = 2;
 }
 
-enum OvenState {
+enum PB_State {
 	STOPPED = 0;
 	LAUNCHED = 1;
 }
 
-enum OvenErrorType {
+enum PB_ErrorType {
 	NONE = 0;
 	FAULTY_TEMPERATURE_SENSOR = 1;
 	FAULTY_RELAY = 2;
 	UNKNOWN_ERROR = 3;
 }
 
-message AnsCmdGetState {
-	OvenState state = 1;
-	OvenErrorType error = 2; // [default = NONE];
-}
-
-message AnsCmdStart {
-	bool success = 1; // [default = true];
-	uint32 startTime = 2;
-}
-
-message AnsCmdStop {
-	bool success = 1; // [default = true];
-	uint32 stopTime = 2;
-}
-
-message AnsTempMeasure {
-	bool success = 1; // [default = true];
-}
-
-message FinishProgram {
-	bool success = 1; // [default = true];
+message PB_Response {
+	PB_CmdType cmdType = 1;
+	uint32 cmdId = 2;
+	bool success = 3;
+	PB_State state = 4;
+	PB_ErrorType error = 5; // [default = NONE];
+	uint32 time = 6; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
 }
 
 // другие примеры кода

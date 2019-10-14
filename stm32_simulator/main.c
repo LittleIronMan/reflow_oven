@@ -130,6 +130,8 @@ int main(void)
 	money_init();
 	TaskHandle_t defaultTask;
 	xTaskCreate(money_defaultTask, "defaultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &defaultTask);
+	TaskHandle_t cmdManagerTask;
+	xTaskCreate(money_cmdManagerTask, "cmdManagerTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 4, &cmdManagerTask);
 	TaskHandle_t receiverTask;
 	xTaskCreate(money_taskMsgReceiver, "receiverTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &receiverTask);
 	TaskHandle_t senderTask;

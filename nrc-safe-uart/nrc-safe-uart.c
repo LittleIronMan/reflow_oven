@@ -50,7 +50,7 @@ uint16_t createUartMsg(uint8_t uartMsgBuf[], uint8_t type, uint8_t msgContentBuf
 
 uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 {
-	const uint8_t errType = 0; // MsgType_UNDEFINED
+	const uint8_t errType = 0; // PB_MsgType_UNDEFINED
 	if (msgNumOfBytes <= 9) {
 		nrcLogD("Too little bytes count: %d", msgNumOfBytes); return errType;
 	}
@@ -75,11 +75,10 @@ uint8_t getMsgType(uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
 	return uartMsgBuf[4];
 }
 
-long getMsgContent(uint8_t msgContentBuf[], uint8_t uartMsgBuf[], uint16_t msgNumOfBytes)
+uint8_t* getMsgContent(uint8_t uartMsgBuf[], uint16_t *contentLen)
 {
-	uint16_t contentLen = *((uint16_t*)&uartMsgBuf[1]);
-	memcpy(msgContentBuf, &uartMsgBuf[5], contentLen);
-	return contentLen;
+	*contentLen = *((uint16_t*)&uartMsgBuf[1]);
+	return &uartMsgBuf[5];
 }
 
 long transmitMsg(uint8_t type, uint8_t msgContent[], uint16_t contentLen, uint8_t uartTransmitBuf[])

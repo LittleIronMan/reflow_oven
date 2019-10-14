@@ -15,112 +15,45 @@
 #define osDelay(millisec) vTaskDelay(millisec)
 #endif
 
-typedef enum {
-	DISABLED,
-	ENABLED,
-	SAVE_DATA
-} ControlState;
+NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, 0, 0 };
 
-typedef struct {
-	TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
-	uint32_t startTime; // веремя начала программы
-	ControlState state; // состояние программы управления
-	uint32_t integral;
-	uint16_t prevMeasure;
-} NRC_ControlData;
-NRC_ControlData cd;
-
-NrcUartBufBeta RxBuf, TxBuf;
-NrcUartBufAlpha dmaRxBuf;
 // соответствующие массивы
-uint8_t RxArr[UART_RECEIVE_BUF_SIZE];
-uint8_t TxArr[UART_TRANSMIT_BUF_SIZE];
-uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2];
-uint8_t msgBuf[UART_RECEIVE_BUF_SIZE - 8];
+uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
+uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
+uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
+NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, NULL, BufState_USED_BY_HARDWARE },
+				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, NULL, BufState_USED_BY_PROC };
+NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
 
-#define MAX_CMD_COUNT_IN_QUEUE 5
-typedef struct _CmdEx {
-	OvenCommand data;
-	bool isActual;
-	struct _CmdEx *next;
-} CmdEx;
-CmdEx commandQueueBuf[MAX_CMD_COUNT_IN_QUEUE];
-CmdEx *cmdQueueFront = NULL, *cmdQueueBack = NULL;
+// статически выделенная память для очередей
+#define COMMAND_QUEUE_COUNT_ITEMS 5
+uint8_t commandQueueDataBuf[sizeof(PB_Command) * COMMAND_QUEUE_COUNT_ITEMS];
+NRC_QueueItem commandQueueItemsBuf[COMMAND_QUEUE_COUNT_ITEMS];
+#define RESPONSE_QUEUE_COUNT_ITEMS 5
+uint8_t responseQueueDataBuf[sizeof(PB_Response) * RESPONSE_QUEUE_COUNT_ITEMS];
+NRC_QueueItem responseQueueItemsBuf[RESPONSE_QUEUE_COUNT_ITEMS];
 
-bool addCommand(OvenCommand *newCmd) {
-	CmdEx *freePlace = NULL,
-		*moreImportantCmd = NULL,
-		*iter;
-	uint8_t i = 0;
-	bool success = false;
+NRC_Queue commandQueue = { NULL, commandQueueItemsBuf, commandQueueDataBuf, sizeof(PB_Command), COMMAND_QUEUE_COUNT_ITEMS, NULL, NULL }, // очередь входящих сообщений
+		responseQueue = { NULL, responseQueueItemsBuf, responseQueueDataBuf, sizeof(PB_Response), RESPONSE_QUEUE_COUNT_ITEMS, NULL, NULL }; // очередь сообщений для отправки
 
-	// сначала ищем в буфере свободное место для новой команды
-	for (; i < MAX_CMD_COUNT_IN_QUEUE; i++) {
-		if (!commandQueueBuf[i].isActual) { freePlace = &commandQueueBuf[i]; break; }
-	}
-	// затем ищем ближайшую команду с более высоким приоритетом
-	for (iter = cmdQueueFront; iter && iter->data.priority >= newCmd->priority; iter = iter->next) {
-		moreImportantCmd = iter;
-	}
-	// если свободного места не было найдено, а итератор еще не в конце очереди
-	if (!freePlace && iter) {
-		for (; iter && iter->next; iter = iter->next) {} // ищем конец очереди
-		freePlace = iter; // он будет перезаписан
-	}
+uint8_t allQueuesCount = 2;
+NRC_Queue* allQueues[2] = { &commandQueue, &responseQueue };
 
-	// вставляем новую команду, с обновлением соответствующих ссылок
-	if (freePlace) {
-		freePlace->data = *newCmd;
-		if (moreImportantCmd) {
-			freePlace->next = (moreImportantCmd->next) ? (moreImportantCmd->next->next) : NULL;
-			moreImportantCmd->next = freePlace;
-		}
-		else {
-			freePlace->next = NULL;
-			// обновляем голову очереди
-			cmdQueueFront = freePlace;
-		}
-		success = true;
-	}
-	return success;
-}
-
-OvenCommand popCmdFromQueue() {
-	OvenCommand result = cmdQueueFront->data;
-	cmdQueueFront->isActual = false;
-	cmdQueueFront = cmdQueueFront->next;
-	return result;
-}
-
-void money_init()
+// обработчик команд
+void money_cmdManagerTask(void const *argument)
 {
-	// инициализация буферов приема/передачи по uart
-	RxBuf.arr = RxArr; RxBuf.size = UART_RECEIVE_BUF_SIZE; RxBuf.state = BufState_NEED_UPDATE; RxBuf.countBytes = 0; RxBuf.sem = xSemaphoreCreateBinary();
-	TxBuf.arr = TxArr; TxBuf.size = UART_TRANSMIT_BUF_SIZE; TxBuf.state = BufState_NEED_UPDATE; TxBuf.countBytes = 0; TxBuf.sem = xSemaphoreCreateBinary();
-	dmaRxBuf.arr = RxDmaArr; dmaRxBuf.size = UART_RECEIVE_BUF_SIZE / 2;
-	dmaRxBuf.curCNDTR = dmaRxBuf.size;
-
-	// инициализация структуры данных для управления печью
-	cd.startTime = 0; // веремя начала программы
-	cd.state = DISABLED;
-	// задаем температурный профиль
-	cd.tempProfile = (TempProfile)TempProfile_init_zero;
-	TempMeasure *tp = cd.tempProfile.data;
-	tp[0].time = 0; tp[0].temp = 26;
-	tp[1].time = 10; tp[1].temp = 40;
-	tp[2].time = 20; tp[2].temp = 60;
-	tp[3].time = 30; tp[3].temp = 60;
-	cd.tempProfile.countPoints = 4;
-	// кодируем термопрофиль с помощью Protocol Buffers(nanopb)
-	//uint8_t buffer[TempProfile_size];
-	//pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	//bool ostatus = pb_encode(&ostream, TempProfile_fields, &cd.tempProfile);
-
-	//TempProfile inputMsg = TempProfile_init_zero;
-	//pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
-	//bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
+	nrcLogD("Start cmdManagerTask");
+	PB_Command cmd;
+	for(;;) {
+		popItemFromQueue(&commandQueue, &cmd);
+		nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
+		// сразу посылаем ответ на команду
+		PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
+		addItemToQueue(&responseQueue, &response, cmd.priority);
+	}
 }
 
+// в штатном режиме ОС будет просто периодически измерять температуру
 void money_defaultTask(void const *argument)
 {
 	uint8_t counter = 0;
@@ -149,57 +82,73 @@ void money_defaultTask(void const *argument)
 	}
 }
 
+// задача - декодирует принятые данные и раскидывает их по очередям(например очередь команд)
 void money_taskMsgReceiver(void const * argument)
 {
+	PB_Command RxCmd;
 	nrcLogD("Start Messenger");
 	for (;;) {
 		xSemaphoreTake(RxBuf.sem, portMAX_DELAY);
 		RxBuf.state = BufState_USED_BY_PROC; // устанавливаем флаг того что сейчас буфер будет использоваться процессором
-		MsgType msgType = getMsgType(RxBuf.arr, RxBuf.countBytes);
-		if (msgType == MsgType_CMD) {
-			OvenCommand cmd = OvenCommand_init_default;
-			pb_istream_t istream = pb_istream_from_buffer(msgBuf, sizeof(msgBuf));
-			bool status = pb_decode(&istream, OvenCommand_fields, &cmd);
-			if (status) {
-				addCommand(&cmd);
+
+		PB_MsgType msgType = getMsgType(RxBuf.arr, RxBuf.countBytes);
+
+		// сразу декодируем принятое сообщение, если удалось обнаружить его тип
+		bool decodeStatus = false;
+		if (msgType == PB_MsgType_UNDEFINED) {
+			nrcLogD("Error: failed to define message type");
+		}
+		else if (msgType == PB_MsgType_CMD) {
+			uint16_t encodedRxDataLen;
+			uint8_t *pEncodedRxData = getMsgContent(RxBuf.arr, &encodedRxDataLen);
+			pb_istream_t istream = pb_istream_from_buffer(pEncodedRxData, encodedRxDataLen);
+			decodeStatus = pb_decode(&istream, PB_Command_fields, &RxCmd);
+			if (!decodeStatus) {
+				nrcLogD("Error: failed to decode command");
 			}
 		}
-		RxBuf.state = BufState_NEED_UPDATE; // буфер можно перезаписывать
 
-		// сбрасываем переменные, чтобы dma смог снова обновить буфер
+		// сбрасываем флаг, чтобы DMA-прерывания снова получили возможность обновлять RxBuf
+		RxBuf.countBytes = 0;
 		RxBuf.state = BufState_USED_BY_HARDWARE;
-		RxBuf.countBytes = -2;
 
-		if (msgType == MsgType_CMD) {
-			OvenCommand cmd = popCmdFromQueue();
-			pb_ostream_t ostream = pb_ostream_from_buffer(msgBuf, sizeof(msgBuf));
-			bool status = pb_encode(&ostream, OvenCommand_fields, &cmd);
-			if (status) {
-				// ждем пока uart завершит передачу предыдущего сообщения
-				xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
-				TxBuf.state = BufState_USED_BY_PROC;
-				// минуем стадию UPDATED, в следующей функции данные будут паковаться и сразу начнется их передача
-				long result = transmitMsg(msgType, msgBuf, ostream.bytes_written, TxBuf.arr);
-				if (result == -2) {
-					nrcLogD("Error sending data");
-				}
-				else {
-					nrcLogD("Message successful transmitted");
+		// добавляем новую команду в очередь команд
+		if (decodeStatus) {
+			if (msgType == PB_MsgType_CMD) {
+				bool success = addItemToQueue(&commandQueue, &RxCmd, RxCmd.priority);
+				if (!success){
+					nrcLogD("Error: Failed to add command to queue");
 				}
 			}
-		}
-		else {
-			nrcLogD("Receive error");
+			else {
+				nrcLogD("Warning: unhandled message type");
+			}
 		}
 	}
 }
 
+// задача которая сериализует данные для отправки, упаковывает их для последовательного протокола и, собственно, отправляет их с помощью DMA
 void money_taskMsgSender(void const * argument)
 {
+	uint8_t pbEncodedTxData[PB_Response_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
+	PB_Response response;
 	for(;;) {
-		// ждем новых данных
-		xSemaphoreTake(RxBuf.sem, portMAX_DELAY);
-		// распаковываем данные
+		popItemFromQueue(&responseQueue, &response);
+
+		pb_ostream_t ostream = pb_ostream_from_buffer(pbEncodedTxData, sizeof(pbEncodedTxData));
+		bool status = pb_encode(&ostream, PB_Response_fields, &response);
+		if (status) {
+			// ждем пока uart завершит передачу предыдущего сообщения
+			xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
+			TxBuf.state = BufState_USED_BY_PROC;
+			long result = transmitMsg(PB_MsgType_RESPONSE, pbEncodedTxData, ostream.bytes_written, TxBuf.arr);
+			if (result == -2) {
+				nrcLogD("Error sending data");
+			}
+			else {
+				nrcLogD("Message successful transmitted");
+			}
+		}
 	}
 }
 
@@ -212,19 +161,19 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 	static bool RxUartDmaOveflow = false; // буфер приема переполнен(слишком большое сообщение), в этом случае дожидаемся конца приема и сбрасываем буфер
 
 	/* Determine start position in DMA buffer based on previous CNDTR value */
-	start = (dmaRxBuf.curCNDTR < dmaRxBuf.size) ? (dmaRxBuf.size - dmaRxBuf.curCNDTR) : 0;
+	start = (dmaRxBuf.prevCNDTR < dmaRxBuf.size) ? (dmaRxBuf.size - dmaRxBuf.prevCNDTR) : 0;
 
 	if (event == NRC_EVENT_TRANSFER_COMPLETED) {
-		length = (dmaRxBuf.curCNDTR < dmaRxBuf.size) ? (dmaRxBuf.curCNDTR - curCNDTR) : (dmaRxBuf.size - curCNDTR);
-		dmaRxBuf.curCNDTR = curCNDTR;
+		length = (dmaRxBuf.prevCNDTR < dmaRxBuf.size) ? (dmaRxBuf.prevCNDTR - curCNDTR) : (dmaRxBuf.size - curCNDTR);
+		dmaRxBuf.prevCNDTR = curCNDTR;
 	}
 	else if (event == NRC_EVENT_HALF_BUF) { /* DMA Rx Half event */
 		length = (dmaRxBuf.size >> 1) - start;
-		dmaRxBuf.curCNDTR = (dmaRxBuf.size >> 1);
+		dmaRxBuf.prevCNDTR = (dmaRxBuf.size >> 1);
 	}
 	else if (event == NRC_EVENT_FULL_BUF) { /* DMA Rx Complete event */
 		length = dmaRxBuf.size - start;
-		dmaRxBuf.curCNDTR = dmaRxBuf.size;
+		dmaRxBuf.prevCNDTR = dmaRxBuf.size;
 	}
 	nrcPrintfV("RxBuf.countBytes == %d, length == %d\n", RxBuf.countBytes, length);
 
@@ -245,7 +194,6 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 				RxUartDmaOveflow = false;
 			}
 			else {
-				RxBuf.state = BufState_UPDATED;
 				xSemaphoreGiveFromISR(RxBuf.sem, NULL); // буфером можно пользоваться
 				nrcLog("Received %d bytes", RxBuf.countBytes);
 			}
@@ -256,12 +204,12 @@ uint32_t NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 	}
 }
 
-
 // -------->>>> Windows - specific code <<<<--------
 #ifdef NRC_WINDOWS_SIMULATOR
 
 const uint32_t kReceiveIRQ_No = 31;
 const uint32_t kTransmitIRQ_No = 30;
+uint16_t windows_curCNDTR = 0;
 
 // этот флаг запрещает IRQ_generator'у обновлять DMA-буфер,
 // до тех пор пока не отработает IRQ_handler
@@ -299,12 +247,16 @@ DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 			BOOL readResult = TRUE;
 			while (readResult) {
 				if (dmaIRQ_lock) continue;
-				readResult = ReadFile(hPipe, dmaRxBuf.arr, dmaRxBuf.size, &dmaRxBuf.curCNDTR, NULL);
-				nrcLogD("receiverIRQ_generator - Received %d bytes", dmaRxBuf.curCNDTR);
+				uint16_t byteCounter = 0;
+				readResult = ReadFile(hPipe, dmaRxBuf.arr, dmaRxBuf.size, &byteCounter, NULL);
+				nrcLogD("receiverIRQ_generator - Received %d bytes", byteCounter);
+
 				dmaIRQ_lock = true;
+				windows_curCNDTR = dmaRxBuf.size - byteCounter;
 				vPortGenerateSimulatedInterrupt(kReceiveIRQ_No);
+
 				// выходим из этого цикла, если буфер заполнен неполностью(т.е. найден конец сообщения)
-				if (dmaRxBuf.curCNDTR < dmaRxBuf.size) {
+				if (byteCounter < dmaRxBuf.size) {
 					break;
 				}
 			}
@@ -321,9 +273,9 @@ uint32_t receiverIRQ_handler()
 
 	nrcLogD("receiverIRQ_handler start");
 	NRC_UART_EventType type = NRC_EVENT_TRANSFER_COMPLETED;
-	if (dmaRxBuf.curCNDTR == dmaRxBuf.size) { type = NRC_EVENT_FULL_BUF; }
-	NRC_UART_RxEvent(type, dmaRxBuf.curCNDTR);
-	dmaRxBuf.curCNDTR = 0; // это делается только для windows
+	if (windows_curCNDTR == 0) { type = NRC_EVENT_FULL_BUF; }
+	NRC_UART_RxEvent(type, windows_curCNDTR);
+	dmaRxBuf.prevCNDTR = dmaRxBuf.size; // это делается только для windows
 	dmaIRQ_lock = false;
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -331,6 +283,7 @@ uint32_t receiverIRQ_handler()
 
 void money_initReceiverIRQ()
 {
+	RxBuf.state = BufState_USED_BY_HARDWARE;
 	SetThreadPriority(CreateThread(NULL, 0, receiverIRQ_generator, NULL, 0, NULL), THREAD_PRIORITY_ABOVE_NORMAL);
 	vPortSetInterruptHandler(kReceiveIRQ_No, receiverIRQ_handler);
 }
@@ -340,6 +293,11 @@ float oven_getTemp(uint16_t* receivedData, uint8_t *err)
 	*err = 0;
 	*receivedData = 0;
 	return 0.0f;
+}
+
+uint32_t getCurrentTime()
+{
+	return 31415;
 }
 
 // ----->>>> реальный код для микроконтроллера <<<<-----
@@ -354,5 +312,101 @@ float oven_getTemp(uint16_t *receivedData, uint8_t *err)
 	return temp;
 }
 
+uint32_t getCurrentTime()
+{
+	return 31415;
+}
+
 #endif
 
+void money_init()
+{
+	// для всех очередей связываем их массив элементов(items) с массивом данных(dataBuf)
+	// и создаем мютексы/семафоры
+	for (uint8_t i = 0; i < allQueuesCount; i++) {
+		NRC_Queue* queue = allQueues[i];
+		for (uint8_t i = 0; i < queue->maxItemsCount; i++) {
+			queue->items[i].data = &(queue->dataBuf[queue->itemDataSize * i]);
+		}
+		queue->mutex = xSemaphoreCreateMutex();
+		queue->semCounter = xSemaphoreCreateCounting(queue->maxItemsCount, 0);
+	}
+
+	// инициализация буферов приема/передачи по uart
+	RxBuf.sem = xSemaphoreCreateBinary();
+	TxBuf.sem = xSemaphoreCreateBinary();
+
+	// задаем температурный профиль
+	PB_TempMeasure *tp = cd.tempProfile.data;
+	tp[0].time = 0; tp[0].temp = 26;
+	tp[1].time = 10; tp[1].temp = 40;
+	tp[2].time = 20; tp[2].temp = 60;
+	tp[3].time = 30; tp[3].temp = 60;
+	cd.tempProfile.countPoints = 4;
+	// кодируем термопрофиль с помощью Protocol Buffers(nanopb)
+	//uint8_t buffer[TempProfile_size];
+	//pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	//bool ostatus = pb_encode(&ostream, TempProfile_fields, &cd.tempProfile);
+
+	//TempProfile inputMsg = TempProfile_init_default;
+	//pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
+	//bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
+}
+
+bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
+{
+	NRC_QueueItem *freePlace = NULL,
+		*moreImportantItem = NULL,
+		*iter;
+	uint8_t i = 0;
+	bool success = false;
+
+	xSemaphoreTake(queue->mutex, portMAX_DELAY); // очередь блокируется пока добавляется новый элемент
+
+	// сначала ищем в буфере свободное место для нового элемента
+	for (; i < queue->maxItemsCount; i++) {
+		if (!queue->items[i].isActual) { freePlace = &queue->items[i]; break; }
+	}
+	// затем ищем ближайший элемент с более высоким приоритетом
+	for (iter = queue->front; iter && iter->priority >= newPriority; iter = iter->next) {
+		moreImportantItem = iter;
+	}
+	// если свободного места не было найдено, а итератор еще не в конце очереди
+	if (!freePlace && iter) {
+		for (; iter && iter->next; iter = iter->next) {} // ищем конец очереди
+		freePlace = iter; // он будет перезаписан
+	}
+
+	// вставляем новый элемент, с обновлением соответствующих ссылок
+	if (freePlace) {
+		freePlace->priority = newPriority;
+		memcpy(freePlace->data, newData, queue->itemDataSize);
+		if (moreImportantItem) {
+			freePlace->next = (moreImportantItem->next) ? (moreImportantItem->next->next) : NULL;
+			moreImportantItem->next = freePlace;
+		}
+		else {
+			freePlace->next = NULL;
+			// обновляем голову очереди
+			queue->front = freePlace;
+		}
+		success = true;
+	}
+
+	xSemaphoreGive(queue->mutex); // очередью снова можно пользоваться
+	return success;
+}
+
+void popItemFromQueue(NRC_Queue *queue, uint8_t *resultBuf)
+{
+	xSemaphoreTake(queue->semCounter, portMAX_DELAY); // ждем пока в очереди появятся элементы
+	xSemaphoreTake(queue->mutex, portMAX_DELAY);
+
+	// копируем сразу весь массив этого сообщения, из соображений что
+	// после выхода из функции в зависимости от типа сообщения разберутся где полезные а где лишние байты
+	memcpy(resultBuf, queue->front->data, queue->itemDataSize);
+	queue->front->isActual = false;
+	queue->front = queue->front->next;
+
+	xSemaphoreGive(queue->mutex);
+}
