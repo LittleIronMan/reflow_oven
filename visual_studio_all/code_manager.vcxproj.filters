@@ -190,15 +190,6 @@
     <ClCompile Include="..\stm32\Src\system_stm32f1xx.c">
       <Filter>stm32</Filter>
     </ClCompile>
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt.c">
-      <Filter>raspberry\windows_specific_code</Filter>
-    </ClCompile>
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt_long.c">
-      <Filter>raspberry\windows_specific_code</Filter>
-    </ClCompile>
-    <ClCompile Include="..\raspberry\windows_specific_code\wiringSerial.c">
-      <Filter>raspberry\windows_specific_code</Filter>
-    </ClCompile>
     <ClCompile Include="..\raspberry\uart-Tx.c">
       <Filter>raspberry\Tx</Filter>
     </ClCompile>
@@ -207,6 +198,15 @@
     </ClCompile>
     <ClCompile Include="..\stm32_simulator\main.c">
       <Filter>stm32\simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.c">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt_long.c">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c">
+      <Filter>raspberry\windows_specific_code</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -423,14 +423,14 @@
     <ClInclude Include="..\stm32\Inc\stm32f1xx_it.h">
       <Filter>stm32</Filter>
     </ClInclude>
-    <ClInclude Include="..\raspberry\windows_specific_code\getopt.h">
-      <Filter>raspberry\windows_specific_code</Filter>
-    </ClInclude>
-    <ClInclude Include="..\raspberry\windows_specific_code\wiringSerial.h">
-      <Filter>raspberry\windows_specific_code</Filter>
-    </ClInclude>
     <ClInclude Include="..\stm32_simulator\FreeRTOSConfig.h">
       <Filter>stm32\simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.h">
+      <Filter>raspberry\windows_specific_code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h">
+      <Filter>raspberry\windows_specific_code</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

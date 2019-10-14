@@ -135,9 +135,9 @@
     <ClCompile Include="..\protobuf\reflow_oven.pb.c" />
     <ClCompile Include="..\raspberry\uart-Rx.c" />
     <ClCompile Include="..\raspberry\uart-Tx.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt_long.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\wiringSerial.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt_long.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c" />
     <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c" />
     <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c" />
     <ClCompile Include="..\stm32\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c" />
@@ -185,8 +185,8 @@
     <ClInclude Include="..\protobuf\nanopb\pb_decode.h" />
     <ClInclude Include="..\protobuf\nanopb\pb_encode.h" />
     <ClInclude Include="..\protobuf\reflow_oven.pb.h" />
-    <ClInclude Include="..\raspberry\windows_specific_code\getopt.h" />
-    <ClInclude Include="..\raspberry\windows_specific_code\wiringSerial.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h" />
     <ClInclude Include="..\stm32\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f105xc.h" />
     <ClInclude Include="..\stm32\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h" />
     <ClInclude Include="..\stm32\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h" />

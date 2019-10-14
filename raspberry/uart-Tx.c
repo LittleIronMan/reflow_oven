@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 		// void serialPrintf(int fd, char *message, Е);
 
 		if ((uartDescriptor = serialOpen(serialPortName, serialBaudRate)) < 0) {
-			nrcLog("Unable to open serial port: %s", strerror(errno, ""));
+			nrcLog("Unable to open serial port: %s", strerror(errno));
 			return 1;
 		}
 		else {

@@ -2,18 +2,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\raspberry\uart-Rx.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt_long.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\wiringSerial.c" />
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
     <ClCompile Include="..\nrc-print\nrc-print.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt_long.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\raspberry\windows_specific_code\getopt.h" />
-    <ClInclude Include="..\raspberry\windows_specific_code\wiringSerial.h" />
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
     <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h" />
     <ClInclude Include="..\nrc-print\nrc-print.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.h" />
   </ItemGroup>
 </Project>

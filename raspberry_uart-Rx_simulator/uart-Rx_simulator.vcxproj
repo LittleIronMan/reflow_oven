@@ -76,7 +76,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\raspberry\windows_specific_code;..\other;..\nrc-print;..\nrc-safe-uart;..\raspberry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\raspberry\windows_specific_code\wiringpi;..\raspberry\windows_specific_code\getopt_MSVC;..\other;..\nrc-print;..\nrc-safe-uart;..\raspberry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NRC_WINDOWS_SIMULATOR;NRC_RPI_UART_RX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -102,7 +102,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\raspberry\windows_specific_code;..\other;..\nrc-print;..\nrc-safe-uart;..\raspberry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\raspberry\windows_specific_code\wiringpi;..\raspberry\windows_specific_code\getopt_MSVC;..\other;..\nrc-print;..\nrc-safe-uart;..\raspberry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NRC_WINDOWS_SIMULATOR;NRC_RPI_UART_RX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -131,16 +131,16 @@
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
     <ClCompile Include="..\raspberry\uart-Rx.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\getopt_long.c" />
-    <ClCompile Include="..\raspberry\windows_specific_code\wiringSerial.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt_long.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nrc-print\nrc-print.h" />
     <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h" />
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
-    <ClInclude Include="..\raspberry\windows_specific_code\getopt.h" />
-    <ClInclude Include="..\raspberry\windows_specific_code\wiringSerial.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\getopt_MSVC\getopt.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

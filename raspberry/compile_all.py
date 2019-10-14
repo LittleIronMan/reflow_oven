@@ -45,8 +45,8 @@ includeDirs += ["../nrc-print", "../nrc-safe-uart", "../other"]
 if isLinux:
 	compileLibs += ["-lwiringPi"] # библиотека для обмена данными по последовательному протоколу для rapsberry pi
 elif isWindows:
-	includeDirs += ["windows_specific_code"]
-	compileSourceFiles += ["windows_specific_code/wiringSerial.c"] # фейковая библиотека, имитирует uart на Windows
+	includeDirs += ["windows_specific_code/wiringpi"]
+	compileSourceFiles += ["windows_specific_code/wiringpi/wiringSerial.c"] # фейковая библиотека, имитирует uart на Windows
 
 # nanopb
 includeDirs += ["../protobuf", "../protobuf/nanopb"]
@@ -54,8 +54,9 @@ includeDirs += ["../protobuf", "../protobuf/nanopb"]
 progs = ["uart-Rx", "uart-Tx"]
 for prog in progs:
 	# добавляем зависимые от конкретной программы файлы
-	incDirs = list(includeDirs) + [prog, "../nrc-print/config_rpi_" + prog, "../nrc-safe-uart/config_rpi_" + prog]
-	compileSrc = list(compileSourceFiles) + [prog + "/" + prog + ".c", "../nrc-safe-uart/config_rpi_" + prog + "/nrc-safe-uart_config.c"]
+	incDirs = list(includeDirs)
+	compilerDefines = ["NRC_RPI_" + prog.upper().replace("-", "_")]
+	compileSrc = list(compileSourceFiles) + [prog + ".c"]
 	outFile = prog + ".exe" # даже для линукса исполняемый файл будет иметь расширение exe, это сделано только для того чтобы в других программах меньше if(linux) писать
 
 	# для Windows будут использоваться абсолютные пути к файлам
@@ -69,9 +70,12 @@ for prog in progs:
 	# добавляем префикс -I к директориям с заголовочниками файлами
 	for i in range(len(incDirs)):
 		incDirs[i] = "-I" + incDirs[i]
+	# добавляем префикс -D к макросам для компилятора
+	for i in range(len(compilerDefines)):
+		compilerDefines[i] = "-D" + compilerDefines[i]
 
 	print("--------------->>> compile " + prog + " <<<-----------------")
-	args = compilerArgs + compileLibs + incDirs + compileSrc + ["-o", outFile]
+	args = compilerArgs + compileLibs + incDirs + compileSrc + compilerDefines + ["-o", outFile]
 	if chDir != "":
 		tmpCwd = os.getcwd() # запоминаем на всякий current working directory, чтобы потом вернуть её на место
 		os.chdir(chDir)
