@@ -192,6 +192,7 @@
     <ClCompile Include="..\nrc-print\nrc-print.c" />
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
+    <ClCompile Include="..\PID_controller\pid.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_common.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_decode.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_encode.c" />
@@ -240,6 +241,7 @@
     <ClInclude Include="..\nrc-print\nrc-print.h" />
     <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h" />
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
+    <ClInclude Include="..\PID_controller\pid.h" />
     <ClInclude Include="..\protobuf\nanopb\pb.h" />
     <ClInclude Include="..\protobuf\nanopb\pb_common.h" />
     <ClInclude Include="..\protobuf\nanopb\pb_decode.h" />

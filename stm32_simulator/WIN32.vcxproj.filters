@@ -30,6 +30,9 @@
     <Filter Include="nrc-money-logic">
       <UniqueIdentifier>{672618b4-da23-453a-8d33-4c1887960fa5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PID_controller">
+      <UniqueIdentifier>{b97f4a0b-1818-41d8-8da2-2e0cde38b248}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\list.c">
@@ -77,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c">
       <Filter>nrc-safe-uart</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PID_controller\pid.c">
+      <Filter>PID_controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h">
       <Filter>nrc-safe-uart</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PID_controller\pid.h">
+      <Filter>PID_controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
