@@ -1,41 +1,19 @@
 #include "pid.h"
 #include <stdint.h> // uint8_t, uint16_t
 
-typedef struct PID_DATA {
-	int16_t lastProcessValue;
-	int32_t integralTerm;
-	double kp;
-	double ki;
-	double kd;
-	int16_t MAX_OUT;
-	int16_t MIN_OUT;
-} pidData_t;
 
-struct PID_DATA pidData;
-
-double pid_Controller(int16_t setPoint, int16_t processValue)
+float pidСontroller(PID_Data *pd, float setPoint, float processValue, float deltaTime)
 {
-	double error, p_term, d_term;
-	double out;
-
+	float error, dErr, control;
 	error = setPoint - processValue;
-	pidData.integralTerm += pidData.ki * error;
-	if (pidData.integralTerm > pidData.MAX_OUT) {
-		pidData.integralTerm = pidData.MAX_OUT;
-		out = pidData.MAX_OUT;
-	}
-	else {
-		d_term = pidData.kd * (processValue - pidData.lastProcessValue);
-		p_term = pidData.kp * error;
-		out = (p_term + pidData.integralTerm - d_term);
-		if (out > pidData.MAX_OUT) {
-			out = pidData.MAX_OUT;
-		}
-		else if (out < pidData.MIN_OUT) {
-			out = pidData.MIN_OUT;
-		}
-	}
-	pidData.lastProcessValue = processValue;
+	pd->integralErr += error * deltaTime; // интеграл ошибки
+	float dErr = (processValue - pd->lastProcessValue) / deltaTime; // производная ошибки
+	pd->lastProcessValue = processValue;
 
-	return out;
+	// U = K * (Err + (1 / Ti) * Int + Td * dErr)  см. здесь: https://habr.com/ru/post/145991/ - замечательная статья
+	control = pd->Kp * (error +
+						pd->integralErr / pd->Ti +
+						pd->Td * dErr);
+
+	return control;
 }

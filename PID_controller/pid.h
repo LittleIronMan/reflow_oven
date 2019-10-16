@@ -1,7 +1,13 @@
 #ifndef pid_h
 #define pid_h
 
-// частично взято отсюда: https://github.com/alexandr-bbm/pid-lib
+typedef struct {
+	float lastProcessValue;
+	float integralErr;
+	float Kp; // пропорциональный коэффициент регулятора
+	float Ti;
+	float Td;
+} PID_Data;
 
 
 #endif // pid_h
