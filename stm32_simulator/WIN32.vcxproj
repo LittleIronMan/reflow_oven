@@ -74,8 +74,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\raspberry\windows_specific_code;..\other;..\PID_controller;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;NRC_STM32;NRC_WINDOWS_SIMULATOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\raspberry\windows_specific_code\wiringpi;..\other;..\PID_controller;..\nrc-test;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;NRC_STM32;NRC_WINDOWS_SIMULATOR;NRC_TEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -191,12 +191,14 @@
     <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c" />
     <ClCompile Include="..\nrc-print\nrc-print.c" />
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
+    <ClCompile Include="..\nrc-test\nrc-test.c" />
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
     <ClCompile Include="..\PID_controller\pid.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_common.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_decode.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_encode.c" />
     <ClCompile Include="..\protobuf\reflow_oven.pb.c" />
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c" />
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\timers.c" />
@@ -240,6 +242,7 @@
     <ClInclude Include="..\nrc-money-logic\nrc-money-logic.h" />
     <ClInclude Include="..\nrc-print\nrc-print.h" />
     <ClInclude Include="..\nrc-safe-uart\nrc-safe-uart.h" />
+    <ClInclude Include="..\nrc-test\nrc-test.h" />
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
     <ClInclude Include="..\PID_controller\pid.h" />
     <ClInclude Include="..\protobuf\nanopb\pb.h" />
@@ -247,6 +250,7 @@
     <ClInclude Include="..\protobuf\nanopb\pb_decode.h" />
     <ClInclude Include="..\protobuf\nanopb\pb_encode.h" />
     <ClInclude Include="..\protobuf\reflow_oven.pb.h" />
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h" />

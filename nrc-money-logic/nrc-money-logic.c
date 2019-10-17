@@ -3,7 +3,9 @@
 #include "nrc-print.h"
 #include <string.h> // memcpy
 #include <stdbool.h>
+
 #include "FreeRTOS.h"
+#include "timers.h"
 
 // protocol buffers
 #include "reflow_oven.pb.h"
@@ -12,12 +14,20 @@
 
 #include "pid.h"
 
+#ifdef NRC_TEST
+#include "nrc-test.h"
+#endif
+
 #ifdef NRC_WINDOWS_SIMULATOR
 #include <windows.h>
 #define osDelay(millisec) vTaskDelay(millisec)
 #elif NRC_STM32
 #include "main.h"
 #endif
+
+bool allowSyncTime = true;
+uint32_t lastSyncUnixTime = 0;
+uint32_t lastTickCount = 0;
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, 0, 0 };
 PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1.0f/* интегральный */, 1.0f/* дифференциальный */};
@@ -44,6 +54,23 @@ NRC_Queue commandQueue = { NULL, commandQueueItemsBuf, commandQueueDataBuf, size
 uint8_t allQueuesCount = 2;
 NRC_Queue* allQueues[2] = { &commandQueue, &responseQueue };
 
+xTimerHandle tempMeasureTimer;
+uint32_t timerPeriod = 250;
+xSemaphoreHandle pidControllerTaskSem = NULL;
+xSemaphoreHandle defaultTaskSem = NULL;
+xSemaphoreHandle termometerMutex = NULL;
+
+void timerFunc(xTimerHandle xTimer) {
+	// nrcLogD("Temp measure timer callback");
+	if (cd.state == PB_State_LAUNCHED) {
+		xSemaphoreGive(pidControllerTaskSem);
+	}
+	else {
+		xSemaphoreGive(defaultTaskSem);
+	}
+	// xTimerChangePeriod(xTimer, uiAutoReloadTimerPeriod, 0);
+}
+
 // обработчик команд
 void money_cmdManagerTask(void const *argument)
 {
@@ -58,21 +85,45 @@ void money_cmdManagerTask(void const *argument)
 	}
 }
 
-// в штатном режиме ОС будет просто периодически измерять температуру
-void money_defaultTask(void const *argument)
+void money_pidControllerTask(void const *argument)
 {
-	uint8_t counter = 0;
-	for (;;)
-	{
-		osDelay(500);
-		counter++;
+	nrcLogD("Start pidControllerTask");
+	for(;;) {
+		xSemaphoreTake(pidControllerTaskSem, portMAX_DELAY);
 
 		uint16_t receivedData = 0;
 		uint8_t err = 0;
 		float temp = oven_getTemp(&receivedData, &err);
 		
 		if (err) {
-			nrcLog("Receive error, errcode == %u", err);
+			nrcLog("SPI Receive error, errcode == %u", err);
+		}
+		else {
+			//myPrint("Received data == %x", receivedData);
+			uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
+			if (coupleDisconnected) {
+				nrcLog("Disconnected termocouple");
+			}
+			else {
+				nrcLogD("Temp %.2f", temp);
+			}
+		}
+	}
+}
+
+// в штатном режиме ОС будет просто периодически измерять температуру
+void money_defaultTask(void const *argument)
+{
+	for (;;)
+	{
+		xSemaphoreTake(defaultTaskSem, portMAX_DELAY);
+
+		uint16_t receivedData = 0;
+		uint8_t err = 0;
+		float temp = oven_getTemp(&receivedData, &err);
+		
+		if (err) {
+			nrcLog("SPI Receive error, errcode == %u", err);
 		}
 		else {
 			//myPrint("Received data == %x", receivedData);
@@ -88,7 +139,7 @@ void money_defaultTask(void const *argument)
 }
 
 // задача - декодирует принятые данные и раскидывает их по очередям(например очередь команд)
-void money_taskMsgReceiver(void const * argument)
+void money_taskMsgReceiver(void const *argument)
 {
 	PB_Command RxCmd;
 	nrcLogD("Start msgReceiver");
@@ -133,7 +184,7 @@ void money_taskMsgReceiver(void const * argument)
 }
 
 // задача которая сериализует данные для отправки, упаковывает их для последовательного протокола и, собственно, отправляет их с помощью DMA
-void money_taskMsgSender(void const * argument)
+void money_taskMsgSender(void const *argument)
 {
 	nrcLogD("Start msgSender");
 	uint8_t pbEncodedTxData[PB_Response_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
@@ -291,35 +342,34 @@ uint32_t receiverIRQ_handler()
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
+#endif
 
 void money_initReceiverIRQ()
 {
+#ifdef NRC_WINDOWS_SIMULATOR
 	RxBuf.state = BufState_USED_BY_HARDWARE;
 	SetThreadPriority(CreateThread(NULL, 0, receiverIRQ_generator, NULL, 0, NULL), THREAD_PRIORITY_ABOVE_NORMAL);
 	vPortSetInterruptHandler(kReceiveIRQ_No, receiverIRQ_handler);
+#endif
 }
 
 float oven_getTemp(uint16_t* receivedData, uint8_t *err)
 {
+	float temp;
+
+	xSemaphoreTake(termometerMutex, portMAX_DELAY);
+#ifdef NRC_WINDOWS_SIMULATOR
 	*err = 0;
 	*receivedData = 0;
-	return 0.0f;
-}
-
-uint32_t getCurrentTime()
-{
-	return 31415;
-}
-
-// ----->>>> реальный код для микроконтроллера <<<<-----
-#else
-
-float oven_getTemp(uint16_t *receivedData, uint8_t *err)
-{
+	temp = 0.0f;
+#elif NRC_STM32
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 	*err = (uint8_t)HAL_SPI_Receive(&hspi3, (uint8_t*)receivedData, 1, HAL_MAX_DELAY);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-	float temp = ((*receivedData >> 3) & 0xfff) * 0.25f;
+	temp = ((*receivedData >> 3) & 0xfff) * 0.25f;
+#endif
+	xSemaphoreGive(termometerMutex);
+
 	return temp;
 }
 
@@ -328,10 +378,12 @@ uint32_t getCurrentTime()
 	return 31415;
 }
 
-#endif
-
 void money_init()
 {
+#ifdef NRC_TEST
+	nrc_testAll();
+#endif
+
 	// для всех очередей связываем их массив элементов(items) с массивом данных(dataBuf)
 	// и создаем мютексы/семафоры
 	for (uint8_t i = 0; i < allQueuesCount; i++) {
@@ -363,6 +415,12 @@ void money_init()
 	//TempProfile inputMsg = TempProfile_init_default;
 	//pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
 	//bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
+
+	tempMeasureTimer = xTimerCreate("AutoReloadTimer", timerPeriod, pdTRUE, 0, timerFunc);
+	xTimerReset(tempMeasureTimer, 0);
+	pidControllerTaskSem = xSemaphoreCreateBinary();
+	defaultTaskSem = xSemaphoreCreateBinary();
+	termometerMutex = xSemaphoreCreateMutex();
 }
 
 bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
@@ -426,3 +484,41 @@ void popItemFromQueue(NRC_Queue *queue, uint8_t *resultBuf)
 
 	xSemaphoreGive(queue->mutex);
 }
+
+void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
+{
+	uint32_t tickCount, deltaTicks, deltaSeconds;
+
+	if (argTickCount) { tickCount = *argTickCount; }
+	else { tickCount = xTaskGetTickCount(); }
+
+	allowSyncTime = false;
+
+	if (lastTickCount < tickCount) { deltaTicks = tickCount - lastTickCount; }
+	else { deltaTicks = ((uint32_t)0xFFFFFFFF - lastTickCount) + tickCount + 1; }
+	deltaSeconds = deltaTicks / 1000;
+	time->mills = (deltaTicks - deltaSeconds * 1000);
+	time->unixSeconds = lastSyncUnixTime + deltaSeconds;
+	lastTickCount = tickCount; // обновляем переменную lastTickCount каждый раз когда вызывается функция NRC_getTime()
+
+	allowSyncTime = true;
+
+	if (argTickCount) { *argTickCount = tickCount; }
+}
+
+#ifdef NRC_TEST
+void NRC_assertCall(unsigned long ulLine, const char* const pcFileName)
+{
+	nrcLog("NRC Assert! Line %d, file %s", ulLine, pcFileName);
+
+	taskENTER_CRITICAL();
+	{
+		// блокируем всю ОС
+		while (true) {
+			__asm { NOP };
+			__asm { NOP };
+		}
+	}
+	taskEXIT_CRITICAL();
+}
+#endif

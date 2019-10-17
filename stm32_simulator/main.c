@@ -132,6 +132,8 @@ int main(void)
 	xTaskCreate(money_defaultTask, "defaultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &defaultTask);
 	TaskHandle_t cmdManagerTask;
 	xTaskCreate(money_cmdManagerTask, "cmdManagerTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &cmdManagerTask);
+	TaskHandle_t pidControllerTask;
+	xTaskCreate(money_pidControllerTask, "pidControllerTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 4, &pidControllerTask);
 	TaskHandle_t receiverTask;
 	xTaskCreate(money_taskMsgReceiver, "receiverTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &receiverTask);
 	TaskHandle_t senderTask;

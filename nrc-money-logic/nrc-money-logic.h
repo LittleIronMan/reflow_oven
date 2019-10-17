@@ -60,15 +60,21 @@ typedef struct {
 	uint16_t prevMeasure;
 } NRC_ControlData;
 
+typedef struct {
+	uint32_t unixSeconds; // секунд с начала эпохи(UNIX - время)
+	uint16_t mills; // миллисекунды последней секунды
+} NRC_Time;
+
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
 						TxBuf; // буфер данных, передаваемых по UART
 extern NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
 
 void money_init(void);
-void money_cmdManagerTask(void const* argument);
+void money_cmdManagerTask(void const *argument);
+void money_pidControllerTask(void const *argument);
 void money_defaultTask(void const *argument);
-void money_taskMsgReceiver(void const * argument);
-void money_taskMsgSender(void const * argument);
+void money_taskMsgReceiver(void const *argument);
+void money_taskMsgSender(void const *argument);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
 void money_initReceiverIRQ(void);
 void money_initSender(void);
@@ -79,5 +85,9 @@ void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 
 bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
+
+extern uint32_t lastSyncUnixTime;
+extern uint32_t lastTickCount;
+void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
 
 #endif // main_logic_h

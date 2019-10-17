@@ -33,6 +33,12 @@
     <Filter Include="PID_controller">
       <UniqueIdentifier>{b97f4a0b-1818-41d8-8da2-2e0cde38b248}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FreeRTOS Source\Source\Portable\MSVC">
+      <UniqueIdentifier>{7f8d69f0-1e42-43d5-9126-daadf0a5a17c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nrc-test">
+      <UniqueIdentifier>{450a6280-cf12-4b1e-bb65-188d412fe5b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\list.c">
@@ -43,9 +49,6 @@
     </ClCompile>
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\tasks.c">
       <Filter>FreeRTOS Source\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\port.c">
-      <Filter>FreeRTOS Source\Source\Portable</Filter>
     </ClCompile>
     <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\timers.c">
       <Filter>FreeRTOS Source\Source</Filter>
@@ -84,6 +87,15 @@
     <ClCompile Include="..\PID_controller\pid.c">
       <Filter>PID_controller</Filter>
     </ClCompile>
+    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\port.c">
+      <Filter>FreeRTOS Source\Source\Portable\MSVC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c">
+      <Filter>nrc-safe-uart</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nrc-test\nrc-test.c">
+      <Filter>nrc-test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h">
@@ -108,9 +120,6 @@
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\task.h">
-      <Filter>FreeRTOS Source\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h">
@@ -149,6 +158,15 @@
     </ClInclude>
     <ClInclude Include="..\PID_controller\pid.h">
       <Filter>PID_controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h">
+      <Filter>FreeRTOS Source\Source\Portable\MSVC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h">
+      <Filter>nrc-safe-uart</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nrc-test\nrc-test.h">
+      <Filter>nrc-test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
