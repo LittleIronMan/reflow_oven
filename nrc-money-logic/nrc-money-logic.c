@@ -523,11 +523,13 @@ void NRC_setDefaultTempProfile(PB_TempProfile *profile)
 
 float NRC_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time)
 {
-	if (time > tp->data[tp->countPoints - 1].time) { }
-	uint8_t nearIdx = 0;
-	for (uint8_t i = 0; i < tp->countPoints; i++) {
-		if (tp->data[i].time > time) {
-			nearIdx = i - 1; break;
-		}
+#define invalidTempValue 26.0f // стандартная температура жилого помещения
+	if (time > tp->data[tp->countPoints - 1].time) { return invalidTempValue; }
+	uint8_t i = 1;
+	for (; i < tp->countPoints; i++) {
+		if (tp->data[i].time > time) { break; }
 	}
+	PB_TempMeasure *A = &(tp->data[i - 1]),
+		*B = &(tp->data[i]);
+	return (A->temp + ((time - A->time) / ((float)B->time - A->time)) * ((float)B->temp - A->temp));
 }

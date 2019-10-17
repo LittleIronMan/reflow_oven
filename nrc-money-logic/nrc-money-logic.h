@@ -90,5 +90,6 @@ extern uint32_t lastSyncUnixTime;
 extern uint32_t lastTickCount;
 void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
 void NRC_setDefaultTempProfile(PB_TempProfile* profile);
+float NRC_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time);
 
 #endif // main_logic_h
