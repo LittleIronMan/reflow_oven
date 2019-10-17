@@ -25,7 +25,7 @@
 #include "main.h"
 #endif
 
-bool allowSyncTime = true;
+volatile bool allowSyncTime = true;
 uint32_t lastSyncUnixTime = 0;
 uint32_t lastTickCount = 0;
 
