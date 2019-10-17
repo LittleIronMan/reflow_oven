@@ -507,19 +507,27 @@ void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
 	if (argTickCount) { *argTickCount = tickCount; }
 }
 
-#ifdef NRC_TEST
-void NRC_assertCall(unsigned long ulLine, const char* const pcFileName)
+void NRC_setDefaultTempProfile(PB_TempProfile *profile)
 {
-	nrcLog("NRC Assert! Line %d, file %s", ulLine, pcFileName);
+	PB_TempMeasure* tp = profile->data; uint16_t lastTime = 0; uint8_t idx = 0;
+#define NRC_SET_POINT(peroiodInSeconds,tempValue) lastTime += peroiodInSeconds; tp[idx].time = lastTime * 1000; tp[idx].temp = tempValue; idx++
+	NRC_SET_POINT(0, 26);
+	NRC_SET_POINT(70, 160); // за 60 секунд нагреть плату от 45 до 150 - 170 градусов
+	NRC_SET_POINT(60, 160); // (растекание флюса) удерживать в таком состоянии 60 секунд
+	NRC_SET_POINT(30, 195); // нагреть плату выше 183 градусов
+	NRC_SET_POINT(45, 195); // (оплавление припоя) удерживать 45 + -15 секунд. Максимальная температура 215 + -5 градусов
+	NRC_SET_POINT(50, 26); // остывать - не быстрее 4 градусов в секунду
+	profile->countPoints = idx;
+	// Итого 3 минуты + остывание(~50 секунд на открытом воздухе)s
+}
 
-	taskENTER_CRITICAL();
-	{
-		// блокируем всю ОС
-		while (true) {
-			__asm { NOP };
-			__asm { NOP };
+float NRC_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time)
+{
+	if (time > tp->data[tp->countPoints - 1].time) { }
+	uint8_t nearIdx = 0;
+	for (uint8_t i = 0; i < tp->countPoints; i++) {
+		if (tp->data[i].time > time) {
+			nearIdx = i - 1; break;
 		}
 	}
-	taskEXIT_CRITICAL();
 }
-#endif

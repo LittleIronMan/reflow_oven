@@ -89,5 +89,6 @@ void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
 extern uint32_t lastSyncUnixTime;
 extern uint32_t lastTickCount;
 void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
+void NRC_setDefaultTempProfile(PB_TempProfile* profile);
 
 #endif // main_logic_h

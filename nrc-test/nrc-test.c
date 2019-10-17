@@ -28,9 +28,41 @@ void nrc_testAll()
 	lastTickCount = tmp2;
 	// -------------->>>> NRC_getTime End <<<<----------------
 
+	// -------------->>>> NRC_getInterpolatedTempProfileValue Begin <<<<----------------
+	PB_TempProfile profile;
+	NRC_setDefaultTempProfile(&profile);
+	NRC_SET_POINT(0, 26);
+	NRC_SET_POINT(70, 160); // за 60 секунд нагреть плату от 45 до 150 - 170 градусов
+	NRC_SET_POINT(60, 160); // (растекание флюса) удерживать в таком состоянии 60 секунд
+	NRC_SET_POINT(30, 195); // нагреть плату выше 183 градусов
+	NRC_SET_POINT(45, 195); // (оплавление припоя) удерживать 45 + -15 секунд. Максимальная температура 215 + -5 градусов
+	NRC_SET_POINT(50, 26); // остывать - не быстрее 4 градусов в секунду
+#define TEST_INTERVAL(idx1,idx2) NRC_AssertTest(abs(NRC_getInterpolatedTempProfileValue(&profile, 0.5f * (profile.data[idx1].time + profile.data[idx2].time)) - 0.5f * (profile.data[idx1].temp + profile.data[idx2].temp)) < 1.0f)
+	TEST_INTERVAL(0, 1);
+	TEST_INTERVAL(1, 2);
+	TEST_INTERVAL(2, 3);
+	TEST_INTERVAL(3, 4);
+	TEST_INTERVAL(4, 5);
+	// -------------->>>> NRC_getInterpolatedTempProfileValue End <<<<----------------
+
 
 	// -------------->>>> Finish <<<<----------------
 	nrcLog("All tests completed succesfull");
+}
+
+void NRC_assertCall(unsigned long ulLine, const char* const pcFileName)
+{
+	nrcLog("NRC Assert! Line %d, file %s", ulLine, pcFileName);
+
+	taskENTER_CRITICAL();
+	{
+		// блокируем всю ОС
+		while (true) {
+			__asm { NOP };
+			__asm { NOP };
+		}
+	}
+	taskEXIT_CRITICAL();
 }
 
 #endif // NRC_TEST
