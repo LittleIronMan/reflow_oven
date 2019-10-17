@@ -7,9 +7,9 @@
 // тесты всех нетривиальных функций проекта
 void nrc_testAll()
 {
-	// -------------->>>> NRC_getTime <<<<----------------
+	// -------------->>>> NRC_getTime Begin <<<<----------------
 	NRC_Time testTime;
-	uint32_t fakeCurrentTickCount;
+	uint32_t fakeCurrentTickCount, tmp1 = lastSyncUnixTime, tmp2 = lastTickCount;
 
 	lastSyncUnixTime = 1570000000;
 	lastTickCount = 3000000;
@@ -23,6 +23,10 @@ void nrc_testAll()
 	NRC_getTime(&testTime, &fakeCurrentTickCount);
 	NRC_AssertTest((testTime.unixSeconds == 1570000100) && testTime.mills == 201);
 
+	// после теста восстанавливаем глобальным переменным их исходные величины
+	lastSyncUnixTime = tmp1;
+	lastTickCount = tmp2;
+	// -------------->>>> NRC_getTime End <<<<----------------
 
 
 	// -------------->>>> Finish <<<<----------------

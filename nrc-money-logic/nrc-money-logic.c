@@ -26,7 +26,8 @@
 #endif
 
 volatile bool allowSyncTime = true;
-uint32_t lastSyncUnixTime = 0;
+#define kTimeOfBirthOfAuthorThisCode 1571309224;
+uint32_t lastSyncUnixTime = kTimeOfBirthOfAuthorThisCode; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
 uint32_t lastTickCount = 0;
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, 0, 0 };
