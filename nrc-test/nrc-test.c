@@ -1,6 +1,8 @@
 #include "nrc-test.h"
 #include "nrc-money-logic.h"
 #include "nrc-print.h"
+//#include "FreeRTOS.h"
+#include "task.h"
 
 #ifdef NRC_TEST
 
@@ -31,12 +33,7 @@ void nrc_testAll()
 	// -------------->>>> NRC_getInterpolatedTempProfileValue Begin <<<<----------------
 	PB_TempProfile profile;
 	NRC_setDefaultTempProfile(&profile);
-	NRC_SET_POINT(0, 26);
-	NRC_SET_POINT(70, 160); // за 60 секунд нагреть плату от 45 до 150 - 170 градусов
-	NRC_SET_POINT(60, 160); // (растекание флюса) удерживать в таком состоянии 60 секунд
-	NRC_SET_POINT(30, 195); // нагреть плату выше 183 градусов
-	NRC_SET_POINT(45, 195); // (оплавление припоя) удерживать 45 + -15 секунд. Максимальная температура 215 + -5 градусов
-	NRC_SET_POINT(50, 26); // остывать - не быстрее 4 градусов в секунду
+
 #define TEST_INTERVAL(idx1,idx2) NRC_AssertTest(abs(NRC_getInterpolatedTempProfileValue(&profile, 0.5f * (profile.data[idx1].time + profile.data[idx2].time)) - 0.5f * (profile.data[idx1].temp + profile.data[idx2].temp)) < 1.0f)
 	TEST_INTERVAL(0, 1);
 	TEST_INTERVAL(1, 2);
