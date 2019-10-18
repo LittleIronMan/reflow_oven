@@ -77,7 +77,7 @@ typedef struct _PB_Response {
 
 typedef struct _PB_TempMeasure {
     uint32_t time;
-    uint16_t temp;
+    float temp;
 /* @@protoc_insertion_point(struct:PB_TempMeasure) */
 } PB_TempMeasure;
 
@@ -133,9 +133,9 @@ extern const pb_field_t PB_Response_fields[7];
 
 /* Maximum encoded size of messages (where known) */
 #define PB_Command_size                          14
-#define PB_TempMeasure_size                      12
-#define PB_TempProfile_size                      146
-#define PB_ResponseGetTempProfile_size           151
+#define PB_TempMeasure_size                      11
+#define PB_TempProfile_size                      136
+#define PB_ResponseGetTempProfile_size           141
 #define PB_Response_size                         20
 
 /* Message IDs (where set with "msgid" option) */

@@ -383,7 +383,7 @@
             if (message.time != null && message.hasOwnProperty("time"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.time);
             if (message.temp != null && message.hasOwnProperty("temp"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.temp);
+                writer.uint32(/* id 2, wireType 5 =*/21).float(message.temp);
             return writer;
         };
     
@@ -422,7 +422,7 @@
                     message.time = reader.uint32();
                     break;
                 case 2:
-                    message.temp = reader.uint32();
+                    message.temp = reader.float();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -463,8 +463,8 @@
                 if (!$util.isInteger(message.time))
                     return "time: integer expected";
             if (message.temp != null && message.hasOwnProperty("temp"))
-                if (!$util.isInteger(message.temp))
-                    return "temp: integer expected";
+                if (typeof message.temp !== "number")
+                    return "temp: number expected";
             return null;
         };
     
@@ -483,7 +483,7 @@
             if (object.time != null)
                 message.time = object.time >>> 0;
             if (object.temp != null)
-                message.temp = object.temp >>> 0;
+                message.temp = Number(object.temp);
             return message;
         };
     
@@ -507,7 +507,7 @@
             if (message.time != null && message.hasOwnProperty("time"))
                 object.time = message.time;
             if (message.temp != null && message.hasOwnProperty("temp"))
-                object.temp = message.temp;
+                object.temp = options.json && !isFinite(message.temp) ? String(message.temp) : message.temp;
             return object;
         };
     
