@@ -2,8 +2,9 @@
 const webpack = require('webpack');
 const middleware = require('webpack-dev-middleware');
 const webpackConfig = require('./webpack.config');
-const pb = require('./nrc_msg.pb.js');
-const base64 = require('protobufjs/minimal').util.base64;
+const pb = require('./reflow_oven.pb.js');
+const protobuf = require('protobufjs/minimal');
+const base64 = protobuf.util.base64;
 let compiler = webpack(webpackConfig);
 
 const express = require('express');
@@ -48,7 +49,31 @@ else if (process.platform === 'win32') {
     //uartListener = child_process.spawn('python', ['-u', '../rpi-uart/uart-listener-win32-emulate.py']);
 }
 
+var binaryData = new Uint8Array(150);
+
 uartListener.stdout.on('data', function (data) {
+    let str = data.toString();
+    let type = parseInt(str.substring(0, 2));
+    console.log("Received msg with type ", type);
+    if (type === pb.PB_MsgType.UNDEFINED) {
+        return;
+    }
+    let b64data = str.substring(2);
+    let pbLength = base64.decode(b64data, binaryData, 0);
+    if (type === pb.PB_MsgType.TEMP_MEASURE) {
+        let tempMeasure;
+        try {// tempMeasure = pb.PB_TempMeasure.decode(pbEncodedData).toObject();
+            tempMeasure = pb.PB_TempMeasure.decode(binaryData, pbLength);
+            console.log("emit obj " + tempMeasure);
+            io.emit('temp measure', tempMeasure);
+        }
+        catch (e) {
+            if (e instanceof protobuf.util.ProtocolError) { }
+            else { }
+        }
+    }
+
+    /*
     let str = data.toString();
     if (str.startsWith('temp measure')) {
         let words = str.match(/\S+/g) || [];
@@ -64,6 +89,7 @@ uartListener.stdout.on('data', function (data) {
     else {
         console.log("Unhandled uart message: ", str);
     }
+    */
 });
 
 uartListener.stderr.on('data', function (data) {
@@ -77,13 +103,12 @@ uartListener.on('close', function (code) {
 var pingProcess;
 function sendPing() {
     if (pingProcess === undefined) {
-        let cmd = pb.OvenCommand.create({type: pb.OvenCommand.Type.START, id: 314, priority: 1});
-	    console.log(cmd);
-	    let payload = pb.OvenCommand.encode(cmd).finish();
+        let cmd = pb.PB_Command.create({type: pb.PB_CmdType.GET_STATE, id: 314, priority: 1});
+	    let payload = pb.PB_Command.encode(cmd).finish();
         payload = base64.encode(payload, 0, payload.length);
         console.log('base64 payload: ' + payload);
 
-        pingProcess = child_process.exec('../rpi-uart/uart-speaker -s ' + payload + ' -t ' + pb.MsgType.CMD + ' -b'); // translate: '<some path>/uart-speaker --send <data> --type <type> --base64'
+        pingProcess = child_process.exec('../raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe -s ' + payload + ' -t ' + pb.PB_MsgType.CMD + ' -b');
         pingProcess.on('exit', function (code) {
             console.log('pingProcess exited with exit code ' + code);
             pingProcess = undefined;

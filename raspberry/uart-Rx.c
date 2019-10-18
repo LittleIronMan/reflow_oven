@@ -88,10 +88,11 @@ int main(int argc, char *argv[])
 			nrcLogD("Wrong message");
 		}
 		else {
-			nrcLogD("Received message with type %d and length %d bytes!", msgType, msgLen);
 			int b64Len = 0;
 			char *b64encoded = base64(pbEncodedMsgContent, msgLen, &b64Len);
-			nrcLogD("base64 content: %s", b64encoded);
+			//nrcLogD("Received message with type %d and length %d bytes!", msgType, msgLen);
+			//nrcLogD("base64 content: %s", b64encoded);
+			nrcPrintf("%d%d%s", msgType / 10, msgType % 10, b64encoded);
 		}
 	}
 	//close(fifoDescriptor); 
