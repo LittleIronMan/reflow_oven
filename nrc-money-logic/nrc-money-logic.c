@@ -41,19 +41,23 @@ NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, NULL, BufState_USED_BY
 				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, NULL, BufState_USED_BY_PROC };
 NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
 
-// статически выделенная память для очередей
-#define COMMAND_QUEUE_COUNT_ITEMS 5
-uint8_t commandQueueDataBuf[sizeof(PB_Command) * COMMAND_QUEUE_COUNT_ITEMS];
-NRC_QueueItem commandQueueItemsBuf[COMMAND_QUEUE_COUNT_ITEMS];
-#define RESPONSE_QUEUE_COUNT_ITEMS 5
-uint8_t responseQueueDataBuf[sizeof(PB_Response) * RESPONSE_QUEUE_COUNT_ITEMS];
-NRC_QueueItem responseQueueItemsBuf[RESPONSE_QUEUE_COUNT_ITEMS];
+// макрофункция для статического выделения памяти для очередей
+#define NRC_CREATE_QUEUE(queueName,type,countItems,msgType,protobufFields) \
+uint8_t queueName##DataBuf[sizeof(type) * (countItems)]; \
+NRC_QueueItem queueName##ItemsBuf[(countItems)]; \
+NRC_Queue queueName = { NULL, queueName##ItemsBuf, queueName##DataBuf, sizeof(type), (countItems), NULL, (msgType), protobufFields }
 
-NRC_Queue commandQueue = { NULL, commandQueueItemsBuf, commandQueueDataBuf, sizeof(PB_Command), COMMAND_QUEUE_COUNT_ITEMS, NULL, NULL }, // очередь входящих сообщений
-		responseQueue = { NULL, responseQueueItemsBuf, responseQueueDataBuf, sizeof(PB_Response), RESPONSE_QUEUE_COUNT_ITEMS, NULL, NULL }; // очередь сообщений для отправки
+NRC_CREATE_QUEUE(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields); // очередь входящих сообщений
+NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields); // очередь сообщений для отправки
+NRC_CREATE_QUEUE(tempMeasureQueue, PB_TempMeasure, 3, PB_MsgType_TEMP_MEASURE, PB_TempMeasure_fields); // очередь измерений температуры для отправки
 
-uint8_t allQueuesCount = 2;
-NRC_Queue* allQueues[2] = { &commandQueue, &responseQueue };
+// массив всех очередей
+const NRC_Queue* allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue };
+#define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
+
+// массив очередей с исходящими данными(при отправке бОльший приоритет имеют очереди в начале массива)
+const NRC_Queue* outgoingQueues[] = { &responseQueue, &tempMeasureQueue };
+#define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 xTimerHandle tempMeasureTimer;
 uint32_t timerPeriod = 250 / NRC_TIME_ACCELERATION;
@@ -78,24 +82,31 @@ void money_cmdManagerTask(void const *argument)
 	nrcLogD("Start cmdManagerTask");
 	PB_Command cmd;
 	for (;;) {
-		popItemFromQueue(&commandQueue, (uint8_t*)&cmd);
-		nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
-		if (cmd.cmdType == PB_CmdType_START) {
-			// сброс начальных данных ПИД регулятора
-			NRC_getTime(&cd.startTime, NULL);
-			cd.lastIterationTime = cd.startTime;
-			pidData.lastProcessValue = 0.0f;
-			pidData.integralErr = 0.0f;
-			cd.state = PB_State_LAUNCHED;
-		}
-		else if (cmd.cmdType == PB_CmdType_STOP) {
-			Oven_finishHeatingProgram();
-		}
-		else {
-			// сразу посылаем ответ на команду
-			PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
-			addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority);
-		}
+		xSemaphoreTake(semCounterIncomingMessages, portMAX_DELAY);
+
+		do {
+			if (!commandQueue.firstItem) {
+				continue;
+			}
+			popItemFromQueue(&commandQueue, (uint8_t*)&cmd);
+			nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
+			if (cmd.cmdType == PB_CmdType_START) {
+				// сброс начальных данных ПИД регулятора
+				NRC_getTime(&cd.startTime, NULL);
+				cd.lastIterationTime = cd.startTime;
+				pidData.lastProcessValue = 0.0f;
+				pidData.integralErr = 0.0f;
+				cd.state = PB_State_LAUNCHED;
+			}
+			else if (cmd.cmdType == PB_CmdType_STOP) {
+				Oven_finishHeatingProgram();
+			}
+			else {
+				// сразу посылаем ответ на команду
+				PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
+				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
+			}
+		} while (false);
 	}
 }
 
@@ -133,6 +144,8 @@ void money_pidControllerTask(void const *argument)
 					Oven_applyControl(control);
 
 					nrcLogD("Time %d, Temp %.2f, control %.2f", millsSinceStart, temp, control);
+					PB_TempMeasure tempMeasure = { millsSinceStart, temp };
+					addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
 				}
 			}
 		}
@@ -199,7 +212,7 @@ void money_taskMsgReceiver(void const *argument)
 		// добавляем новую команду в очередь команд
 		if (decodeStatus) {
 			if (msgType == PB_MsgType_CMD) {
-				bool success = addItemToQueue(&commandQueue, (uint8_t*)&RxCmd, RxCmd.priority);
+				bool success = addItemToQueue(&commandQueue, (uint8_t*)&RxCmd, RxCmd.priority, semCounterIncomingMessages);
 				if (!success){
 					nrcLogD("Error: Failed to add command to queue");
 				}
@@ -215,29 +228,40 @@ void money_taskMsgReceiver(void const *argument)
 void money_taskMsgSender(void const *argument)
 {
 	nrcLogD("Start msgSender");
-	uint8_t pbEncodedTxData[PB_Response_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
-	PB_Response response;
-	for(;;) {
-		popItemFromQueue(&responseQueue, (uint8_t*)&response);
 
-		pb_ostream_t ostream = pb_ostream_from_buffer(pbEncodedTxData, sizeof(pbEncodedTxData));
-		bool status = pb_encode(&ostream, PB_Response_fields, &response);
-		if (status) {
-			// ждем пока uart завершит передачу предыдущего сообщения
-			xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
-			TxBuf.state = BufState_USED_BY_PROC;
-			long result = transmitMsg(PB_MsgType_RESPONSE, pbEncodedTxData, ostream.bytes_written, TxBuf.arr);
-			if (result == 0) {
-				nrcLogD("Error sending data");
+	static uint8_t pbEncodedTxData[NRC_MAX(PB_Response_size, PB_TempMeasure_size)]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
+	static uint8_t plainTxData[NRC_MAX(sizeof(PB_Response), sizeof(PB_TempMeasure))];
+
+	for(;;) {
+		xSemaphoreTake(semCounterOutgoingMessages, portMAX_DELAY);
+		for (uint8_t i = 0; i < outgoingQueuesCount; i++) {
+			NRC_Queue* queue = outgoingQueues[i];
+
+			if (!queue->firstItem) { continue; }
+
+			popItemFromQueue(queue, plainTxData);
+
+			pb_ostream_t ostream = pb_ostream_from_buffer(pbEncodedTxData, sizeof(pbEncodedTxData));
+			bool status = pb_encode(&ostream, queue->protobufFields, plainTxData);
+			if (status) {
+				// ждем пока uart завершит передачу предыдущего сообщения
+				xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
+				TxBuf.state = BufState_USED_BY_PROC;
+				long result = transmitMsg(queue->msgType, pbEncodedTxData, ostream.bytes_written, TxBuf.arr);
+				if (result == 0) {
+					nrcLogD("Error sending data");
+				}
+				else {
+					nrcLogD("Message successful transmitted");
+				}
+				#ifdef NRC_WINDOWS_SIMULATOR
+				xSemaphoreGive(TxBuf.sem); // симулятор завершает оправку сообщения при вызове функции transmitMsg, поэтому семафор можно возвращать сразу
+				#else
+				// на реальном железе семафор освобождается в прерывании по завершению отправки
+				#endif
 			}
-			else {
-				nrcLogD("Message successful transmitted");
-			}
-#ifdef NRC_WINDOWS_SIMULATOR
-			xSemaphoreGive(TxBuf.sem);
-#else
-			// семафор освобождается в прерывании
-#endif
+
+			break; // после отправке любого сообщения возвращаемся к семафору
 		}
 	}
 }
@@ -473,8 +497,11 @@ void money_init()
 			queue->items[i].data = &(queue->dataBuf[queue->itemDataSize * i]);
 		}
 		queue->mutex = xSemaphoreCreateMutex();
-		queue->semCounter = xSemaphoreCreateCounting(queue->maxItemsCount, 0);
 	}
+
+	// семафоры для входящих/исходящих сообщений
+	semCounterIncomingMessages = xSemaphoreCreateCounting(10, 0);
+	semCounterOutgoingMessages = xSemaphoreCreateCounting(10, 0);
 
 	// инициализация буферов приема/передачи по uart
 	RxBuf.sem = xSemaphoreCreateBinary();
@@ -500,7 +527,7 @@ void money_init()
 	termometerMutex = xSemaphoreCreateMutex();
 }
 
-bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
+bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSemaphoreHandle semCounter)
 {
 	NRC_QueueItem *freePlace = NULL,
 		*moreImportantItem = NULL,
@@ -515,7 +542,7 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
 		if (!queue->items[i].isActual) { freePlace = &queue->items[i]; needUpdateCounter = true; break; }
 	}
 	// затем ищем ближайший элемент с более высоким приоритетом
-	for (iter = queue->front; iter && iter->priority >= newPriority; iter = iter->next) {
+	for (iter = queue->firstItem; iter && iter->priority >= newPriority; iter = iter->next) {
 		moreImportantItem = iter;
 	}
 	// если свободного места не было найдено, а итератор еще не в конце очереди
@@ -535,11 +562,11 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
 		else {
 			freePlace->next = NULL;
 			// обновляем голову очереди
-			queue->front = freePlace;
+			queue->firstItem = freePlace;
 		}
 		freePlace->isActual = true;
 		if (needUpdateCounter) {
-			xSemaphoreGive(queue->semCounter); // увеличиваем количество актуальных элементов в очереди
+			xSemaphoreGive(semCounter); // увеличиваем количество сообщений в очереди
 		}
 		success = true;
 	}
@@ -550,14 +577,11 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority)
 
 void popItemFromQueue(NRC_Queue *queue, uint8_t *resultBuf)
 {
-	xSemaphoreTake(queue->semCounter, portMAX_DELAY); // ждем пока в очереди появятся элементы
 	xSemaphoreTake(queue->mutex, portMAX_DELAY);
 
-	// копируем сразу весь массив этого сообщения, из соображений что
-	// после выхода из функции в зависимости от типа сообщения разберутся где полезные а где лишние байты
-	memcpy(resultBuf, queue->front->data, queue->itemDataSize);
-	queue->front->isActual = false;
-	queue->front = queue->front->next;
+	memcpy(resultBuf, queue->firstItem->data, queue->itemDataSize);
+	queue->firstItem->isActual = false;
+	queue->firstItem = queue->firstItem->next;
 
 	xSemaphoreGive(queue->mutex);
 }

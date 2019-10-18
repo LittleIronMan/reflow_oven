@@ -5,6 +5,8 @@
 #include "semphr.h"
 #include "reflow_oven.pb.h"
 
+#define NRC_MAX(x,y) ((x) > (y) ? (x) : (y))
+
 #ifdef NRC_WINDOWS_SIMULATOR
 	#define NRC_TIME_ACCELERATION 10
 #else
@@ -47,16 +49,26 @@ typedef struct _NRC_QueueItem {
 	struct _NRC_QueueItem *next;
 } NRC_QueueItem;
 
+typedef enum {
+	NRC_MsgDirection_INCOMING, // входящее сообщение
+	NRC_MsgDirection_OUTGOING // исходящее сообщение
+} NRC_MsgDirection;
+
 // очередь с приоритетами
 typedef struct {
-	NRC_QueueItem* front; // превый элемент в очереди(с наивысшим приоритетом)
+	NRC_QueueItem* firstItem; // превый элемент в очереди(с наивысшим приоритетом)
 	NRC_QueueItem* items; // указатель на массив со всеми элементами этой очереди
 	uint8_t *dataBuf; // указатель на выделенный массив данных для этой очереди
-	uint16_t itemDataSize; // размер единицы структуры данных в этой очереди, грубо говоря sizeof(*items[i].data)
-	uint8_t maxItemsCount; // максимальное количество элементов в очереди
+	const uint16_t itemDataSize; // размер единицы структуры данных в этой очереди, грубо говоря sizeof(*items[i].data)
+	const uint8_t maxItemsCount; // максимальное количество элементов в очереди
 	xSemaphoreHandle mutex; // мютекс, предоставляет доступ к очереди для какой-то одной задачи
-	xSemaphoreHandle semCounter; // семафор - счетчик, блокирует задачу если очередь пуста
+	const PB_MsgType msgType; // тип структур данных в этой очереди
+	const pb_field_t* protobufFields; // указатель на специальную область данных, которая используется как шифр при
+										// кодировании/декодировании структуры данных элемента очереди в nanopb 
 } NRC_Queue;
+
+xSemaphoreHandle semCounterIncomingMessages; // семафор - счетчик для ВХОДЯЩИХ сообщений
+xSemaphoreHandle semCounterOutgoingMessages; // семафор - счетчик для ИСХОДЯЩИХ сообщений
 
 typedef struct {
 	uint32_t unixSeconds; // секунд с начала эпохи(UNIX - время)
@@ -99,7 +111,7 @@ float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* 
 
 void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 
-bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority);
+bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority, xSemaphoreHandle semCounter);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
 
 extern NRC_Time prevTime;
