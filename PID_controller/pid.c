@@ -2,7 +2,7 @@
 #include <stdint.h> // uint8_t, uint16_t
 
 
-float pidСontroller(PID_Data *pd, float setPoint, float processValue, float deltaTime)
+float pidController(PID_Data *pd, float setPoint, float processValue, float deltaTime/* в секундах */)
 {
 	float error, dErr, control;
 	error = setPoint - processValue;

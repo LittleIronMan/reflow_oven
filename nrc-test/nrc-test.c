@@ -10,16 +10,16 @@
 void nrc_testAll()
 {
 	// -------------->>>> NRC_getTime Begin <<<<----------------
-	NRC_Time testTime;
-	uint32_t fakeCurrentTickCount, tmp1 = lastSyncUnixTime, tmp2 = lastTickCount;
+	NRC_Time testTime = { 0, 0 }, tmp1 = lastSyncUnixTime;
+	uint32_t fakeCurrentTickCount, tmp2 = lastTickCount;
 
-	lastSyncUnixTime = 1570000000;
+	lastSyncUnixTime = (NRC_Time){ 1570000000, 0 };
 	lastTickCount = 3000000;
 	fakeCurrentTickCount = 3141592;
 	NRC_getTime(&testTime, &fakeCurrentTickCount);
 	NRC_AssertTest((testTime.unixSeconds == 1570000141) && (testTime.mills == 592));
 
-	lastSyncUnixTime = 1570000000;
+	lastSyncUnixTime = (NRC_Time){ 1570000000, 0 };
 	lastTickCount = 0xFFFFFFFF; // проверка переполнения счетчика lastTickCount
 	fakeCurrentTickCount = 100200;
 	NRC_getTime(&testTime, &fakeCurrentTickCount);

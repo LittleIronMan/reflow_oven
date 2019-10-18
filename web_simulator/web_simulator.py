@@ -79,9 +79,9 @@ allKeys["s"] = ["stop", "Остановка программы", reflow_oven_pb2
 allKeys["p"] = ["profile", "Получить от контроллера термопрофиль", reflow_oven_pb2.PB_MsgType.CMD, cmdProfile]
 allKeys["g"] = ["get_state", "Получить от контроллера его состояние", reflow_oven_pb2.PB_MsgType.CMD, cmdState]
 
-sendProg = "../uart-speaker"
+sendProg = "../raspberry/uart-Tx.exe"
 if isWindows:
-	sendProg = "../raspberry/uart-Tx/windows_simulator/Release/uart-Tx_simulator.exe"
+	sendProg = "../raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe"
 
 def handleKey(key):
 	global cmdId

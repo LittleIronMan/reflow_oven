@@ -26,11 +26,11 @@
 #endif
 
 volatile bool allowSyncTime = true;
-#define kTimeOfBirthOfAuthorThisCode 1571309224;
-uint32_t lastSyncUnixTime = kTimeOfBirthOfAuthorThisCode; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
+#define kTimeOfBirthOfAuthorThisCode 1571309224
+NRC_Time lastSyncUnixTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
 uint32_t lastTickCount = 0;
 
-NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, 0, 0 };
+NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED };
 PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1.0f/* интегральный */, 1.0f/* дифференциальный */};
 
 // соответствующие массивы
@@ -77,12 +77,25 @@ void money_cmdManagerTask(void const *argument)
 {
 	nrcLogD("Start cmdManagerTask");
 	PB_Command cmd;
-	for(;;) {
+	for (;;) {
 		popItemFromQueue(&commandQueue, (uint8_t*)&cmd);
 		nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
-		// сразу посылаем ответ на команду
-		PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
-		addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority);
+		if (cmd.cmdType == PB_CmdType_START) {
+			// сброс начальных данных ПИД регулятора
+			NRC_getTime(&cd.startTime, NULL);
+			cd.lastIterationTime = cd.startTime;
+			pidData.lastProcessValue = 0.0f;
+			pidData.integralErr = 0.0f;
+			cd.state = PB_State_LAUNCHED;
+		}
+		else if (cmd.cmdType == PB_CmdType_STOP) {
+			cd.state = PB_State_STOPPED;
+		}
+		else {
+			// сразу посылаем ответ на команду
+			PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
+			addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority);
+		}
 	}
 }
 
@@ -106,7 +119,14 @@ void money_pidControllerTask(void const *argument)
 				nrcLog("Disconnected termocouple");
 			}
 			else {
-				nrcLogD("Temp %.2f", temp);
+				NRC_Time currentTime;
+				NRC_getTime(&currentTime, NULL);
+				uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
+				uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &cd.lastIterationTime);
+				float setpoint = NRC_getInterpolatedTempProfileValue(&cd.tempProfile, millsSinceStart);
+				float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
+
+				nrcLogD("Time %d, Temp %.2f, control %.2f", millsSinceStart, temp, control);
 			}
 		}
 	}
@@ -495,16 +515,22 @@ void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
 
 	allowSyncTime = false;
 
-	if (lastTickCount < tickCount) { deltaTicks = tickCount - lastTickCount; }
-	else { deltaTicks = ((uint32_t)0xFFFFFFFF - lastTickCount) + tickCount + 1; }
+	if (lastTickCount < tickCount) { deltaTicks = tickCount - lastTickCount + lastSyncUnixTime.mills; }
+	else { deltaTicks = ((uint32_t)0xFFFFFFFF - lastTickCount) + tickCount + 1 + lastSyncUnixTime.mills; }
 	deltaSeconds = deltaTicks / 1000;
 	time->mills = (deltaTicks - deltaSeconds * 1000);
-	time->unixSeconds = lastSyncUnixTime + deltaSeconds;
+	time->unixSeconds = lastSyncUnixTime.unixSeconds + deltaSeconds;
 	lastTickCount = tickCount; // обновляем переменную lastTickCount каждый раз когда вызывается функция NRC_getTime()
 
 	allowSyncTime = true;
 
 	if (argTickCount) { *argTickCount = tickCount; }
+}
+
+// возвращает разницу между 2-мя временными метками в миллисекундах
+uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2)
+{
+	return (time1->unixSeconds - time2->unixSeconds) * 1000 + ((long)time1->mills - time2->mills);
 }
 
 void NRC_setDefaultTempProfile(PB_TempProfile *profile)
@@ -521,7 +547,7 @@ void NRC_setDefaultTempProfile(PB_TempProfile *profile)
 	// Итого 3 минуты + остывание(~50 секунд на открытом воздухе)s
 }
 
-float NRC_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time)
+float NRC_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time /* в миллисекундах */ )
 {
 #define invalidTempValue 26.0f // стандартная температура жилого помещения
 	if (time > tp->data[tp->countPoints - 1].time) { return invalidTempValue; }

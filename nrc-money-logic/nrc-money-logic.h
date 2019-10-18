@@ -53,17 +53,16 @@ typedef struct {
 } NRC_Queue;
 
 typedef struct {
-	PB_TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
-	uint32_t startTime; // веремя начала программы
-	PB_State state; // состояние программы управления
-	uint32_t integral;
-	uint16_t prevMeasure;
-} NRC_ControlData;
-
-typedef struct {
 	uint32_t unixSeconds; // секунд с начала эпохи(UNIX - время)
 	uint16_t mills; // миллисекунды последней секунды
 } NRC_Time;
+
+typedef struct {
+	PB_TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
+	NRC_Time startTime; // веремя начала программы
+	NRC_Time lastIterationTime; // веремя последней итерации пид регулятора
+	PB_State state; // состояние программы управления
+} NRC_ControlData;
 
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
 						TxBuf; // буфер данных, передаваемых по UART
@@ -86,10 +85,12 @@ void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
 
-extern uint32_t lastSyncUnixTime;
+extern NRC_Time lastSyncUnixTime;
 extern uint32_t lastTickCount;
 void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
+uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2);
+
 void NRC_setDefaultTempProfile(PB_TempProfile* profile);
-float NRC_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time);
+float NRC_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */ );
 
 #endif // main_logic_h
