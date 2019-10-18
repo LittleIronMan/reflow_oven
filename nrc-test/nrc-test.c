@@ -10,24 +10,24 @@
 void nrc_testAll()
 {
 	// -------------->>>> NRC_getTime Begin <<<<----------------
-	NRC_Time testTime = { 0, 0 }, tmp1 = lastSyncUnixTime;
-	uint32_t fakeCurrentTickCount, tmp2 = lastTickCount;
+	NRC_Time testTime = { 0, 0 }, tmp1 = prevTime;
+	uint32_t fakeCurrentTickCount, tmp2 = prevTickCount;
 
-	lastSyncUnixTime = (NRC_Time){ 1570000000, 0 };
-	lastTickCount = 3000000;
+	prevTime = (NRC_Time){ 1570000000, 0 };
+	prevTickCount = 3000000;
 	fakeCurrentTickCount = 3141592;
 	NRC_getTime(&testTime, &fakeCurrentTickCount);
 	NRC_AssertTest((testTime.unixSeconds == 1570000141) && (testTime.mills == 592));
 
-	lastSyncUnixTime = (NRC_Time){ 1570000000, 0 };
-	lastTickCount = 0xFFFFFFFF; // проверка переполнения счетчика lastTickCount
+	prevTime = (NRC_Time){ 1570000000, 0 };
+	prevTickCount = 0xFFFFFFFF; // проверка переполнения счетчика lastTickCount
 	fakeCurrentTickCount = 100200;
 	NRC_getTime(&testTime, &fakeCurrentTickCount);
 	NRC_AssertTest((testTime.unixSeconds == 1570000100) && testTime.mills == 201);
 
 	// после теста восстанавливаем глобальным переменным их исходные величины
-	lastSyncUnixTime = tmp1;
-	lastTickCount = tmp2;
+	prevTime = tmp1;
+	prevTickCount = tmp2;
 	// -------------->>>> NRC_getTime End <<<<----------------
 
 	// -------------->>>> NRC_getInterpolatedTempProfileValue Begin <<<<----------------

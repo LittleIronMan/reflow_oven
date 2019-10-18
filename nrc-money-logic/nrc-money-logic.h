@@ -85,8 +85,8 @@ void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
 
-extern NRC_Time lastSyncUnixTime;
-extern uint32_t lastTickCount;
+extern NRC_Time prevTime;
+extern uint32_t prevTickCount;
 void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
 uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2);
 

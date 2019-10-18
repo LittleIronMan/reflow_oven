@@ -27,8 +27,8 @@
 
 volatile bool allowSyncTime = true;
 #define kTimeOfBirthOfAuthorThisCode 1571309224
-NRC_Time lastSyncUnixTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
-uint32_t lastTickCount = 0;
+NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
+uint32_t prevTickCount = 0;
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED };
 PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1.0f/* интегральный */, 1.0f/* дифференциальный */};
@@ -508,19 +508,20 @@ void popItemFromQueue(NRC_Queue *queue, uint8_t *resultBuf)
 
 void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
 {
-	uint32_t tickCount, deltaTicks, deltaSeconds;
+	uint32_t tickCount, mills, seconds;
 
 	if (argTickCount) { tickCount = *argTickCount; }
 	else { tickCount = xTaskGetTickCount(); }
 
 	allowSyncTime = false;
 
-	if (lastTickCount < tickCount) { deltaTicks = tickCount - lastTickCount + lastSyncUnixTime.mills; }
-	else { deltaTicks = ((uint32_t)0xFFFFFFFF - lastTickCount) + tickCount + 1 + lastSyncUnixTime.mills; }
-	deltaSeconds = deltaTicks / 1000;
-	time->mills = (deltaTicks - deltaSeconds * 1000);
-	time->unixSeconds = lastSyncUnixTime.unixSeconds + deltaSeconds;
-	lastTickCount = tickCount; // обновляем переменную lastTickCount каждый раз когда вызывается функция NRC_getTime()
+	if (prevTickCount < tickCount) { mills = prevTime.mills + (tickCount - prevTickCount); }
+	else { mills =  prevTime.mills + ((uint32_t)0xFFFFFFFF - prevTickCount) + tickCount + 1; }
+	seconds = mills / 1000;
+	time->mills = (mills - seconds * 1000);
+	time->unixSeconds = prevTime.unixSeconds + seconds;
+	prevTickCount = tickCount; // обновляем переменную lastTickCount каждый раз когда вызывается функция NRC_getTime()
+	prevTime = *time;
 
 	allowSyncTime = true;
 
