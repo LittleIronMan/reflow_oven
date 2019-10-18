@@ -5,6 +5,12 @@
 #include "semphr.h"
 #include "reflow_oven.pb.h"
 
+#ifdef NRC_WINDOWS_SIMULATOR
+	#define NRC_TIME_ACCELERATION 10
+#else
+	#define NRC_TIME_ACCELERATION 1
+#endif
+
 // состояния буфера, который могут раздельно использовать DMA и процессор
 typedef enum {
 	BufState_USED_BY_HARDWARE, // данные используются DMA, процессору доступ запрещен
@@ -57,11 +63,17 @@ typedef struct {
 	uint16_t mills; // миллисекунды последней секунды
 } NRC_Time;
 
+typedef enum {
+	OvenState_TurnOFF,
+	OvenState_TurnON
+} OvenState;
+
 typedef struct {
 	PB_TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
 	NRC_Time startTime; // веремя начала программы
 	NRC_Time lastIterationTime; // веремя последней итерации пид регулятора
 	PB_State state; // состояние программы управления
+	OvenState ovenState; // состояние самой печки(включена/выключена)
 } NRC_ControlData;
 
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
@@ -77,8 +89,13 @@ void money_taskMsgSender(void const *argument);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
 void money_initReceiverIRQ(void);
 void money_initSender(void);
-float oven_getTemp(uint16_t *receivedData, uint8_t *err);
-uint32_t getCurrentTime(void);
+
+float Oven_getTemp(uint16_t *receivedData, uint8_t *err);
+void Oven_applyControl(float controlValue);
+void Oven_setState(OvenState newState);
+void Oven_finishHeatingProgram();
+void Oven_setDefaultTempProfile(PB_TempProfile* profile);
+float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */ );
 
 void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 
@@ -89,8 +106,5 @@ extern NRC_Time prevTime;
 extern uint32_t prevTickCount;
 void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
 uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2);
-
-void NRC_setDefaultTempProfile(PB_TempProfile* profile);
-float NRC_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */ );
 
 #endif // main_logic_h

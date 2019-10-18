@@ -30,7 +30,7 @@ volatile bool allowSyncTime = true;
 NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
 uint32_t prevTickCount = 0;
 
-NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED };
+NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, OvenState_TurnOFF};
 PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1.0f/* интегральный */, 1.0f/* дифференциальный */};
 
 // соответствующие массивы
@@ -56,7 +56,7 @@ uint8_t allQueuesCount = 2;
 NRC_Queue* allQueues[2] = { &commandQueue, &responseQueue };
 
 xTimerHandle tempMeasureTimer;
-uint32_t timerPeriod = 250;
+uint32_t timerPeriod = 250 / NRC_TIME_ACCELERATION;
 xSemaphoreHandle pidControllerTaskSem = NULL;
 xSemaphoreHandle defaultTaskSem = NULL;
 xSemaphoreHandle termometerMutex = NULL;
@@ -89,7 +89,7 @@ void money_cmdManagerTask(void const *argument)
 			cd.state = PB_State_LAUNCHED;
 		}
 		else if (cmd.cmdType == PB_CmdType_STOP) {
-			cd.state = PB_State_STOPPED;
+			Oven_finishHeatingProgram();
 		}
 		else {
 			// сразу посылаем ответ на команду
@@ -107,7 +107,7 @@ void money_pidControllerTask(void const *argument)
 
 		uint16_t receivedData = 0;
 		uint8_t err = 0;
-		float temp = oven_getTemp(&receivedData, &err);
+		float temp = Oven_getTemp(&receivedData, &err);
 		
 		if (err) {
 			nrcLog("SPI Receive error, errcode == %u", err);
@@ -122,11 +122,18 @@ void money_pidControllerTask(void const *argument)
 				NRC_Time currentTime;
 				NRC_getTime(&currentTime, NULL);
 				uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
-				uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &cd.lastIterationTime);
-				float setpoint = NRC_getInterpolatedTempProfileValue(&cd.tempProfile, millsSinceStart);
-				float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
+				if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time) {
+					Oven_finishHeatingProgram();
+					nrcLogD("Heating program finished");
+				}
+				else {
+					uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &cd.lastIterationTime);
+					float setpoint = Oven_getInterpolatedTempProfileValue(&cd.tempProfile, millsSinceStart);
+					float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
+					Oven_applyControl(control);
 
-				nrcLogD("Time %d, Temp %.2f, control %.2f", millsSinceStart, temp, control);
+					nrcLogD("Time %d, Temp %.2f, control %.2f", millsSinceStart, temp, control);
+				}
 			}
 		}
 	}
@@ -141,7 +148,7 @@ void money_defaultTask(void const *argument)
 
 		uint16_t receivedData = 0;
 		uint8_t err = 0;
-		float temp = oven_getTemp(&receivedData, &err);
+		float temp = Oven_getTemp(&receivedData, &err);
 		
 		if (err) {
 			nrcLog("SPI Receive error, errcode == %u", err);
@@ -374,7 +381,7 @@ void money_initReceiverIRQ()
 #endif
 }
 
-float oven_getTemp(uint16_t* receivedData, uint8_t *err)
+float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 {
 	float temp;
 
@@ -382,7 +389,39 @@ float oven_getTemp(uint16_t* receivedData, uint8_t *err)
 #ifdef NRC_WINDOWS_SIMULATOR
 	*err = 0;
 	*receivedData = 0;
-	temp = 0.0f;
+
+	static NRC_Time prevTempMeasureTime = { 0, 0 };
+	NRC_Time currentTime; NRC_getTime(&currentTime, NULL);
+	float deltaTime = (prevTempMeasureTime.unixSeconds == 0 ? 0.0f : (NRC_getTimeDiffInMills(&currentTime, &prevTempMeasureTime) / 1000.0f));
+	prevTempMeasureTime = currentTime;
+
+	static float prevTemp = -1.0f; // предыдущий замер температуры
+	static float prevV = 0.0f; // предыдущая скорость изменения температуры
+#define maxVheating 3.0f // максимальная скорость нагревания(градусов в секунду)
+#define minVcooling -5.0f // минимальная скорость изменения температуры при охлаждении(градусов в секунду)
+#define dVheating 1.0f // "ускорение" температуры при НАГРЕВАНИИ, т.е. время равное изменению скорости нагревания от 0 до 1 грaдуса в секунду
+#define dVcooling -1.0f // "ускорение" температуры при ОХЛАЖДЕНИИ
+#define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
+	if (deltaTime != 0.0f) {
+		bool ovenIsHeating = (cd.ovenState == OvenState_TurnON);
+		float V = prevV; // скорость изменения температуры
+		if (ovenIsHeating) {
+			V = (prevV + (dVheating * deltaTime));
+			if (V > maxVheating) { V = maxVheating; }
+		}
+		else {
+			V = (prevV + (dVcooling * deltaTime));
+			if (V < minVcooling) { V = minVcooling; }
+		}
+		prevV = V;
+
+		temp = prevTemp + V * deltaTime;
+		if (temp < roomTemp) { temp = roomTemp; prevV = 0.0f; } // температура не может стать ниже комнатной
+	}
+	else {
+		temp = roomTemp; // при первом запуске этой функции в симуляторе - будет возвращена комнатная температура
+	}
+	prevTemp = temp;
 #elif NRC_STM32
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 	*err = (uint8_t)HAL_SPI_Receive(&hspi3, (uint8_t*)receivedData, 1, HAL_MAX_DELAY);
@@ -394,9 +433,30 @@ float oven_getTemp(uint16_t* receivedData, uint8_t *err)
 	return temp;
 }
 
-uint32_t getCurrentTime()
+void Oven_applyControl(float controlValue)
 {
-	return 31415;
+	if (controlValue > 1.0f) {
+		Oven_setState(OvenState_TurnON);
+	}
+	else if (controlValue < -1.0f) {
+		Oven_setState(OvenState_TurnOFF);
+	}
+}
+
+void Oven_setState(OvenState newState)
+{
+#ifdef NRC_WINDOWS_SIMULATOR
+#else
+	TODO;
+#endif
+	cd.ovenState = newState;
+}
+
+void Oven_finishHeatingProgram()
+{
+	// TODO: проверить, безопасно ли такое выключение. Могут ли другие задачи/таймеры/перывания это как-то прервать?
+	cd.state = PB_State_STOPPED;
+	Oven_setState(OvenState_TurnOFF);
 }
 
 void money_init()
@@ -422,12 +482,8 @@ void money_init()
 	xSemaphoreGive(TxBuf.sem); // семафор для буфера передачи по умолчанию не занят
 
 	// задаем температурный профиль
-	PB_TempMeasure *tp = cd.tempProfile.data;
-	tp[0].time = 0; tp[0].temp = 26;
-	tp[1].time = 10; tp[1].temp = 40;
-	tp[2].time = 20; tp[2].temp = 60;
-	tp[3].time = 30; tp[3].temp = 60;
-	cd.tempProfile.countPoints = 4;
+	Oven_setDefaultTempProfile(&cd.tempProfile);
+
 	// кодируем термопрофиль с помощью Protocol Buffers(nanopb)
 	//uint8_t buffer[TempProfile_size];
 	//pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -511,7 +567,7 @@ void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
 	uint32_t tickCount, mills, seconds;
 
 	if (argTickCount) { tickCount = *argTickCount; }
-	else { tickCount = xTaskGetTickCount(); }
+	else { tickCount = xTaskGetTickCount() * NRC_TIME_ACCELERATION; }
 
 	allowSyncTime = false;
 
@@ -534,7 +590,7 @@ uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2)
 	return (time1->unixSeconds - time2->unixSeconds) * 1000 + ((long)time1->mills - time2->mills);
 }
 
-void NRC_setDefaultTempProfile(PB_TempProfile *profile)
+void Oven_setDefaultTempProfile(PB_TempProfile *profile)
 {
 	PB_TempMeasure* tp = profile->data; uint16_t lastTime = 0; uint8_t idx = 0;
 #define NRC_SET_POINT(peroiodInSeconds,tempValue) lastTime += peroiodInSeconds; tp[idx].time = lastTime * 1000; tp[idx].temp = tempValue; idx++
@@ -548,10 +604,11 @@ void NRC_setDefaultTempProfile(PB_TempProfile *profile)
 	// Итого 3 минуты + остывание(~50 секунд на открытом воздухе)s
 }
 
-float NRC_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time /* в миллисекундах */ )
+float Oven_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time /* в миллисекундах */ )
 {
-#define invalidTempValue 26.0f // стандартная температура жилого помещения
-	if (time > tp->data[tp->countPoints - 1].time) { return invalidTempValue; }
+	if (time > tp->data[tp->countPoints - 1].time) {
+		return tp->data[tp->countPoints - 1].temp;
+	}
 	uint8_t i = 1;
 	for (; i < tp->countPoints; i++) {
 		if (tp->data[i].time > time) { break; }
