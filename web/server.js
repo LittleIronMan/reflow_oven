@@ -33,25 +33,26 @@ if (process.platform === 'linux') {
 }
 else if (process.platform === 'win32') {
     NRC_Receiver = '../raspberry_uart-Rx_simulator/Release/uart-Rx_simulator.exe';
-    NRC_Transmitter = '../raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe';
+    NRC_Transmitter = 'C:/reflow_oven/raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe';
 }
 
 // функция отправки команд микроконтроллеру
 var globalCmdId = 0;
 function sendCmdToStm32 (commandType, priority) {
-    let cmd = pb.PB_Command.create({type: commandType, priority: priority, id: globalCmdId});
+    let cmd = pb.PB_Command.create({cmdType: commandType, priority: priority, id: globalCmdId});
     globalCmdId++;
     let payload = pb.PB_Command.encode(cmd).finish();
     payload = base64.encode(payload, 0, payload.length);
     // console.log('base64 payload: ' + payload);
 
-    let uartTx = child_process.exec(NRC_Transmitter + ' -s ' + payload + ' -t ' + pb.PB_MsgType.CMD + ' -b -l 2');
-    uartTx.stdout.pipe(process.stdout);
-    uartTx.stderr.on('data', function (data) {
-        console.log('Transmitter stderr: ' + data);
-    });
+    let uartTx = child_process.exec(NRC_Transmitter + ' -s ' + payload + ' -t ' + pb.PB_MsgType.CMD + ' -b');
+    // uartTx.stderr.on('data', function (data) {
+    //     console.log('Transmitter stderr: ' + data);
+    // });
     uartTx.on('exit', function (code) {
-        console.log("Transmitter exit with code ", code);
+        if (code !== 0) {
+            console.log("Transmitter exit with code ", code);
+        }
     });
 }
 
