@@ -21,6 +21,17 @@
 		    // console.log("currentPoints.length == ", currentPoints.length);
         }
 	});
+    socket.on('profile', function(data) {
+        if (globalVar.hasOwnProperty('updateRealTimeView')) {
+            globalVar.(data);
+        }
+    });
+	socket.on('start', function(data) {
+
+    });
+    socket.on('finish', function(data) {
+
+    });
     </script>
 </head>
 <body>

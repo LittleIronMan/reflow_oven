@@ -54,7 +54,7 @@ var binaryData = new Uint8Array(150);
 uartListener.stdout.on('data', function (data) {
     let str = data.toString();
     let type = parseInt(str.substring(0, 2));
-    console.log("Received msg with type ", type);
+    //console.log("Received msg with type ", type);
     if (type === pb.PB_MsgType.UNDEFINED) {
         return;
     }
@@ -64,7 +64,7 @@ uartListener.stdout.on('data', function (data) {
         let tempMeasure;
         try {// tempMeasure = pb.PB_TempMeasure.decode(pbEncodedData).toObject();
             tempMeasure = pb.PB_TempMeasure.decode(binaryData, pbLength);
-            console.log("emit obj " + tempMeasure);
+            // console.log("emit obj " + tempMeasure);
             io.emit('temp measure', tempMeasure);
         }
         catch (e) {

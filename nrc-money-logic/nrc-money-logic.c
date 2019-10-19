@@ -60,7 +60,7 @@ const NRC_Queue* outgoingQueues[] = { &responseQueue, &tempMeasureQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 xTimerHandle tempMeasureTimer;
-uint32_t timerPeriod = 250 / NRC_TIME_ACCELERATION;
+uint32_t timerPeriod = 500 / NRC_TIME_ACCELERATION;
 xSemaphoreHandle pidControllerTaskSem = NULL;
 xSemaphoreHandle defaultTaskSem = NULL;
 xSemaphoreHandle termometerMutex = NULL;
