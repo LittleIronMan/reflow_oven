@@ -20,10 +20,16 @@ class TempMonitor extends Component {
 }
 
 class ControlButtons extends Component {
+    startProcess = () => {
+        socket.emit('start', {});
+    };
+    finishProcess = () => {
+        socket.emit('finish', {});
+    };
     render() {
         return <div className={style.controlButtons}>
-            <button className={style.start}>Start Program</button>
-            <button className={style.stop}>Stop Program</button>
+            <button className={style.start} onClick={this.startProcess}>Start Program</button>
+            <button className={style.stop} onClick={this.finishProcess}>Stop Program</button>
         </div>;
     }
 }
