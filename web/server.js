@@ -100,8 +100,9 @@ uartRx.stdout.on('data', function (data) {
         let tempMeasure;
         try {// tempMeasure = pb.PB_TempMeasure.decode(pbEncodedData).toObject();
             tempMeasure = pb.PB_TempMeasure.decode(binaryData, pbLength);
+            let obj = { temp: tempMeasure.temp, time: tempMeasure.time / 1000 }; // контроллер передает время в миллисекундах, а клиенту нужны данные в секундах
             // console.log("emit obj " + tempMeasure);
-            io.emit('temp measure', tempMeasure);
+            io.emit('temp measure', obj);
         }
         catch (e) {
             if (e instanceof protobuf.util.ProtocolError) { }

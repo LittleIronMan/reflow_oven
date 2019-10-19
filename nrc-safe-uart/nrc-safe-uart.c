@@ -185,7 +185,7 @@ uint16_t uartTransmitData(uint8_t data[], uint16_t bytesCount) {
 
 	// Send a message to the pipe server. 
 	DWORD countWrittenBytes = 0;
-	nrcLogD("Sending %d byte message", bytesCount);
+	nrcLogV("Sending %d byte message", bytesCount);
 	BOOL fSuccess = WriteFile(
 		hPipe, // pipe handle 
 		data, // message 

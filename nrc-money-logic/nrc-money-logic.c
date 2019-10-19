@@ -174,6 +174,8 @@ void money_defaultTask(void const *argument)
 			}
 			else {
 				nrcLogD("Temp %.2f", temp);
+				PB_TempMeasure tempMeasure = { 0, temp };
+				addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
 			}
 		}
 	}
@@ -252,7 +254,7 @@ void money_taskMsgSender(void const *argument)
 					nrcLogD("Error sending data");
 				}
 				else {
-					nrcLogD("Message successful transmitted");
+					nrcLogV("Message successful transmitted");
 				}
 				#ifdef NRC_WINDOWS_SIMULATOR
 				xSemaphoreGive(TxBuf.sem); // симулятор завершает оправку сообщения при вызове функции transmitMsg, поэтому семафор можно возвращать сразу
