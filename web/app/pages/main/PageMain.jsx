@@ -66,7 +66,8 @@ class GraphLayer extends Component {
         let firstPoint = true;
         let firstPointTime = 0;
         for (let i = 0; i < arr.length; i++) {
-            let data = arr[i];
+            let data = { temp: arr[i].temp, time: arr[i].time };
+            if (arr[i].mills !== undefined) { data.time += arr[i].mills / 1000; }
             if ((globalStore.data.lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
 
             if (firstPoint) { firstPointTime = data.time; }
