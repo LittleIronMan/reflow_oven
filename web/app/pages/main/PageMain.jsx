@@ -1,6 +1,7 @@
 import {Component} from 'react';
 import page from 'styles/page.scss';
 import style from './PageMain.scss';
+import {sync, globalStore} from '../../../reflow_oven_store.js';
 
 class TempMonitor extends Component {
     constructor(props) {
@@ -9,7 +10,12 @@ class TempMonitor extends Component {
     }
 
     componentDidMount() {
-        globalVar.updateTempLabel = (data) => this.setState({tempValue: data});
+        globalVar.updateTempLabel = () => {
+            let arr = globalStore.data.realPoints;
+            let lastTemp = 0;
+            if (arr.length > 0) { lastTemp = arr[arr.length - 1].temp; }
+            this.setState({tempValue: lastTemp})
+        };
     }
 
     render() {
@@ -21,10 +27,10 @@ class TempMonitor extends Component {
 
 class ControlButtons extends Component {
     startProcess = () => {
-        socket.emit('start', {});
+        socket.emit('client cmd', {cmdTypeStr: 'START'});
     };
     finishProcess = () => {
-        socket.emit('finish', {});
+        socket.emit('client cmd', {cmdTypeStr: 'START'});
     };
     render() {
         return <div className={style.controlButtons}>
@@ -61,7 +67,7 @@ class GraphLayer extends Component {
         let firstPointTime = 0;
         for (let i = 0; i < arr.length; i++) {
             let data = arr[i];
-            if ((params.lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
+            if ((globalStore.data.lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
 
             if (firstPoint) { firstPointTime = data.time; }
 
@@ -87,7 +93,6 @@ class GraphView extends Component {
             realPoints: [],
             idealPoints: [],
             viewParams: {
-                lastRealTimeMeasure: 0,
                 viewPeriod: 20,
                 maxTemp: 220,
                 viewMode: 'real time'
@@ -97,22 +102,15 @@ class GraphView extends Component {
 
     updateGraphView = () => {
         if (this._realMeasureGraph) {
-            this._realMeasureGraph.drawGraph(this.state.realPoints, this.state.viewParams);
+            this._realMeasureGraph.drawGraph(globalStore.data.realPoints, this.state.viewParams);
         }
         if (this._idealGraph) {
-            this._idealGraph.drawGraph(this.state.idealPoints, this.state.viewParams);
+            this._idealGraph.drawGraph(globalStore.data.tempProfile, this.state.viewParams);
         }
     };
 
     componentDidMount() {
-        globalVar.updateRealTimeView = (newData) => {
-            let params = this.state.viewParams;
-            let arr = this.state.realPoints;
-            if (arr.length > 100) { arr.shift(); } // удаляем устаревшие измерения температуры
-            arr.push(newData);
-            if (newData.time > params.lastRealTimeMeasure) {
-                params.lastRealTimeMeasure = newData.time;
-            }
+        globalVar.updateRealTimeView = () => {
             this.updateGraphView();
         };
         window.addEventListener("resize", this.updateGraphView);

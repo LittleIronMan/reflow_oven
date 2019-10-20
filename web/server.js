@@ -2,9 +2,8 @@
 const webpack = require('webpack');
 const middleware = require('webpack-dev-middleware');
 const webpackConfig = require('./webpack.config');
-const pb = require('./reflow_oven.pb.js');
-const protobuf = require('protobufjs/minimal');
-const base64 = protobuf.util.base64;
+const stm32 = require('./nrc-stm32.js');
+const ovenDataStore = require('./reflow_oven_store.js');
 let compiler = webpack(webpackConfig);
 
 const express = require('express');
@@ -25,113 +24,28 @@ app.get('*', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-var NRC_Receiver;
-var NRC_Transmitter;
-if (process.platform === 'linux') {
-    NRC_Receiver = '../raspberry/uart-Rx.exe';
-    NRC_Transmitter = '../raspberry/uart-Tx.exe';
-}
-else if (process.platform === 'win32') {
-    NRC_Receiver = '../raspberry_uart-Rx_simulator/Release/uart-Rx_simulator.exe';
-    NRC_Transmitter = 'C:/reflow_oven/raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe';
-}
-
-// функция отправки команд микроконтроллеру
-var globalCmdId = 0;
-function sendCmdToStm32 (commandType, priority) {
-    let cmd = pb.PB_Command.create({cmdType: commandType, priority: priority, id: globalCmdId});
-    globalCmdId++;
-    let payload = pb.PB_Command.encode(cmd).finish();
-    payload = base64.encode(payload, 0, payload.length);
-    // console.log('base64 payload: ' + payload);
-
-    let uartTx = child_process.exec(NRC_Transmitter + ' -s ' + payload + ' -t ' + pb.PB_MsgType.CMD + ' -b');
-    // uartTx.stderr.on('data', function (data) {
-    //     console.log('Transmitter stderr: ' + data);
-    // });
-    uartTx.on('exit', function (code) {
-        if (code !== 0) {
-            console.log("Transmitter exit with code ", code);
-        }
-    });
-}
-
-const io = require('socket.io').listen(http);
+var io = require('socket.io').listen(http);
 io.on('connection', function(socket){
-    console.log('a user connected');
+    //console.log('a user connected');
 
-    // клиент нажал на кнопку start
-    socket.on ('start', function () {
-        sendCmdToStm32(pb.PB_CmdType.START, 5);
+    // клиент требует синхронизации всех данных с сервером
+    socket.on('client sync all', function() {
+        socket.emit('server sync all', ovenDataStore.globalStore.data);
     });
-
-    // клиент нажал на кнопку stop
-    socket.on ('finish', function () {
-        sendCmdToStm32(pb.PB_CmdType.STOP, 10);
-    });
+    // команда от клиента микроконтроллеру
+    socket.on('client cmd', stm32.sendCmdFromClientToMCU);
 });
 
-// const PORT = process.env.PORT || 8080
 const PORT = 3000;
+// const PORT = process.env.PORT || 8080
 http.listen(PORT, () => {
     console.log(__dirname);
     console.log(`App listening to ${PORT}....`);
     console.log('Press Ctrl+C to quit.');
 });
 
-// запукскаем Receiver
-const child_process = require('child_process');
-var uartRx = child_process.spawn(NRC_Receiver);
-//uartListener = child_process.spawn('python', ['-u', '../rpi-uart/uart-listener-win32-emulate.py']);
+// запускаем программу для приема сообщений от контроллера
+stm32.startReceiveMsgFromMCU(io);
 
-var binaryData = new Uint8Array(150);
 
-function PB_decode(pbMsgStruct, binaryData, binLength) {
-    try {
-        return pb[pbMsgStruct].decode(binaryData, binLength); // возможен еще такой вариант decode(<...>).toObject(), правда я не понял в чем разница
-    }
-    catch (e) {
-        if (e instanceof protobuf.util.ProtocolError) { }
-        else { }
-    }
-    return null;
-}
-
-// функция приема сообщений от Receiver'а
-uartRx.stdout.on('data', function (data) {
-    let str = data.toString();
-    let type = parseInt(str.substring(0, 2));
-    //console.log("Received msg with type ", type);
-    if (type === pb.PB_MsgType.UNDEFINED) {
-        return;
-    }
-    let b64data = str.substring(2);
-    let pbLength = base64.decode(b64data, binaryData, 0);
-
-    if (type === pb.PB_MsgType.RESPONSE) {
-        let response = PB_decode('PB_Response', binaryData, pbLength); if (response == null) { return; }
-        if (response.cmdType === pb.PB_CmdType.START) {
-            io.emit('start', {time: (response.time * 1000 + response.mills)});
-        }
-        else if (response.cmdType === pb.PB_CmdType.STOP) {
-            io.emit('stop', {time: (response.time * 1000 + response.mills)});
-        }
-        else if (response.cmdType === pb.PB_CmdType.GET_STATE) {
-
-        }
-    }
-    else if (type === pb.PB_MsgType.TEMP_MEASURE) {
-        let tempMeasure = PB_decode('PB_TempMeasure', binaryData, pbLength); if (tempMeasure == null) { return; }
-        let obj = { temp: tempMeasure.temp, time: tempMeasure.time / 1000 }; // контроллер передает время в миллисекундах, а клиенту нужны данные в секундах
-        io.emit('temp measure', obj);
-    }
-});
-
-uartRx.stderr.on('data', function (data) {
-    console.log('Receiver stderr: ' + data);
-});
-
-uartRx.on('close', function (code) {
-    console.log('Receiver exited with code ' + code);
-});
 
