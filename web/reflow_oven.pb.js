@@ -322,6 +322,7 @@
          * @exports IPB_TempMeasure
          * @interface IPB_TempMeasure
          * @property {number|null} [time] PB_TempMeasure time
+         * @property {number|null} [mills] PB_TempMeasure mills
          * @property {number|null} [temp] PB_TempMeasure temp
          */
     
@@ -347,6 +348,14 @@
          * @instance
          */
         PB_TempMeasure.prototype.time = 0;
+    
+        /**
+         * PB_TempMeasure mills.
+         * @member {number} mills
+         * @memberof PB_TempMeasure
+         * @instance
+         */
+        PB_TempMeasure.prototype.mills = 0;
     
         /**
          * PB_TempMeasure temp.
@@ -382,8 +391,10 @@
                 writer = $Writer.create();
             if (message.time != null && message.hasOwnProperty("time"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.time);
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.mills);
             if (message.temp != null && message.hasOwnProperty("temp"))
-                writer.uint32(/* id 2, wireType 5 =*/21).float(message.temp);
+                writer.uint32(/* id 3, wireType 5 =*/29).float(message.temp);
             return writer;
         };
     
@@ -422,6 +433,9 @@
                     message.time = reader.uint32();
                     break;
                 case 2:
+                    message.mills = reader.uint32();
+                    break;
+                case 3:
                     message.temp = reader.float();
                     break;
                 default:
@@ -462,6 +476,9 @@
             if (message.time != null && message.hasOwnProperty("time"))
                 if (!$util.isInteger(message.time))
                     return "time: integer expected";
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                if (!$util.isInteger(message.mills))
+                    return "mills: integer expected";
             if (message.temp != null && message.hasOwnProperty("temp"))
                 if (typeof message.temp !== "number")
                     return "temp: number expected";
@@ -482,6 +499,8 @@
             var message = new $root.PB_TempMeasure();
             if (object.time != null)
                 message.time = object.time >>> 0;
+            if (object.mills != null)
+                message.mills = object.mills >>> 0;
             if (object.temp != null)
                 message.temp = Number(object.temp);
             return message;
@@ -502,10 +521,13 @@
             var object = {};
             if (options.defaults) {
                 object.time = 0;
+                object.mills = 0;
                 object.temp = 0;
             }
             if (message.time != null && message.hasOwnProperty("time"))
                 object.time = message.time;
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                object.mills = message.mills;
             if (message.temp != null && message.hasOwnProperty("temp"))
                 object.temp = options.json && !isFinite(message.temp) ? String(message.temp) : message.temp;
             return object;

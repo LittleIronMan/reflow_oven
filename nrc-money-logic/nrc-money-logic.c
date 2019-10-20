@@ -144,7 +144,7 @@ void money_pidControllerTask(void const *argument)
 					Oven_applyControl(control);
 
 					nrcLogD("Time %d, Temp %.2f, control %.2f", millsSinceStart, temp, control);
-					PB_TempMeasure tempMeasure = { millsSinceStart, temp };
+					PB_TempMeasure tempMeasure = { millsSinceStart, 0, temp };
 					addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
 				}
 			}
@@ -174,7 +174,8 @@ void money_defaultTask(void const *argument)
 			}
 			else {
 				nrcLogD("Temp %.2f", temp);
-				PB_TempMeasure tempMeasure = { 0, temp };
+				NRC_Time curTime; NRC_getTime(&curTime, NULL);
+				PB_TempMeasure tempMeasure = { curTime.unixSeconds, curTime.mills, temp };
 				addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
 			}
 		}

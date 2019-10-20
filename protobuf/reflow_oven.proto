@@ -30,7 +30,8 @@ message PB_Command {
 
 message PB_TempMeasure {
 	uint32 time = 1;
-	float temp = 2;
+	uint32 mills = 2 [(nanopb).int_size = IS_16];
+	float temp = 3;
 }
 
 message PB_TempProfile {

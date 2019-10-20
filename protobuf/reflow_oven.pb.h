@@ -77,6 +77,7 @@ typedef struct _PB_Response {
 
 typedef struct _PB_TempMeasure {
     uint32_t time;
+    uint16_t mills;
     float temp;
 /* @@protoc_insertion_point(struct:PB_TempMeasure) */
 } PB_TempMeasure;
@@ -97,12 +98,12 @@ typedef struct _PB_ResponseGetTempProfile {
 
 /* Initializer values for message structs */
 #define PB_Command_init_default                  {_PB_CmdType_MIN, 0, 0}
-#define PB_TempMeasure_init_default              {0, 0}
+#define PB_TempMeasure_init_default              {0, 0, 0}
 #define PB_TempProfile_init_default              {0, {PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default}}
 #define PB_ResponseGetTempProfile_init_default   {0, PB_TempProfile_init_default}
 #define PB_Response_init_default                 {_PB_CmdType_MIN, 0, 0, _PB_State_MIN, _PB_ErrorType_MIN, 0}
 #define PB_Command_init_zero                     {_PB_CmdType_MIN, 0, 0}
-#define PB_TempMeasure_init_zero                 {0, 0}
+#define PB_TempMeasure_init_zero                 {0, 0, 0}
 #define PB_TempProfile_init_zero                 {0, {PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero}}
 #define PB_ResponseGetTempProfile_init_zero      {0, PB_TempProfile_init_zero}
 #define PB_Response_init_zero                    {_PB_CmdType_MIN, 0, 0, _PB_State_MIN, _PB_ErrorType_MIN, 0}
@@ -118,7 +119,8 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_Response_error_tag                    5
 #define PB_Response_time_tag                     6
 #define PB_TempMeasure_time_tag                  1
-#define PB_TempMeasure_temp_tag                  2
+#define PB_TempMeasure_mills_tag                 2
+#define PB_TempMeasure_temp_tag                  3
 #define PB_TempProfile_countPoints_tag           1
 #define PB_TempProfile_data_tag                  2
 #define PB_ResponseGetTempProfile_success_tag    1
@@ -126,16 +128,16 @@ typedef struct _PB_ResponseGetTempProfile {
 
 /* Struct field encoding specification for nanopb */
 extern const pb_field_t PB_Command_fields[4];
-extern const pb_field_t PB_TempMeasure_fields[3];
+extern const pb_field_t PB_TempMeasure_fields[4];
 extern const pb_field_t PB_TempProfile_fields[3];
 extern const pb_field_t PB_ResponseGetTempProfile_fields[3];
 extern const pb_field_t PB_Response_fields[7];
 
 /* Maximum encoded size of messages (where known) */
 #define PB_Command_size                          14
-#define PB_TempMeasure_size                      11
-#define PB_TempProfile_size                      136
-#define PB_ResponseGetTempProfile_size           141
+#define PB_TempMeasure_size                      17
+#define PB_TempProfile_size                      196
+#define PB_ResponseGetTempProfile_size           201
 #define PB_Response_size                         20
 
 /* Message IDs (where set with "msgid" option) */

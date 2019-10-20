@@ -17,9 +17,10 @@ const pb_field_t PB_Command_fields[4] = {
     PB_LAST_FIELD
 };
 
-const pb_field_t PB_TempMeasure_fields[3] = {
+const pb_field_t PB_TempMeasure_fields[4] = {
     PB_FIELD(  1, UINT32  , SINGULAR, STATIC  , FIRST, PB_TempMeasure, time, time, 0),
-    PB_FIELD(  2, FLOAT   , SINGULAR, STATIC  , OTHER, PB_TempMeasure, temp, time, 0),
+    PB_FIELD(  2, UINT32  , SINGULAR, STATIC  , OTHER, PB_TempMeasure, mills, time, 0),
+    PB_FIELD(  3, FLOAT   , SINGULAR, STATIC  , OTHER, PB_TempMeasure, temp, mills, 0),
     PB_LAST_FIELD
 };
 

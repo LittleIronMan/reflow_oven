@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x11reflow_oven.proto\x1a\x0cnanopb.proto\"O\n\nPB_Command\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\n\n\x02id\x18\x02 \x01(\r\x12\x17\n\x08priority\x18\x03 \x01(\rB\x05\x92?\x02\x38\x08\",\n\x0ePB_TempMeasure\x12\x0c\n\x04time\x18\x01 \x01(\r\x12\x0c\n\x04temp\x18\x02 \x01(\x02\"X\n\x0ePB_TempProfile\x12\x1a\n\x0b\x63ountPoints\x18\x01 \x01(\rB\x05\x92?\x02\x38\x08\x12*\n\x04\x64\x61ta\x18\x02 \x03(\x0b\x32\x0f.PB_TempMeasureB\x0b\x92?\x02\x10\n\x92?\x03\x80\x01\x01\"N\n\x19PB_ResponseGetTempProfile\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12 \n\x07profile\x18\x02 \x01(\x0b\x32\x0f.PB_TempProfile\"\x91\x01\n\x0bPB_Response\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\r\n\x05\x63mdId\x18\x02 \x01(\r\x12\x0f\n\x07success\x18\x03 \x01(\x08\x12\x18\n\x05state\x18\x04 \x01(\x0e\x32\t.PB_State\x12\x1c\n\x05\x65rror\x18\x05 \x01(\x0e\x32\r.PB_ErrorType\x12\x0c\n\x04time\x18\x06 \x01(\r*\xa2\x01\n\nPB_MsgType\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x43MD\x10\x01\x12\x0c\n\x08RESPONSE\x10\x02\x12\x1d\n\x19RESPONSE_GET_TEMP_PROFILE\x10\x03\x12\x10\n\x0cTEMP_MEASURE\x10\x04\x12\x19\n\x15RESPONSE_TEMP_MEASURE\x10\x05\x12\x12\n\x0e\x46INISH_PROGRAM\x10\x06\x12\x0e\n\nPLAIN_TEXT\x10\x07*F\n\nPB_CmdType\x12\x14\n\x10GET_TEMP_PROFILE\x10\x00\x12\r\n\tGET_STATE\x10\x01\x12\t\n\x05START\x10\x02\x12\x08\n\x04STOP\x10\x03*%\n\x08PB_State\x12\x0b\n\x07STOPPED\x10\x00\x12\x0c\n\x08LAUNCHED\x10\x01*\\\n\x0cPB_ErrorType\x12\x08\n\x04NONE\x10\x00\x12\x1d\n\x19\x46\x41ULTY_TEMPERATURE_SENSOR\x10\x01\x12\x10\n\x0c\x46\x41ULTY_RELAY\x10\x02\x12\x11\n\rUNKNOWN_ERROR\x10\x03\x62\x06proto3')
+  serialized_pb=_b('\n\x11reflow_oven.proto\x1a\x0cnanopb.proto\"O\n\nPB_Command\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\n\n\x02id\x18\x02 \x01(\r\x12\x17\n\x08priority\x18\x03 \x01(\rB\x05\x92?\x02\x38\x08\"B\n\x0ePB_TempMeasure\x12\x0c\n\x04time\x18\x01 \x01(\r\x12\x14\n\x05mills\x18\x02 \x01(\rB\x05\x92?\x02\x38\x10\x12\x0c\n\x04temp\x18\x03 \x01(\x02\"X\n\x0ePB_TempProfile\x12\x1a\n\x0b\x63ountPoints\x18\x01 \x01(\rB\x05\x92?\x02\x38\x08\x12*\n\x04\x64\x61ta\x18\x02 \x03(\x0b\x32\x0f.PB_TempMeasureB\x0b\x92?\x02\x10\n\x92?\x03\x80\x01\x01\"N\n\x19PB_ResponseGetTempProfile\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12 \n\x07profile\x18\x02 \x01(\x0b\x32\x0f.PB_TempProfile\"\x91\x01\n\x0bPB_Response\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\r\n\x05\x63mdId\x18\x02 \x01(\r\x12\x0f\n\x07success\x18\x03 \x01(\x08\x12\x18\n\x05state\x18\x04 \x01(\x0e\x32\t.PB_State\x12\x1c\n\x05\x65rror\x18\x05 \x01(\x0e\x32\r.PB_ErrorType\x12\x0c\n\x04time\x18\x06 \x01(\r*\xa2\x01\n\nPB_MsgType\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x43MD\x10\x01\x12\x0c\n\x08RESPONSE\x10\x02\x12\x1d\n\x19RESPONSE_GET_TEMP_PROFILE\x10\x03\x12\x10\n\x0cTEMP_MEASURE\x10\x04\x12\x19\n\x15RESPONSE_TEMP_MEASURE\x10\x05\x12\x12\n\x0e\x46INISH_PROGRAM\x10\x06\x12\x0e\n\nPLAIN_TEXT\x10\x07*F\n\nPB_CmdType\x12\x14\n\x10GET_TEMP_PROFILE\x10\x00\x12\r\n\tGET_STATE\x10\x01\x12\t\n\x05START\x10\x02\x12\x08\n\x04STOP\x10\x03*%\n\x08PB_State\x12\x0b\n\x07STOPPED\x10\x00\x12\x0c\n\x08LAUNCHED\x10\x01*\\\n\x0cPB_ErrorType\x12\x08\n\x04NONE\x10\x00\x12\x1d\n\x19\x46\x41ULTY_TEMPERATURE_SENSOR\x10\x01\x12\x10\n\x0c\x46\x41ULTY_RELAY\x10\x02\x12\x11\n\rUNKNOWN_ERROR\x10\x03\x62\x06proto3')
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,])
 
@@ -69,8 +69,8 @@ _PB_MSGTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=481,
-  serialized_end=643,
+  serialized_start=503,
+  serialized_end=665,
 )
 _sym_db.RegisterEnumDescriptor(_PB_MSGTYPE)
 
@@ -100,8 +100,8 @@ _PB_CMDTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=645,
-  serialized_end=715,
+  serialized_start=667,
+  serialized_end=737,
 )
 _sym_db.RegisterEnumDescriptor(_PB_CMDTYPE)
 
@@ -123,8 +123,8 @@ _PB_STATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=717,
-  serialized_end=754,
+  serialized_start=739,
+  serialized_end=776,
 )
 _sym_db.RegisterEnumDescriptor(_PB_STATE)
 
@@ -154,8 +154,8 @@ _PB_ERRORTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=756,
-  serialized_end=848,
+  serialized_start=778,
+  serialized_end=870,
 )
 _sym_db.RegisterEnumDescriptor(_PB_ERRORTYPE)
 
@@ -241,8 +241,15 @@ _PB_TEMPMEASURE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='temp', full_name='PB_TempMeasure.temp', index=1,
-      number=2, type=2, cpp_type=6, label=1,
+      name='mills', full_name='PB_TempMeasure.mills', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\0028\020'), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='temp', full_name='PB_TempMeasure.temp', index=2,
+      number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -260,7 +267,7 @@ _PB_TEMPMEASURE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=116,
-  serialized_end=160,
+  serialized_end=182,
 )
 
 
@@ -297,8 +304,8 @@ _PB_TEMPPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=162,
-  serialized_end=250,
+  serialized_start=184,
+  serialized_end=272,
 )
 
 
@@ -335,8 +342,8 @@ _PB_RESPONSEGETTEMPPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=252,
-  serialized_end=330,
+  serialized_start=274,
+  serialized_end=352,
 )
 
 
@@ -401,8 +408,8 @@ _PB_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=333,
-  serialized_end=478,
+  serialized_start=355,
+  serialized_end=500,
 )
 
 _PB_COMMAND.fields_by_name['cmdType'].enum_type = _PB_CMDTYPE
@@ -459,6 +466,7 @@ _sym_db.RegisterMessage(PB_Response)
 
 
 _PB_COMMAND.fields_by_name['priority']._options = None
+_PB_TEMPMEASURE.fields_by_name['mills']._options = None
 _PB_TEMPPROFILE.fields_by_name['countPoints']._options = None
 _PB_TEMPPROFILE.fields_by_name['data']._options = None
 # @@protoc_insertion_point(module_scope)
