@@ -30,7 +30,7 @@ class ControlButtons extends Component {
         socket.emit('client cmd', {cmdTypeStr: 'START'});
     };
     finishProcess = () => {
-        socket.emit('client cmd', {cmdTypeStr: 'START'});
+        socket.emit('client cmd', {cmdTypeStr: 'STOP'});
     };
     render() {
         return <div className={style.controlButtons}>
