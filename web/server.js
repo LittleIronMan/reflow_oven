@@ -86,6 +86,17 @@ var uartRx = child_process.spawn(NRC_Receiver);
 
 var binaryData = new Uint8Array(150);
 
+function PB_decode(pbMsgStruct, binaryData, binLength) {
+    try {
+        return pb[pbMsgStruct].decode(binaryData, binLength); // возможен еще такой вариант decode(<...>).toObject(), правда я не понял в чем разница
+    }
+    catch (e) {
+        if (e instanceof protobuf.util.ProtocolError) { }
+        else { }
+    }
+    return null;
+}
+
 // функция приема сообщений от Receiver'а
 uartRx.stdout.on('data', function (data) {
     let str = data.toString();
@@ -96,18 +107,23 @@ uartRx.stdout.on('data', function (data) {
     }
     let b64data = str.substring(2);
     let pbLength = base64.decode(b64data, binaryData, 0);
-    if (type === pb.PB_MsgType.TEMP_MEASURE) {
-        let tempMeasure;
-        try {// tempMeasure = pb.PB_TempMeasure.decode(pbEncodedData).toObject();
-            tempMeasure = pb.PB_TempMeasure.decode(binaryData, pbLength);
-            let obj = { temp: tempMeasure.temp, time: tempMeasure.time / 1000 }; // контроллер передает время в миллисекундах, а клиенту нужны данные в секундах
-            // console.log("emit obj " + tempMeasure);
-            io.emit('temp measure', obj);
+
+    if (type === pb.PB_MsgType.RESPONSE) {
+        let response = PB_decode('PB_Response', binaryData, pbLength); if (response == null) { return; }
+        if (response.cmdType === pb.PB_CmdType.START) {
+            io.emit('start', {time: (response.time * 1000 + response.mills)});
         }
-        catch (e) {
-            if (e instanceof protobuf.util.ProtocolError) { }
-            else { }
+        else if (response.cmdType === pb.PB_CmdType.STOP) {
+            io.emit('stop', {time: (response.time * 1000 + response.mills)});
         }
+        else if (response.cmdType === pb.PB_CmdType.GET_STATE) {
+
+        }
+    }
+    else if (type === pb.PB_MsgType.TEMP_MEASURE) {
+        let tempMeasure = PB_decode('PB_TempMeasure', binaryData, pbLength); if (tempMeasure == null) { return; }
+        let obj = { temp: tempMeasure.temp, time: tempMeasure.time / 1000 }; // контроллер передает время в миллисекундах, а клиенту нужны данные в секундах
+        io.emit('temp measure', obj);
     }
 });
 
