@@ -14,13 +14,29 @@ var io;
 
 function PB_decode(pbMsgStruct, binaryData, binLength) {
     try {
-        return pb[pbMsgStruct].decode(binaryData, binLength); // возможен еще такой вариант decode(<...>).toObject(), правда я не понял в чем разница
+        let obj = pb[pbMsgStruct].decode(binaryData, binLength);
+        return pb[pbMsgStruct].toObject(obj, { enums: String/*enums as string names*/});
     }
     catch (e) {
         if (e instanceof protobuf.util.ProtocolError) { }
         else { }
     }
     return null;
+}
+
+// массив, связывает прототип сообщения с соответствующим числовым типом
+const msgPrototypeBinder = {
+    PB_Response : pb.PB_MsgType.RESPONSE,
+    PB_TempMeasure : pb.PB_MsgType.TEMP_MEASURE,
+    PB_ResponseGetTempProfile : pb.PB_MsgType.RESPONSE_GET_TEMP_PROFILE
+};
+
+function getMsgPrototype(num) {
+    let type = null;
+    for (let key in msgPrototypeBinder) {
+        if (msgPrototypeBinder[key] === num) { type = key; break; }
+    }
+    return type;
 }
 
 // функция приема сообщений от микроконтроллера
@@ -37,7 +53,7 @@ function receiveMsgFromStm32 (data) {
     let b64data = str.substring(2);
     let pbLength = base64.decode(b64data, binaryDataBuf, 0);
 
-    let msgProto = ovenDataStore.getMsgPrototype(msgType);
+    let msgProto = getMsgPrototype(msgType);
     if (msgProto == null) {
         console.log('Error: Cannot find prototype for msgType ', msgType); return;
     }
@@ -61,7 +77,7 @@ function receiveMsgFromStm32 (data) {
     }
     else {
         // при успешном обновлении данных - принуждаем всех подключенных клиентов тоже обновиться
-        console.log('Successful update server store');
+        //console.log('Successful update server store');
         io.sockets.emit('server sync update', updateItem);
 
         // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)

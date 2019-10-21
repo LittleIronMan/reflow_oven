@@ -82,6 +82,7 @@ void money_cmdManagerTask(void const *argument)
 {
 	nrcLogD("Start cmdManagerTask");
 	PB_Command cmd;
+	PB_Response response;
 	for (;;) {
 		xSemaphoreTake(semCounterIncomingMessages, portMAX_DELAY);
 
@@ -98,19 +99,21 @@ void money_cmdManagerTask(void const *argument)
 				pidData.lastProcessValue = 0.0f;
 				pidData.integralErr = 0.0f;
 				cd.state = PB_State_LAUNCHED;
+				response = (PB_Response) { PB_CmdType_START, cmd.id, true, PB_State_LAUNCHED, PB_ErrorType_NONE, cd.startTime.unixSeconds, cd.startTime.mills };
+				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
 			}
 			else if (cmd.cmdType == PB_CmdType_STOP) {
 				Oven_finishHeatingProgram();
 			}
 			else if (cmd.cmdType == PB_CmdType_GET_TEMP_PROFILE) {
-				PB_ResponseGetTempProfile* response = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
-				response->success = true;
-				response->profile = cd.tempProfile;
-				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response, 2, semCounterOutgoingMessages);
+				PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
+				response2->success = true;
+				response2->profile = cd.tempProfile;
+				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, semCounterOutgoingMessages);
 			}
 			else {
 				// сразу посылаем ответ на команду
-				PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
+				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
 			}
 		} while (false);
@@ -140,7 +143,7 @@ void money_pidControllerTask(void const *argument)
 				NRC_Time currentTime;
 				NRC_getTime(&currentTime, NULL);
 				uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
-				if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time) {
+				if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time * 1000) {
 					Oven_finishHeatingProgram();
 					nrcLogD("Heating program finished");
 				}
@@ -629,7 +632,7 @@ uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2)
 void Oven_setDefaultTempProfile(PB_TempProfile *profile)
 {
 	PB_TempMeasure* tp = profile->data; uint16_t lastTime = 0; uint8_t idx = 0;
-#define NRC_SET_POINT(peroiodInSeconds,tempValue) lastTime += peroiodInSeconds; tp[idx].time = lastTime * 1000; tp[idx].temp = tempValue; idx++
+#define NRC_SET_POINT(peroiodInSeconds,tempValue) lastTime += peroiodInSeconds; tp[idx] = (PB_TempMeasure) { lastTime, 0, tempValue }; idx++
 	NRC_SET_POINT(0, 26);
 	NRC_SET_POINT(70, 160); // за 60 секунд нагреть плату от 45 до 150 - 170 градусов
 	NRC_SET_POINT(60, 160); // (растекание флюса) удерживать в таком состоянии 60 секунд
@@ -640,16 +643,18 @@ void Oven_setDefaultTempProfile(PB_TempProfile *profile)
 	// Итого 3 минуты + остывание(~50 секунд на открытом воздухе)s
 }
 
-float Oven_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t time /* в миллисекундах */ )
+float Oven_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t millsSinceStart /* время в миллисекундах с начала запуска программы */ )
 {
-	if (time > tp->data[tp->countPoints - 1].time) {
+	if (millsSinceStart > tp->data[tp->countPoints - 1].time * 1000) {
 		return tp->data[tp->countPoints - 1].temp;
 	}
 	uint8_t i = 1;
 	for (; i < tp->countPoints; i++) {
-		if (tp->data[i].time > time) { break; }
+		if (tp->data[i].time * 1000 > millsSinceStart) { break; }
 	}
 	PB_TempMeasure *A = &(tp->data[i - 1]),
 		*B = &(tp->data[i]);
-	return (A->temp + ((time - A->time) / ((float)B->time - A->time)) * ((float)B->temp - A->temp));
+	uint32_t A_time = A->time * 1000 + A->mills,
+		B_time = B->time * 1000 + B->mills;
+	return (A->temp + ((millsSinceStart - A_time) / ((float)B_time - A_time)) * ((float)B->temp - A->temp));
 }

@@ -34,7 +34,13 @@ void nrc_testAll()
 	PB_TempProfile profile;
 	Oven_setDefaultTempProfile(&profile);
 
-#define TEST_INTERVAL(idx1,idx2) NRC_AssertTest(abs(Oven_getInterpolatedTempProfileValue(&profile, 0.5f * (profile.data[idx1].time + profile.data[idx2].time)) - 0.5f * (profile.data[idx1].temp + profile.data[idx2].temp)) < 1.0f)
+#define TEST_INTERVAL(idx1,idx2) \
+	NRC_AssertTest( \
+	abs( \
+		Oven_getInterpolatedTempProfileValue(&profile, \
+			0.5f * ((profile.data[idx1].time + profile.data[idx2].time) * 1000) /* середина временного отрезка */ \
+		) - 0.5f * (profile.data[idx1].temp + profile.data[idx2].temp) /* среднее арифметическое температуры */ \
+	) < 1.0f)
 	TEST_INTERVAL(0, 1);
 	TEST_INTERVAL(1, 2);
 	TEST_INTERVAL(2, 3);

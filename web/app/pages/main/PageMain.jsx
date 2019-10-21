@@ -1,7 +1,7 @@
 import {Component} from 'react';
 import page from 'styles/page.scss';
 import style from './PageMain.scss';
-import {sync, globalStore} from '../../../reflow_oven_store.js';
+import {globalStore} from '../../../reflow_oven_store.js';
 
 class TempMonitor extends Component {
     constructor(props) {
@@ -45,7 +45,7 @@ class GraphLayer extends Component {
         super(props);
     }
 
-    drawGraph = (arr, params) => {
+    drawGraph = (arr, params, timeOffset) => {
         let canvas = this.canvas;
         let context = canvas.getContext("2d");
         canvas.width = canvas.clientWidth;
@@ -66,8 +66,7 @@ class GraphLayer extends Component {
         let firstPoint = true;
         let firstPointTime = 0;
         for (let i = 0; i < arr.length; i++) {
-            let data = { temp: arr[i].temp, time: arr[i].time };
-            if (arr[i].mills !== undefined) { data.time += arr[i].mills / 1000; }
+            let data = { temp: arr[i].temp, time: arr[i].time + timeOffset};
             if ((globalStore.data.lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
 
             if (firstPoint) { firstPointTime = data.time; }
@@ -94,7 +93,7 @@ class GraphView extends Component {
             realPoints: [],
             idealPoints: [],
             viewParams: {
-                viewPeriod: 20,
+                viewPeriod: 200,
                 maxTemp: 220,
                 viewMode: 'real time'
             }
@@ -103,10 +102,10 @@ class GraphView extends Component {
 
     updateGraphView = () => {
         if (this._realMeasureGraph) {
-            this._realMeasureGraph.drawGraph(globalStore.data.realPoints, this.state.viewParams);
+            this._realMeasureGraph.drawGraph(globalStore.data.realPoints, this.state.viewParams, 0);
         }
         if (this._idealGraph) {
-            this._idealGraph.drawGraph(globalStore.data.tempProfile, this.state.viewParams);
+            this._idealGraph.drawGraph(globalStore.data.tempProfile, this.state.viewParams, globalStore.data.startTime);
         }
     };
 

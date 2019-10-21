@@ -26,6 +26,9 @@ socket.on('server sync all', function(newStore) {
 // сервер требует обновить БД
 socket.on('server sync update', function(updateItem) {
     let success = sync(updateItem);
+    if (updateItem.type === 'PB_Response' && success) {
+        //console.log(`Start response received, startTime == ${updateItem.data.time}, dbTime == ${globalStore.data.startTime}`);
+    }
     if (success) {
         call('updateRealTimeView');
         call('updateTempLabel');
