@@ -29,7 +29,7 @@ function sync(updateItem) {
             }
             arr.push(newMeasure);
             if (arr.length > 600) {
-                arr.shift(); // если массива стала слишком большой - удаляем самые старые данные
+                arr.shift(); // если размер массива стал слишком большой - удаляем самые старые данные
             }
             break;
         case 'PB_Response':

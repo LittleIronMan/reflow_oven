@@ -64,12 +64,11 @@ class GraphLayer extends Component {
         }
 
         let firstPoint = true;
-        let firstPointTime = 0;
+        let firstPointTime = globalStore.data.lastRealTimeMeasure - params.viewPeriod;
         for (let i = 0; i < arr.length; i++) {
+            if (!firstPoint && arr[i].time === 0) { break; } // выходим из цикла, если наткнулись на невалидный элемент массива
             let data = { temp: arr[i].temp, time: arr[i].time + timeOffset};
             if ((globalStore.data.lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
-
-            if (firstPoint) { firstPointTime = data.time; }
 
             let x = ((data.time - firstPointTime) / params.viewPeriod) * canvas.width;
             let y = (1 - data.temp/params.maxTemp) * canvas.height;

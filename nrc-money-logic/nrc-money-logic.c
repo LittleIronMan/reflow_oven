@@ -31,7 +31,7 @@ NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем п�
 uint32_t prevTickCount = 0;
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, OvenState_TurnOFF};
-PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1.0f/* интегральный */, 1.0f/* дифференциальный */};
+PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1000000.0f/* интегральный */, 10.0f/* дифференциальный */};
 
 // соответствующие массивы
 uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными

@@ -15,7 +15,7 @@ var io;
 function PB_decode(pbMsgStruct, binaryData, binLength) {
     try {
         let obj = pb[pbMsgStruct].decode(binaryData, binLength);
-        return pb[pbMsgStruct].toObject(obj, { enums: String/*enums as string names*/});
+        return pb[pbMsgStruct].toObject(obj, { enums: String, defaults: true/*enums as string names*/});
     }
     catch (e) {
         if (e instanceof protobuf.util.ProtocolError) { }
