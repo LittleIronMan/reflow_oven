@@ -57,11 +57,11 @@ NRC_CREATE_QUEUE(tempMeasureQueue, PB_TempMeasure, 3, PB_MsgType_TEMP_MEASURE, P
 NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPONSE_GET_TEMP_PROFILE, PB_ResponseGetTempProfile_fields);
 
 // массив всех очередей
-const NRC_Queue* allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
+NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
 
 // массив очередей с исходящими данными(при отправке бОльший приоритет имеют очереди в начале массива)
-const NRC_Queue* outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
+NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 xTimerHandle tempMeasureTimer;
@@ -273,7 +273,7 @@ void money_taskMsgSender(void const *argument)
 	for(;;) {
 		xSemaphoreTake(semCounterOutgoingMessages, portMAX_DELAY);
 		for (uint8_t i = 0; i < outgoingQueuesCount; i++) {
-			NRC_Queue* queue = outgoingQueues[i];
+			NRC_Queue *const queue = outgoingQueues[i];
 
 			if (!queue->firstItem) { continue; }
 
@@ -441,7 +441,18 @@ void money_initReceiverIRQ()
 	SetThreadPriority(CreateThread(NULL, 0, receiverIRQ_generator, NULL, 0, NULL), THREAD_PRIORITY_ABOVE_NORMAL);
 	vPortSetInterruptHandler(kReceiveIRQ_No, receiverIRQ_handler);
 #else
-	TODO;
+	// настройка приема данных по uart
+  // к этому моменту UART1 и DMA уже инициализированы и связаны друг с другом(через структуру hdma_usart1_rx),
+  // все происходит в последнем вызове цепочки: 
+  //	MX_USART1_UART_Init(...) => HAL_UART_Init(...) => HAL_UART_MspInit(...)
+  // чтобы обрабатывать прерывания, нужно определить функции:
+  //	HAL_UART_RxHalfCpltCallback, и HAL_UART_RxCpltCallback
+  // притом функция HAL_UART_RxCpltCallback, будет вызываться еще и по прерыванию UART_IT_IDLE
+  //	этот вызов добавлен в функцию USART1_IRQHandler в файле stm32f1xx_it.c
+  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);   // enable idle line interrupt
+  //__HAL_DMA_DISABLE_IT(&huart1, DMA_IT_HT);  // disable uart half tx interrupt
+  RxBuf.state = BufState_USED_BY_HARDWARE;
+  HAL_UART_Receive_DMA(&huart1, dmaRxBuf.arr, dmaRxBuf.size);
 #endif
 }
 
@@ -617,7 +628,7 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSe
 	return success;
 }
 
-void popItemFromQueue(NRC_Queue *queue, uint8_t *resultBuf)
+void popItemFromQueue(NRC_Queue *const queue, uint8_t *resultBuf)
 {
 	xSemaphoreTake(queue->mutex, portMAX_DELAY);
 

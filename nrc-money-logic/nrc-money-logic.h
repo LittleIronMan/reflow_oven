@@ -101,12 +101,11 @@ void money_taskMsgReceiver(void const *argument);
 void money_taskMsgSender(void const *argument);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
 void money_initReceiverIRQ(void);
-void money_initSender(void);
 
 float Oven_getTemp(uint16_t *receivedData, uint8_t *err);
 void Oven_applyControl(float controlValue);
 void Oven_setState(OvenState newState);
-void Oven_finishHeatingProgram();
+void Oven_finishHeatingProgram(void);
 void Oven_setDefaultTempProfile(PB_TempProfile* profile);
 float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */ );
 

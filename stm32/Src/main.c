@@ -56,27 +56,6 @@ DMA_HandleTypeDef hdma_usart1_tx;
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
-void money_initReceiver()
-{
-  // настройка приема данных по uart
-  // к этому моменту UART1 и DMA уже инициализированы и связаны друг с другом(через структуру hdma_usart1_rx),
-  // все происходит в последнем вызове цепочки: 
-  //	MX_USART1_UART_Init(...) => HAL_UART_Init(...) => HAL_UART_MspInit(...)
-  // чтобы обрабатывать прерывания, нужно определить функции:
-  //	HAL_UART_RxHalfCpltCallback, и HAL_UART_RxCpltCallback
-  // притом функция HAL_UART_RxCpltCallback, будет вызываться еще и по прерыванию UART_IT_IDLE
-  //	этот вызов добавлен в функцию USART1_IRQHandler в файле stm32f1xx_it.c
-  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);   // enable idle line interrupt
-  //__HAL_DMA_DISABLE_IT(&huart1, DMA_IT_HT);  // disable uart half tx interrupt
-  RxBuf.state = BufState_USED_BY_HARDWARE;
-  HAL_UART_Receive_DMA(&huart1, dmaRxBuf.arr, dmaRxBuf.size);
-}
-
-void money_initSender()
-{
-
-}
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -132,8 +111,7 @@ int main(void)
   MX_RTC_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-  money_initReceiver();
-  money_initSender();
+	money_initReceiverIRQ();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
