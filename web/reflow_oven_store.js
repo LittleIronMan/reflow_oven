@@ -34,13 +34,18 @@ function sync(updateItem) {
             break;
         case 'PB_Response':
             let response = updateItem.data;
+            globalStore.data.programsState = response.state;
             switch (response.cmdType) {
                 case 'START':
-                    globalStore.data.programsState = response.state;
                     globalStore.data.startTime = response.time + ((response.mills == null) ? 0 : response.mills / 1000);
                     break;
                 case 'STOP':
-                    globalStore.data.programsState = response.state;
+                    break;
+                case 'HARD_RESET':
+                case 'CLIENT_REQUIRES_RESET':
+                    globalStore.data.lastRealTimeMeasure = 0;
+                    globalStore.data.tempProifle = [];
+                    globalStore.data.realPoints = [];
                     break;
                 default:
                     break;

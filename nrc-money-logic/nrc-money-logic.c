@@ -31,7 +31,11 @@ NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем п�
 uint32_t prevTickCount = 0;
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, OvenState_TurnOFF};
-PID_Data pidData = {0.0f, 0.0f, 1.0f /* пропорциональный */, 1000000.0f/* интегральный */, 10.0f/* дифференциальный */};
+PID_Data pidData = { 0.0f, 0.0f,
+	1.0f /* пропорциональный */,
+	1000000.0f/* интегральный */,
+	100.0f/* дифференциальный */
+};
 
 // соответствующие массивы
 uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
@@ -65,6 +69,14 @@ uint32_t timerPeriod = 500 / NRC_TIME_ACCELERATION;
 xSemaphoreHandle pidControllerTaskSem = NULL;
 xSemaphoreHandle defaultTaskSem = NULL;
 xSemaphoreHandle termometerMutex = NULL;
+
+#ifdef NRC_WINDOWS_SIMULATOR
+// некоторые вспомогательные данные для симулятора
+NRC_Time simulator_prevTempMeasureTime = { 0, 0 }; // время предыдущего замера температуры
+float simulator_prevTemp = -1.0f; // величина предыдущего замера температуры
+float simulator_prevV = 0.0f; // предыдущая скорость изменения температуры(V это velocity, заранее прошу прощения за неясность)
+#endif
+
 
 void timerFunc(xTimerHandle xTimer) {
 	// nrcLogD("Temp measure timer callback");
@@ -110,6 +122,16 @@ void money_cmdManagerTask(void const *argument)
 				response2->success = true;
 				response2->profile = cd.tempProfile;
 				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, semCounterOutgoingMessages);
+			}
+			else if (cmd.cmdType == PB_CmdType_CLIENT_REQUIRES_RESET) {
+				Oven_finishHeatingProgram();
+#ifdef NRC_WINDOWS_SIMULATOR
+				simulator_prevTempMeasureTime = (NRC_Time) { 0, 0 };
+				simulator_prevTemp = -1.0f;
+				simulator_prevV = 0.0f;
+#endif
+				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
+				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
 			}
 			else {
 				// сразу посылаем ответ на команду
@@ -415,6 +437,8 @@ void money_initReceiverIRQ()
 	RxBuf.state = BufState_USED_BY_HARDWARE;
 	SetThreadPriority(CreateThread(NULL, 0, receiverIRQ_generator, NULL, 0, NULL), THREAD_PRIORITY_ABOVE_NORMAL);
 	vPortSetInterruptHandler(kReceiveIRQ_No, receiverIRQ_handler);
+#else
+	TODO;
 #endif
 }
 
@@ -427,13 +451,10 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 	*err = 0;
 	*receivedData = 0;
 
-	static NRC_Time prevTempMeasureTime = { 0, 0 };
 	NRC_Time currentTime; NRC_getTime(&currentTime, NULL);
-	float deltaTime = (prevTempMeasureTime.unixSeconds == 0 ? 0.0f : (NRC_getTimeDiffInMills(&currentTime, &prevTempMeasureTime) / 1000.0f));
-	prevTempMeasureTime = currentTime;
+	float deltaTime = (simulator_prevTempMeasureTime.unixSeconds == 0 ? 0.0f : (NRC_getTimeDiffInMills(&currentTime, &simulator_prevTempMeasureTime) / 1000.0f));
+	simulator_prevTempMeasureTime = currentTime;
 
-	static float prevTemp = -1.0f; // предыдущий замер температуры
-	static float prevV = 0.0f; // предыдущая скорость изменения температуры
 #define maxVheating 3.0f // максимальная скорость нагревания(градусов в секунду)
 #define minVcooling -5.0f // минимальная скорость изменения температуры при охлаждении(градусов в секунду)
 #define dVheating 1.0f // "ускорение" температуры при НАГРЕВАНИИ, т.е. время равное изменению скорости нагревания от 0 до 1 грaдуса в секунду
@@ -441,24 +462,24 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 #define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
 	if (deltaTime != 0.0f) {
 		bool ovenIsHeating = (cd.ovenState == OvenState_TurnON);
-		float V = prevV; // скорость изменения температуры
+		float V = simulator_prevV; // скорость изменения температуры
 		if (ovenIsHeating) {
-			V = (prevV + (dVheating * deltaTime));
+			V = (simulator_prevV + (dVheating * deltaTime));
 			if (V > maxVheating) { V = maxVheating; }
 		}
 		else {
-			V = (prevV + (dVcooling * deltaTime));
+			V = (simulator_prevV + (dVcooling * deltaTime));
 			if (V < minVcooling) { V = minVcooling; }
 		}
-		prevV = V;
+		simulator_prevV = V;
 
-		temp = prevTemp + V * deltaTime;
-		if (temp < roomTemp) { temp = roomTemp; prevV = 0.0f; } // температура не может стать ниже комнатной
+		temp = simulator_prevTemp + V * deltaTime;
+		if (temp < roomTemp) { temp = roomTemp; simulator_prevV = 0.0f; } // температура не может стать ниже комнатной
 	}
 	else {
 		temp = roomTemp; // при первом запуске этой функции в симуляторе - будет возвращена комнатная температура
 	}
-	prevTemp = temp;
+	simulator_prevTemp = temp;
 #elif NRC_STM32
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 	*err = (uint8_t)HAL_SPI_Receive(&hspi3, (uint8_t*)receivedData, 1, HAL_MAX_DELAY);
@@ -538,6 +559,9 @@ void money_init()
 	pidControllerTaskSem = xSemaphoreCreateBinary();
 	defaultTaskSem = xSemaphoreCreateBinary();
 	termometerMutex = xSemaphoreCreateMutex();
+
+	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
+	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, semCounterOutgoingMessages);
 }
 
 bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSemaphoreHandle semCounter)

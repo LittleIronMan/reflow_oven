@@ -33,11 +33,13 @@ typedef enum _PB_CmdType {
     PB_CmdType_GET_TEMP_PROFILE = 0,
     PB_CmdType_GET_STATE = 1,
     PB_CmdType_START = 2,
-    PB_CmdType_STOP = 3
+    PB_CmdType_STOP = 3,
+    PB_CmdType_HARD_RESET = 4,
+    PB_CmdType_CLIENT_REQUIRES_RESET = 5
 } PB_CmdType;
 #define _PB_CmdType_MIN PB_CmdType_GET_TEMP_PROFILE
-#define _PB_CmdType_MAX PB_CmdType_STOP
-#define _PB_CmdType_ARRAYSIZE ((PB_CmdType)(PB_CmdType_STOP+1))
+#define _PB_CmdType_MAX PB_CmdType_CLIENT_REQUIRES_RESET
+#define _PB_CmdType_ARRAYSIZE ((PB_CmdType)(PB_CmdType_CLIENT_REQUIRES_RESET+1))
 
 typedef enum _PB_State {
     PB_State_STOPPED = 0,

@@ -50,6 +50,8 @@
      * @property {number} GET_STATE=1 GET_STATE value
      * @property {number} START=2 START value
      * @property {number} STOP=3 STOP value
+     * @property {number} HARD_RESET=4 HARD_RESET value
+     * @property {number} CLIENT_REQUIRES_RESET=5 CLIENT_REQUIRES_RESET value
      */
     $root.PB_CmdType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -57,6 +59,8 @@
         values[valuesById[1] = "GET_STATE"] = 1;
         values[valuesById[2] = "START"] = 2;
         values[valuesById[3] = "STOP"] = 3;
+        values[valuesById[4] = "HARD_RESET"] = 4;
+        values[valuesById[5] = "CLIENT_REQUIRES_RESET"] = 5;
         return values;
     })();
     
@@ -226,6 +230,8 @@
                 case 1:
                 case 2:
                 case 3:
+                case 4:
+                case 5:
                     break;
                 }
             if (message.id != null && message.hasOwnProperty("id"))
@@ -265,6 +271,14 @@
             case "STOP":
             case 3:
                 message.cmdType = 3;
+                break;
+            case "HARD_RESET":
+            case 4:
+                message.cmdType = 4;
+                break;
+            case "CLIENT_REQUIRES_RESET":
+            case 5:
+                message.cmdType = 5;
                 break;
             }
             if (object.id != null)
@@ -1247,6 +1261,8 @@
                 case 1:
                 case 2:
                 case 3:
+                case 4:
+                case 5:
                     break;
                 }
             if (message.cmdId != null && message.hasOwnProperty("cmdId"))
@@ -1310,6 +1326,14 @@
             case "STOP":
             case 3:
                 message.cmdType = 3;
+                break;
+            case "HARD_RESET":
+            case 4:
+                message.cmdType = 4;
+                break;
+            case "CLIENT_REQUIRES_RESET":
+            case 5:
+                message.cmdType = 5;
                 break;
             }
             if (object.cmdId != null)

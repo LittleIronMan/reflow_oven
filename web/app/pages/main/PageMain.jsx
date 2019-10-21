@@ -32,10 +32,14 @@ class ControlButtons extends Component {
     finishProcess = () => {
         socket.emit('client cmd', {cmdTypeStr: 'STOP'});
     };
+    requestReset = () => {
+        socket.emit('client cmd', {cmdTypeStr: 'CLIENT_REQUIRES_RESET'});
+    };
     render() {
         return <div className={style.controlButtons}>
             <button className={style.start} onClick={this.startProcess}>Start Program</button>
             <button className={style.stop} onClick={this.finishProcess}>Stop Program</button>
+            <button className={style.reset} onClick={this.requestReset}>Reset</button>
         </div>;
     }
 }
