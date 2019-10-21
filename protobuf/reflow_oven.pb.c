@@ -19,7 +19,7 @@ const pb_field_t PB_Command_fields[4] = {
 
 const pb_field_t PB_TempMeasure_fields[4] = {
     PB_FIELD(  1, UINT32  , SINGULAR, STATIC  , FIRST, PB_TempMeasure, time, time, 0),
-    PB_FIELD(  2, UINT32  , SINGULAR, STATIC  , OTHER, PB_TempMeasure, mills, time, 0),
+    PB_FIELD(  2, FLOAT   , SINGULAR, STATIC  , OTHER, PB_TempMeasure, mills, time, 0),
     PB_FIELD(  3, FLOAT   , SINGULAR, STATIC  , OTHER, PB_TempMeasure, temp, mills, 0),
     PB_LAST_FIELD
 };
@@ -36,13 +36,14 @@ const pb_field_t PB_ResponseGetTempProfile_fields[3] = {
     PB_LAST_FIELD
 };
 
-const pb_field_t PB_Response_fields[7] = {
+const pb_field_t PB_Response_fields[8] = {
     PB_FIELD(  1, UENUM   , SINGULAR, STATIC  , FIRST, PB_Response, cmdType, cmdType, 0),
     PB_FIELD(  2, UINT32  , SINGULAR, STATIC  , OTHER, PB_Response, cmdId, cmdType, 0),
     PB_FIELD(  3, BOOL    , SINGULAR, STATIC  , OTHER, PB_Response, success, cmdId, 0),
     PB_FIELD(  4, UENUM   , SINGULAR, STATIC  , OTHER, PB_Response, state, success, 0),
     PB_FIELD(  5, UENUM   , SINGULAR, STATIC  , OTHER, PB_Response, error, state, 0),
     PB_FIELD(  6, UINT32  , SINGULAR, STATIC  , OTHER, PB_Response, time, error, 0),
+    PB_FIELD(  7, FLOAT   , SINGULAR, STATIC  , OTHER, PB_Response, mills, time, 0),
     PB_LAST_FIELD
 };
 

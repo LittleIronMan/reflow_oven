@@ -3,7 +3,8 @@ const pb = require('./reflow_oven.pb.js');
 // массив, связывает прототип сообщения с соответствующим числовым типом
 const msgPrototypeBinder = {
     PB_Response : pb.PB_MsgType.RESPONSE,
-    PB_TempMeasure : pb.PB_MsgType.TEMP_MEASURE
+    PB_TempMeasure : pb.PB_MsgType.TEMP_MEASURE,
+    PB_ResponseGetTempProfile : pb.PB_MsgType.RESPONSE_GET_TEMP_PROFILE
 };
 
 function getMsgPrototype(num) {
@@ -21,7 +22,9 @@ let globalStore = {
         tempProfile: [], // термопрофиль программы нагревания
         realPoints: [], // некоторое количество последних измерений температуры
         lastRealTimeMeasure: 0,
-        ovenState: 0
+        ovenState: 0, // состояние печки(включена/выключена)
+        programState: pb.PB_State.STOPPED, // состояние программы нагревания STOPPED / LAUNCHED
+        startTime: 0 // время начала программы нагревания
     }
 };
 
@@ -38,12 +41,27 @@ function sync(updateItem) {
             if (arr.length > 600) {
                 arr.shift(); // если массива стала слишком большой - удаляем самые старые данные
             }
-            if (newMeasure.time > globalStore.data.lastRealTimeMeasure) {
-                globalStore.data.lastRealTimeMeasure = newMeasure.time;
+            let newTime = newMeasure.time + ((newMeasure.mills == null) ? 0 : newMeasure.mills / 1000);
+            if (newTime > globalStore.data.lastRealTimeMeasure) {
+                globalStore.data.lastRealTimeMeasure = newTime;
             }
             break;
-        case 'State':
-            globalStore.data.ovenState = updateItem.data;
+        case 'PB_Response':
+            let response = updateItem.data;
+            switch (response.cmdType) {
+                case pb.PB_CmdType.START:
+                    globalStore.data.programsState = response.state;
+                    globalStore.data.startTime = response.time + ((response.mills == null) ? 0 : response.mills / 1000);
+                    break;
+                case pb.PB_CmdType.STOP:
+                    globalStore.data.programsState = response.state;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case 'PB_ResponseGetTempProfile':
+            globalStore.data.tempProfile = updateItem.data.profile.data;
             break;
         default:
             return false;

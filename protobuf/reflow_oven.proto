@@ -30,7 +30,7 @@ message PB_Command {
 
 message PB_TempMeasure {
 	uint32 time = 1;
-	uint32 mills = 2 [(nanopb).int_size = IS_16];
+	float mills = 2 [(nanopb).int_size = IS_16]; // миллисекунды времени
 	float temp = 3;
 }
 
@@ -63,6 +63,7 @@ message PB_Response {
 	PB_State state = 4;
 	PB_ErrorType error = 5; // [default = NONE];
 	uint32 time = 6; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
+	float mills = 7 [(nanopb).int_size = IS_16]; // миллисекунды времени
 }
 
 // другие примеры кода

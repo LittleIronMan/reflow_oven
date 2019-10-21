@@ -45,18 +45,19 @@ NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_B
 #define NRC_CREATE_QUEUE(queueName,type,countItems,msgType,protobufFields) \
 uint8_t queueName##DataBuf[sizeof(type) * (countItems)]; \
 NRC_QueueItem queueName##ItemsBuf[(countItems)]; \
-NRC_Queue queueName = { NULL, queueName##ItemsBuf, queueName##DataBuf, sizeof(type), (countItems), NULL, (msgType), protobufFields }
+NRC_Queue queueName = { #queueName, NULL, queueName##ItemsBuf, queueName##DataBuf, sizeof(type), (countItems), NULL, (msgType), protobufFields }
 
 NRC_CREATE_QUEUE(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields); // очередь входящих сообщений
 NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields); // очередь сообщений для отправки
 NRC_CREATE_QUEUE(tempMeasureQueue, PB_TempMeasure, 3, PB_MsgType_TEMP_MEASURE, PB_TempMeasure_fields); // очередь измерений температуры для отправки
+NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPONSE_GET_TEMP_PROFILE, PB_ResponseGetTempProfile_fields);
 
 // массив всех очередей
-const NRC_Queue* allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue };
+const NRC_Queue* allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
 
 // массив очередей с исходящими данными(при отправке бОльший приоритет имеют очереди в начале массива)
-const NRC_Queue* outgoingQueues[] = { &responseQueue, &tempMeasureQueue };
+const NRC_Queue* outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 xTimerHandle tempMeasureTimer;
@@ -101,6 +102,12 @@ void money_cmdManagerTask(void const *argument)
 			else if (cmd.cmdType == PB_CmdType_STOP) {
 				Oven_finishHeatingProgram();
 			}
+			else if (cmd.cmdType == PB_CmdType_GET_TEMP_PROFILE) {
+				PB_ResponseGetTempProfile* response = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
+				response->success = true;
+				response->profile = cd.tempProfile;
+				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response, 2, semCounterOutgoingMessages);
+			}
 			else {
 				// сразу посылаем ответ на команду
 				PB_Response response = { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0 };
@@ -143,8 +150,8 @@ void money_pidControllerTask(void const *argument)
 					float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
 					Oven_applyControl(control);
 
-					nrcLogD("Time %d, Temp %.2f, control %.2f", millsSinceStart, temp, control);
-					PB_TempMeasure tempMeasure = { millsSinceStart, 0, temp };
+					nrcLogD("Time %.2f, Temp %.2f, control %.2f", millsSinceStart / 1000.0f, temp, control);
+					PB_TempMeasure tempMeasure = { currentTime.unixSeconds, currentTime.mills, temp };
 					addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
 				}
 			}
@@ -232,8 +239,8 @@ void money_taskMsgSender(void const *argument)
 {
 	nrcLogD("Start msgSender");
 
-	static uint8_t pbEncodedTxData[NRC_MAX(PB_Response_size, PB_TempMeasure_size)]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
-	static uint8_t plainTxData[NRC_MAX(sizeof(PB_Response), sizeof(PB_TempMeasure))];
+	static uint8_t pbEncodedTxData[PB_ResponseGetTempProfile_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
+	static uint8_t plainTxData[sizeof(PB_ResponseGetTempProfile)];
 
 	for(;;) {
 		xSemaphoreTake(semCounterOutgoingMessages, portMAX_DELAY);
@@ -557,7 +564,9 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSe
 	// вставляем новый элемент, с обновлением соответствующих ссылок
 	if (freePlace) {
 		freePlace->priority = newPriority;
-		memcpy(freePlace->data, newData, queue->itemDataSize);
+		if (freePlace->data != newData) {
+			memcpy(freePlace->data, newData, queue->itemDataSize); // копируем данные
+		}
 		if (moreImportantItem) {
 			freePlace->next = (moreImportantItem->next) ? (moreImportantItem->next->next) : NULL;
 			moreImportantItem->next = freePlace;

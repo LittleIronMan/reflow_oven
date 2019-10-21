@@ -392,7 +392,7 @@
             if (message.time != null && message.hasOwnProperty("time"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.time);
             if (message.mills != null && message.hasOwnProperty("mills"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.mills);
+                writer.uint32(/* id 2, wireType 5 =*/21).float(message.mills);
             if (message.temp != null && message.hasOwnProperty("temp"))
                 writer.uint32(/* id 3, wireType 5 =*/29).float(message.temp);
             return writer;
@@ -433,7 +433,7 @@
                     message.time = reader.uint32();
                     break;
                 case 2:
-                    message.mills = reader.uint32();
+                    message.mills = reader.float();
                     break;
                 case 3:
                     message.temp = reader.float();
@@ -477,8 +477,8 @@
                 if (!$util.isInteger(message.time))
                     return "time: integer expected";
             if (message.mills != null && message.hasOwnProperty("mills"))
-                if (!$util.isInteger(message.mills))
-                    return "mills: integer expected";
+                if (typeof message.mills !== "number")
+                    return "mills: number expected";
             if (message.temp != null && message.hasOwnProperty("temp"))
                 if (typeof message.temp !== "number")
                     return "temp: number expected";
@@ -500,7 +500,7 @@
             if (object.time != null)
                 message.time = object.time >>> 0;
             if (object.mills != null)
-                message.mills = object.mills >>> 0;
+                message.mills = Number(object.mills);
             if (object.temp != null)
                 message.temp = Number(object.temp);
             return message;
@@ -527,7 +527,7 @@
             if (message.time != null && message.hasOwnProperty("time"))
                 object.time = message.time;
             if (message.mills != null && message.hasOwnProperty("mills"))
-                object.mills = message.mills;
+                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
             if (message.temp != null && message.hasOwnProperty("temp"))
                 object.temp = options.json && !isFinite(message.temp) ? String(message.temp) : message.temp;
             return object;
@@ -1037,6 +1037,7 @@
          * @property {PB_State|null} [state] PB_Response state
          * @property {PB_ErrorType|null} [error] PB_Response error
          * @property {number|null} [time] PB_Response time
+         * @property {number|null} [mills] PB_Response mills
          */
     
         /**
@@ -1103,6 +1104,14 @@
         PB_Response.prototype.time = 0;
     
         /**
+         * PB_Response mills.
+         * @member {number} mills
+         * @memberof PB_Response
+         * @instance
+         */
+        PB_Response.prototype.mills = 0;
+    
+        /**
          * Creates a new PB_Response instance using the specified properties.
          * @function create
          * @memberof PB_Response
@@ -1138,6 +1147,8 @@
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.error);
             if (message.time != null && message.hasOwnProperty("time"))
                 writer.uint32(/* id 6, wireType 0 =*/48).uint32(message.time);
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                writer.uint32(/* id 7, wireType 5 =*/61).float(message.mills);
             return writer;
         };
     
@@ -1189,6 +1200,9 @@
                     break;
                 case 6:
                     message.time = reader.uint32();
+                    break;
+                case 7:
+                    message.mills = reader.float();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -1262,6 +1276,9 @@
             if (message.time != null && message.hasOwnProperty("time"))
                 if (!$util.isInteger(message.time))
                     return "time: integer expected";
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                if (typeof message.mills !== "number")
+                    return "mills: number expected";
             return null;
         };
     
@@ -1329,6 +1346,8 @@
             }
             if (object.time != null)
                 message.time = object.time >>> 0;
+            if (object.mills != null)
+                message.mills = Number(object.mills);
             return message;
         };
     
@@ -1352,6 +1371,7 @@
                 object.state = options.enums === String ? "STOPPED" : 0;
                 object.error = options.enums === String ? "NONE" : 0;
                 object.time = 0;
+                object.mills = 0;
             }
             if (message.cmdType != null && message.hasOwnProperty("cmdType"))
                 object.cmdType = options.enums === String ? $root.PB_CmdType[message.cmdType] : message.cmdType;
@@ -1365,6 +1385,8 @@
                 object.error = options.enums === String ? $root.PB_ErrorType[message.error] : message.error;
             if (message.time != null && message.hasOwnProperty("time"))
                 object.time = message.time;
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
             return object;
         };
     

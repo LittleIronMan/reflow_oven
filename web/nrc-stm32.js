@@ -61,7 +61,14 @@ function receiveMsgFromStm32 (data) {
     }
     else {
         // при успешном обновлении данных - принуждаем всех подключенных клиентов тоже обновиться
+        console.log('Successful update server store');
         io.sockets.emit('server sync update', updateItem);
+
+        // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)
+        // и при этом сервер не знает термопрофиля мк, то отправляем запрос на получение термопрофиля
+        if (ovenDataStore.globalStore.data.tempProfile.length === 0) {
+            sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_TEMP_PROFILE}, 2);
+        }
     }
 }
 
