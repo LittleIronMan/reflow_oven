@@ -12,7 +12,7 @@ float pidController(PID_Data *pd, float setPoint, float processValue, float delt
 
 	// U = K * (Err + (1 / Ti) * Int + Td * dErr)  см. здесь: https://habr.com/ru/post/145991/ - замечательная статья
 	control = pd->Kp * (error +
-						pd->integralErr / pd->Ti +
+						(pd->Ti == 0.0f ? 0.0f : pd->integralErr / pd->Ti) +
 						pd->Td * dErr);
 
 	return control;

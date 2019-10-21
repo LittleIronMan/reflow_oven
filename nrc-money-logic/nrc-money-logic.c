@@ -32,9 +32,9 @@ uint32_t prevTickCount = 0;
 
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, OvenState_TurnOFF};
 PID_Data pidData = { 0.0f, 0.0f,
-	1.0f /* пропорциональный */,
+	100.0f /* пропорциональный */,
 	1000000.0f/* интегральный */,
-	100.0f/* дифференциальный */
+	0.1f/* дифференциальный */
 };
 
 // соответствующие массивы
@@ -130,6 +130,9 @@ void money_cmdManagerTask(void const *argument)
 				simulator_prevTemp = -1.0f;
 				simulator_prevV = 0.0f;
 #endif
+				pidData.lastProcessValue = 0.0f;
+				pidData.integralErr = 0.0f;
+
 				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
 			}
