@@ -128,7 +128,6 @@
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="FreeRTOSConfig.h" />
     <ClInclude Include="..\nrc-print\nrc-print.h">
       <Filter>nrc-print</Filter>
     </ClInclude>
@@ -168,5 +167,6 @@
     <ClInclude Include="..\nrc-test\nrc-test.h">
       <Filter>nrc-test</Filter>
     </ClInclude>
+    <ClInclude Include="..\stm32\Inc\FreeRTOSConfig.h" />
   </ItemGroup>
 </Project>
