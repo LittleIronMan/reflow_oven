@@ -70,6 +70,8 @@ uint32_t timerPeriod = 500 / NRC_TIME_ACCELERATION;
 xSemaphoreHandle pidControllerTaskSem = NULL;
 xSemaphoreHandle defaultTaskSem = NULL;
 xSemaphoreHandle termometerMutex = NULL;
+xSemaphoreHandle semCounterIncomingMessages = NULL; // семафор - счетчик для ВХОДЯЩИХ сообщений
+xSemaphoreHandle semCounterOutgoingMessages = NULL; // семафор - счетчик для ИСХОДЯЩИХ сообщений
 
 #ifdef NRC_WINDOWS_SIMULATOR
 // некоторые вспомогательные данные для симулятора
@@ -519,8 +521,13 @@ void Oven_applyControl(float controlValue)
 void Oven_setState(OvenState newState)
 {
 #ifdef NRC_WINDOWS_SIMULATOR
-#else
-	TODO;
+#elif NRC_STM32
+	if (newState == OvenState_TurnOFF) {
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+	}
+	else {
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+	}
 #endif
 	cd.ovenState = newState;
 }

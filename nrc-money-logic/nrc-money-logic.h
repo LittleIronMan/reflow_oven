@@ -68,9 +68,6 @@ typedef struct {
 										// кодировании/декодировании структуры данных элемента очереди в nanopb 
 } NRC_Queue;
 
-xSemaphoreHandle semCounterIncomingMessages; // семафор - счетчик для ВХОДЯЩИХ сообщений
-xSemaphoreHandle semCounterOutgoingMessages; // семафор - счетчик для ИСХОДЯЩИХ сообщений
-
 typedef struct {
 	uint32_t unixSeconds; // секунд с начала эпохи(UNIX - время)
 	uint16_t mills; // миллисекунды последней секунды
