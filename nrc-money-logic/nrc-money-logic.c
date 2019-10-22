@@ -221,7 +221,6 @@ void money_defaultTask(void const *argument)
 }
 
 // задача - декодирует принятые данные и раскидывает их по очередям(например очередь команд)
-pb_istream_t istream;
 void money_msgReceiverTask(void const *argument)
 {
 	PB_Command RxCmd;
@@ -240,7 +239,7 @@ void money_msgReceiverTask(void const *argument)
 		else if (msgType == PB_MsgType_CMD) {
 			uint16_t encodedRxDataLen;
 			uint8_t *pEncodedRxData = getMsgContent(RxBuf.arr, &encodedRxDataLen);
-			istream = pb_istream_from_buffer(pEncodedRxData, encodedRxDataLen);
+			pb_istream_t istream = pb_istream_from_buffer(pEncodedRxData, encodedRxDataLen);
 			decodeStatus = pb_decode(&istream, PB_Command_fields, &RxCmd);
 			if (!decodeStatus) {
 				nrcLogD("Error: failed to decode command");
@@ -267,12 +266,12 @@ void money_msgReceiverTask(void const *argument)
 }
 
 // задача которая сериализует данные для отправки, упаковывает их для последовательного протокола и, собственно, отправляет их с помощью DMA
-uint8_t pbEncodedTxData[PB_ResponseGetTempProfile_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
-uint8_t plainTxData[sizeof(PB_ResponseGetTempProfile)];
-pb_ostream_t ostream;
 void money_msgSenderTask(void const *argument)
 {
 	nrcLogD("Start msgSender");
+
+	static uint8_t pbEncodedTxData[PB_ResponseGetTempProfile_size]; // буфер с protobuf-кодированными данными передаваемой структуры данных(но еще не упакованы для передачи)
+	static uint8_t plainTxData[sizeof(PB_ResponseGetTempProfile)];
 
 	for(;;) {
 		xSemaphoreTake(semCounterOutgoingMessages, portMAX_DELAY);
@@ -283,7 +282,7 @@ void money_msgSenderTask(void const *argument)
 
 			popItemFromQueue(queue, plainTxData);
 
-			ostream = pb_ostream_from_buffer(pbEncodedTxData, sizeof(pbEncodedTxData));
+			pb_ostream_t ostream = pb_ostream_from_buffer(pbEncodedTxData, sizeof(pbEncodedTxData));
 			bool status = pb_encode(&ostream, queue->protobufFields, plainTxData);
 			if (status) {
 				// ждем пока uart завершит передачу предыдущего сообщения
