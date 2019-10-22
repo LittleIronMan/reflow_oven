@@ -102,7 +102,7 @@
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 7 )
-#define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
+#define configMINIMAL_STACK_SIZE                 ((uint16_t)50)
 #define configTOTAL_HEAP_SIZE                    ((size_t)4096)
 #define configMAX_TASK_NAME_LEN                  ( 16 )
 #define configUSE_16_BIT_TICKS                   0
@@ -174,6 +174,55 @@ standard names. */
 #define configTIMER_QUEUE_LENGTH				20
 #define configTIMER_TASK_STACK_DEPTH			( configMINIMAL_STACK_SIZE * 2 )
 #define configUSE_COUNTING_SEMAPHORES			 1
+
+#ifdef NRC_WINDOWS_SIMULATOR
+	//#undef configMAX_TASK_NAME_LEN
+	//#define configMAX_TASK_NAME_LEN					(12)
+
+	//#undef configQUEUE_REGISTRY_SIZE
+	//#define configQUEUE_REGISTRY_SIZE				20
+
+	//#undef INCLUDE_vTaskDelayUntil
+	//#define INCLUDE_vTaskDelayUntil					1
+	
+	//#define configCHECK_FOR_STACK_OVERFLOW			0
+	//#define configUSE_RECURSIVE_MUTEXES				1
+	//#define configUSE_MALLOC_FAILED_HOOK			0 /* pvPortMalloc() is not used. */
+	//#define configUSE_APPLICATION_TASK_TAG			1
+	//#define configUSE_COUNTING_SEMAPHORES			1
+	//#define configUSE_ALTERNATIVE_API				0
+	//#define configUSE_QUEUE_SETS					1
+	//#define configUSE_TASK_NOTIFICATIONS			1
+	//#define configUSE_DAEMON_TASK_STARTUP_HOOK		0
+	//#define configUSE_TRACE_FACILITY				1
+	//#define configIDLE_SHOULD_YIELD					1
+	
+	//#define INCLUDE_uxTaskGetStackHighWaterMark		1
+	//#define INCLUDE_xTimerGetTimerDaemonTaskHandle	1
+	//#define INCLUDE_xTaskGetIdleTaskHandle			1
+	//#define INCLUDE_xTaskGetHandle					1
+	//#define INCLUDE_eTaskGetState					1
+	//#define INCLUDE_xSemaphoreGetMutexHolder		1
+	//#define INCLUDE_xTimerPendFunctionCall			1
+	//#define INCLUDE_xTaskAbortDelay					1
+	
+	/* Run time stats gathering configuration options. */
+	//#define configGENERATE_RUN_TIME_STATS			0
+	//#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
+	//#define portGET_RUN_TIME_COUNTER_VALUE()
+
+	/* This demo makes use of one or more example stats formatting functions.  These
+	format the raw data provided by the uxTaskGetSystemState() function in to human
+	readable ASCII form.  See the notes in the implementation of vTaskList() within
+	FreeRTOS/Source/tasks.c for limitations. */
+	//#define configUSE_STATS_FORMATTING_FUNCTIONS	0
+
+	/* It is a good idea to define configASSERT() while developing.  configASSERT()
+	uses the same semantics as the standard C assert() macro. */
+	extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName );
+	#undef configASSERT
+	#define configASSERT( x ) if( ( x ) == 0 ) vAssertCalled( __LINE__, __FILE__ )
+#endif	
 
 /* USER CODE END Defines */ 
 

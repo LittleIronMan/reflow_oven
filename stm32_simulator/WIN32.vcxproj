@@ -74,7 +74,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\raspberry\windows_specific_code\wiringpi;..\other;..\PID_controller;..\nrc-test;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\protobuf;..\protobuf\nanopb;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include;..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW;..\nrc-money-logic;..\nrc-money-logic\platform_windows;..\nrc-safe-uart;..\nrc-safe-uart\config_windows;..\nrc-print;..\nrc-print\config_windows;..\raspberry\windows_specific_code\wiringpi;..\other;..\PID_controller;..\nrc-test;..\stm32\Inc;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0500;WINVER=0x400;_CRT_SECURE_NO_WARNINGS;NRC_STM32;NRC_WINDOWS_SIMULATOR;NRC_TEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -251,10 +251,10 @@
     <ClInclude Include="..\protobuf\nanopb\pb_encode.h" />
     <ClInclude Include="..\protobuf\reflow_oven.pb.h" />
     <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h" />
+    <ClInclude Include="..\stm32\Inc\FreeRTOSConfig.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MSVC-MingW\portmacro.h" />
-    <ClInclude Include="FreeRTOSConfig.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h" />
     <ClInclude Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\include\list.h" />
