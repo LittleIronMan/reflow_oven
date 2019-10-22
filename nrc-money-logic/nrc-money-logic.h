@@ -94,11 +94,12 @@ extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по U
 extern NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA
 
 void money_init(void);
-void money_cmdManagerTask(void const *argument);
+void money_initTasks(void);
+void money_cmdManagerTask(void const* argument);
 void money_pidControllerTask(void const *argument);
 void money_defaultTask(void const *argument);
-void money_taskMsgReceiver(void const *argument);
-void money_taskMsgSender(void const *argument);
+void money_msgReceiverTask(void const *argument);
+void money_msgSenderTask(void const *argument);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
 void money_initReceiverIRQ(void);
 

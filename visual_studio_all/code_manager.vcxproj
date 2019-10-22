@@ -127,8 +127,8 @@
     <ClCompile Include="..\nrc-print\nrc-print.c" />
     <ClCompile Include="..\nrc-safe-uart\nrc-safe-uart.c" />
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c" />
-    <ClCompile Include="..\other\crc_software_as_stm32_hardware_original.c" />
     <ClCompile Include="..\other\unix-time\unix_time.c" />
+    <ClCompile Include="..\PID_controller\pid.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_common.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_decode.c" />
     <ClCompile Include="..\protobuf\nanopb\pb_encode.c" />
@@ -180,6 +180,7 @@
     <ClInclude Include="..\other\base64.h" />
     <ClInclude Include="..\other\crc_software_as_stm32_hardware.h" />
     <ClInclude Include="..\other\unix-time\unix_time.h" />
+    <ClInclude Include="..\PID_controller\pid.h" />
     <ClInclude Include="..\protobuf\nanopb\pb.h" />
     <ClInclude Include="..\protobuf\nanopb\pb_common.h" />
     <ClInclude Include="..\protobuf\nanopb\pb_decode.h" />
@@ -251,7 +252,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\protobuf\generate_code.py" />
-    <None Include="..\protobuf\reflow_oven.pb.js" />
     <None Include="..\protobuf\reflow_oven.proto" />
     <None Include="..\protobuf\reflow_oven_pb2.py" />
     <None Include="..\raspberry\compile_all.py" />

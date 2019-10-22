@@ -23,6 +23,7 @@
 #define osDelay(millisec) vTaskDelay(millisec)
 #elif NRC_STM32
 #include "main.h"
+#include "cmsis_os.h"
 #endif
 
 volatile bool allowSyncTime = true;
@@ -218,7 +219,7 @@ void money_defaultTask(void const *argument)
 }
 
 // задача - декодирует принятые данные и раскидывает их по очередям(например очередь команд)
-void money_taskMsgReceiver(void const *argument)
+void money_msgReceiverTask(void const *argument)
 {
 	PB_Command RxCmd;
 	nrcLogD("Start msgReceiver");
@@ -263,7 +264,7 @@ void money_taskMsgReceiver(void const *argument)
 }
 
 // задача которая сериализует данные для отправки, упаковывает их для последовательного протокола и, собственно, отправляет их с помощью DMA
-void money_taskMsgSender(void const *argument)
+void money_msgSenderTask(void const *argument)
 {
 	nrcLogD("Start msgSender");
 
@@ -576,6 +577,23 @@ void money_init()
 
 	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, semCounterOutgoingMessages);
+}
+
+void money_initTasks()
+{
+#ifdef NRC_WINDOWS_SIMULATOR
+#define NRC_INIT_TASK(taskName,stackSize,priority) \
+	TaskHandle_t taskName##TaskHandle; \
+	xTaskCreate(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, &taskName##TaskHandle)
+#elif NRC_STM32
+#define NRC_INIT_TASK(taskName,stackSize,priority) \
+	osThreadDef(taskName##Task, money_##taskName##Task, priority - 3, 0, stackSize); \
+	osThreadId taskName##TaskHandle = osThreadCreate(osThread(taskName##Task), NULL)
+#endif
+	NRC_INIT_TASK(cmdManager, configMINIMAL_STACK_SIZE, 2);
+	NRC_INIT_TASK(msgReceiver, configMINIMAL_STACK_SIZE, 3);
+	NRC_INIT_TASK(msgSender, configMINIMAL_STACK_SIZE, 1);
+	NRC_INIT_TASK(pidController, configMINIMAL_STACK_SIZE, 4);
 }
 
 bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSemaphoreHandle semCounter)

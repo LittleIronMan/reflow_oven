@@ -59,6 +59,9 @@
     <Filter Include="stm32\simulator">
       <UniqueIdentifier>{41f1dfb4-a8b4-46f8-8cde-371157776ecf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PID_controller">
+      <UniqueIdentifier>{29a1f062-b8ac-4365-8c98-7ac055715cb0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\nrc-money-logic\nrc-money-logic.c">
@@ -71,9 +74,6 @@
       <Filter>nrc-safe-uart</Filter>
     </ClCompile>
     <ClCompile Include="..\other\crc_software_as_stm32_hardware.c">
-      <Filter>other</Filter>
-    </ClCompile>
-    <ClCompile Include="..\other\crc_software_as_stm32_hardware_original.c">
       <Filter>other</Filter>
     </ClCompile>
     <ClCompile Include="..\other\unix-time\unix_time.c">
@@ -207,6 +207,9 @@
     </ClCompile>
     <ClCompile Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.c">
       <Filter>raspberry\windows_specific_code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PID_controller\pid.c">
+      <Filter>PID_controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -432,15 +435,15 @@
     <ClInclude Include="..\raspberry\windows_specific_code\wiringpi\wiringSerial.h">
       <Filter>raspberry\windows_specific_code</Filter>
     </ClInclude>
+    <ClInclude Include="..\PID_controller\pid.h">
+      <Filter>PID_controller</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\protobuf\reflow_oven_pb2.py">
       <Filter>protobuf</Filter>
     </None>
     <None Include="..\protobuf\generate_code.py">
-      <Filter>protobuf</Filter>
-    </None>
-    <None Include="..\protobuf\reflow_oven.pb.js">
       <Filter>protobuf</Filter>
     </None>
     <None Include="..\protobuf\reflow_oven.proto">
