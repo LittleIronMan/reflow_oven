@@ -473,10 +473,10 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 	float deltaTime = (simulator_prevTempMeasureTime.unixSeconds == 0 ? 0.0f : (NRC_getTimeDiffInMills(&currentTime, &simulator_prevTempMeasureTime) / 1000.0f));
 	simulator_prevTempMeasureTime = currentTime;
 
-#define maxVheating 3.0f // максимальная скорость нагревания(градусов в секунду)
-#define minVcooling -5.0f // минимальная скорость изменения температуры при охлаждении(градусов в секунду)
-#define dVheating 1.0f // "ускорение" температуры при НАГРЕВАНИИ, т.е. время равное изменению скорости нагревания от 0 до 1 грaдуса в секунду
-#define dVcooling -1.0f // "ускорение" температуры при ОХЛАЖДЕНИИ
+#define maxVheating 1.5f // максимальная скорость нагревания(градусов в секунду)
+#define minVcooling -2.0f // минимальная скорость изменения температуры при охлаждении(градусов в секунду)
+#define dVheating 0.5f // "ускорение" температуры при НАГРЕВАНИИ, т.е. время равное изменению скорости нагревания от 0 до 1 грaдуса в секунду
+#define dVcooling -0.5f // "ускорение" температуры при ОХЛАЖДЕНИИ
 #define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
 	if (deltaTime != 0.0f) {
 		bool ovenIsHeating = (cd.ovenState == OvenState_TurnON);
