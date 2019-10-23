@@ -49,8 +49,6 @@ RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi3;
 
-TIM_HandleTypeDef htim6;
-
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
