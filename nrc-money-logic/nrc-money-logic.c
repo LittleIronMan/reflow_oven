@@ -573,7 +573,7 @@ void money_init()
 
 	nrc_semaphoreCreateBinary(pidControllerTaskSem);
 	nrc_semaphoreCreateBinary(defaultTaskSem);
-	nrc_semaphoreCreateBinary(termometerMutex);
+	nrc_semaphoreCreateMutex(termometerMutex);
 
 	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, semCounterOutgoingMessages);
@@ -582,6 +582,7 @@ void money_init()
 void money_initTasks()
 {
 	NRC_INIT_TASK(default, configMINIMAL_STACK_SIZE, 0);
+	NRC_INIT_TASK(cmdManager, configMINIMAL_STACK_SIZE, 2);
 	NRC_INIT_TASK(msgReceiver, configMINIMAL_STACK_SIZE, 3);
 	NRC_INIT_TASK(msgSender, configMINIMAL_STACK_SIZE, 1);
 	NRC_INIT_TASK(pidController, configMINIMAL_STACK_SIZE, 4);

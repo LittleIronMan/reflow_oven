@@ -32,16 +32,10 @@ typedef enum {
 	#define nrc_semaphoreCreateCounting(semaphoreName,maxCount,initCount) semaphoreName = xSemaphoreCreateCountingStatic(maxCount, initCount, &semaphoreName##Buffer)
 	#define nrc_semaphoreCreateBinary(semaphoreName) semaphoreName = xSemaphoreCreateBinaryStatic(&semaphoreName##Buffer)
 	#define nrc_semaphoreCreateMutex(semaphoreName) semaphoreName = xSemaphoreCreateMutexStatic(&semaphoreName##Buffer)
-	#ifdef NRC_WINDOWS_SIMULATOR
-		#define NRC_INIT_TASK(taskName,stackSize,priority) \
-			static StaticTask_t taskName##Buffer; \
-			static StackType_t taskName##Stack[stackSize]; \
-			TaskHandle_t taskName##TaskHandle = xTaskCreateStatic(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, taskName##Stack, &taskName##Buffer)
-	#elif NRC_STM32
-		#define NRC_INIT_TASK(taskName,stackSize,priority) \
-			osThreadDef(taskName##Task, money_##taskName##Task, priority - 3, 0, stackSize); \
-			osThreadId taskName##TaskHandle = osThreadCreate(osThread(taskName##Task), NULL)
-	#endif
+	#define NRC_INIT_TASK(taskName,stackSize,priority) \
+		static StaticTask_t taskName##Buffer; \
+		static StackType_t taskName##Stack[stackSize]; \
+		TaskHandle_t taskName##TaskHandle = xTaskCreateStatic(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, taskName##Stack, &taskName##Buffer)
 	#define nrc_timerCreate(timerName,period,autoReload,id,callback) \
 		static StaticTimer_t timerName##Buffer; \
 		xTimerHandle timerName##Handle = xTimerCreateStatic(#timerName,period,autoReload,id,callback,&timerName##Buffer)
@@ -50,15 +44,9 @@ typedef enum {
 	#define nrc_semaphoreCreateCounting(semaphoreName,maxCount,initCount) semaphoreName = xSemaphoreCreateCounting(maxCount, initCount)
 	#define nrc_semaphoreCreateBinary(semaphoreName) semaphoreName = xSemaphoreCreateBinary()
 	#define nrc_semaphoreCreateMutex(semaphoreName) semaphoreName = xSemaphoreCreateMutex()
-	#ifdef NRC_WINDOWS_SIMULATOR
-		#define NRC_INIT_TASK(taskName,stackSize,priority) \
-			TaskHandle_t taskName##TaskHandle; \
-			xTaskCreate(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, &taskName##TaskHandle)
-	#elif NRC_STM32
-		#define NRC_INIT_TASK(taskName,stackSize,priority) \
-			osThreadDef(taskName##Task, money_##taskName##Task, priority - 3, 0, stackSize); \
-			osThreadId taskName##TaskHandle = osThreadCreate(osThread(taskName##Task), NULL)
-	#endif
+	#define NRC_INIT_TASK(taskName,stackSize,priority) \
+		TaskHandle_t taskName##TaskHandle; \
+		xTaskCreate(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, &taskName##TaskHandle)
 	#define nrc_timerCreate(timerName,period,autoReload,id,callback) \
 		xTimerHandle timerName##Handle = xTimerCreate(#timerName,period,autoReload,id,callback)
 #endif
