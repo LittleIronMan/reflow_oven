@@ -425,7 +425,7 @@ DWORD WINAPI receiverIRQ_generator(LPVOID lpParameter)
 
 uint32_t receiverIRQ_handler()
 {
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	// BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 	nrcLogD("receiverIRQ_handler start");
 	NRC_UART_EventType type = NRC_EVENT_TRANSFER_COMPLETED;
@@ -434,7 +434,7 @@ uint32_t receiverIRQ_handler()
 	dmaRxBuf.prevCNDTR = dmaRxBuf.size; // это делается только для windows
 	dmaIRQ_lock = false;
 
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	// portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 #endif
 
