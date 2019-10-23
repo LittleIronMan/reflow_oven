@@ -42,15 +42,15 @@ PID_Data pidData = { 0.0f, 0.0f,
 uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
 uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
 uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
-NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, NULL, BufState_USED_BY_HARDWARE },
-				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, NULL, BufState_USED_BY_PROC };
+NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, BufState_USED_BY_HARDWARE, NULL },
+				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, BufState_USED_BY_PROC, NULL };
 NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
 
 // макрофункция для статического выделения памяти для очередей
 #define NRC_CREATE_QUEUE(queueName,type,countItems,msgType,protobufFields) \
 uint8_t queueName##DataBuf[sizeof(type) * (countItems)]; \
 NRC_QueueItem queueName##ItemsBuf[(countItems)]; \
-NRC_Queue queueName = { #queueName, NULL, queueName##ItemsBuf, queueName##DataBuf, sizeof(type), (countItems), NULL, (msgType), protobufFields }
+NRC_Queue queueName = { #queueName, NULL, queueName##ItemsBuf, queueName##DataBuf, sizeof(type), (countItems), (msgType), protobufFields, NULL}
 
 NRC_CREATE_QUEUE(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields); // очередь входящих сообщений
 NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields); // очередь сообщений для отправки

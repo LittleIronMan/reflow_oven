@@ -27,8 +27,8 @@ typedef enum {
 
 #if (configSUPPORT_STATIC_ALLOCATION == 1)
 	#define nrc_defineSemaphore(semaphoreName) \
-		StaticSemaphore_t semaphoreName##Buffer; \
-		xSemaphoreHandle semaphoreName
+		xSemaphoreHandle semaphoreName; \
+		StaticSemaphore_t semaphoreName##Buffer
 	#define nrc_semaphoreCreateCounting(semaphoreName,maxCount,initCount) semaphoreName = xSemaphoreCreateCountingStatic(maxCount, initCount, &semaphoreName##Buffer)
 	#define nrc_semaphoreCreateBinary(semaphoreName) semaphoreName = xSemaphoreCreateBinaryStatic(&semaphoreName##Buffer)
 	#define nrc_semaphoreCreateMutex(semaphoreName) semaphoreName = xSemaphoreCreateMutexStatic(&semaphoreName##Buffer)
@@ -68,8 +68,8 @@ typedef volatile struct {
 	uint8_t *arr; // указатель на массив с данными
 	uint16_t size;
 	uint16_t countBytes; // количество актуальных байт в буфере
-	nrc_defineSemaphore(sem); // семафор, блокирующий задачу обработки этого буфера до тех пор пока он не заполнится
 	BetaBufState state; // вся структура volatile только из-за этой переменной
+	nrc_defineSemaphore(sem); // семафор, блокирующий задачу обработки этого буфера до тех пор пока он не заполнится
 } NrcUartBufBeta;
 
 // циклический буфер, который используется DMA
@@ -100,10 +100,10 @@ typedef struct {
 	uint8_t *dataBuf; // указатель на выделенный массив данных для этой очереди
 	const uint16_t itemDataSize; // размер единицы структуры данных в этой очереди, грубо говоря sizeof(*items[i].data)
 	const uint8_t maxItemsCount; // максимальное количество элементов в очереди
-	nrc_defineSemaphore(mutex); // мютекс, предоставляет доступ к очереди для какой-то одной задачи
 	const PB_MsgType msgType; // тип структур данных в этой очереди
 	const pb_field_t* protobufFields; // указатель на специальную область данных, которая используется как шифр при
 										// кодировании/декодировании структуры данных элемента очереди в nanopb 
+	nrc_defineSemaphore(mutex); // мютекс, предоставляет доступ к очереди для какой-то одной задачи
 } NRC_Queue;
 
 typedef struct {
