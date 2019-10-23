@@ -581,7 +581,9 @@ void money_init()
 
 void money_initTasks()
 {
+#ifdef NRC_WINDOWS_SIMULATOR
 	NRC_INIT_TASK(default, configMINIMAL_STACK_SIZE, 0);
+#endif
 	NRC_INIT_TASK(cmdManager, configMINIMAL_STACK_SIZE, 2);
 	NRC_INIT_TASK(msgReceiver, configMINIMAL_STACK_SIZE, 3);
 	NRC_INIT_TASK(msgSender, configMINIMAL_STACK_SIZE, 1);

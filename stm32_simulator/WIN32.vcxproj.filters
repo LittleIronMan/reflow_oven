@@ -57,9 +57,6 @@
       <Filter>FreeRTOS Source\Source</Filter>
     </ClCompile>
     <ClCompile Include="main.c" />
-    <ClCompile Include="..\stm32\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c">
-      <Filter>FreeRTOS Source\Source\Portable</Filter>
-    </ClCompile>
     <ClCompile Include="..\nrc-print\nrc-print.c">
       <Filter>nrc-print</Filter>
     </ClCompile>
