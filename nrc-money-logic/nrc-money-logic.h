@@ -25,12 +25,50 @@ typedef enum {
 	NRC_EVENT_TRANSFER_COMPLETED // передача/прием данных завершен(а) - поймано прерывание IDLE_LINE
 } NRC_UART_EventType;
 
+#if (configSUPPORT_STATIC_ALLOCATION == 1)
+	#define nrc_defineSemaphore(semaphoreName) \
+		StaticSemaphore_t semaphoreName##Buffer; \
+		xSemaphoreHandle semaphoreName
+	#define nrc_semaphoreCreateCounting(semaphoreName,maxCount,initCount) semaphoreName = xSemaphoreCreateCountingStatic(maxCount, initCount, &semaphoreName##Buffer)
+	#define nrc_semaphoreCreateBinary(semaphoreName) semaphoreName = xSemaphoreCreateBinaryStatic(&semaphoreName##Buffer)
+	#define nrc_semaphoreCreateMutex(semaphoreName) semaphoreName = xSemaphoreCreateMutexStatic(&semaphoreName##Buffer)
+	#ifdef NRC_WINDOWS_SIMULATOR
+		#define NRC_INIT_TASK(taskName,stackSize,priority) \
+			static StaticTask_t taskName##Buffer; \
+			static StackType_t taskName##Stack[stackSize]; \
+			TaskHandle_t taskName##TaskHandle = xTaskCreateStatic(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, taskName##Stack, &taskName##Buffer)
+	#elif NRC_STM32
+		#define NRC_INIT_TASK(taskName,stackSize,priority) \
+			osThreadDef(taskName##Task, money_##taskName##Task, priority - 3, 0, stackSize); \
+			osThreadId taskName##TaskHandle = osThreadCreate(osThread(taskName##Task), NULL)
+	#endif
+	#define nrc_timerCreate(timerName,period,autoReload,id,callback) \
+		static StaticTimer_t timerName##Buffer; \
+		xTimerHandle timerName##Handle = xTimerCreateStatic(#timerName,period,autoReload,id,callback,&timerName##Buffer)
+#else
+	#define nrc_defineSemaphore(semaphoreName) xSemaphoreHandle semaphoreName
+	#define nrc_semaphoreCreateCounting(semaphoreName,maxCount,initCount) semaphoreName = xSemaphoreCreateCounting(maxCount, initCount)
+	#define nrc_semaphoreCreateBinary(semaphoreName) semaphoreName = xSemaphoreCreateBinary()
+	#define nrc_semaphoreCreateMutex(semaphoreName) semaphoreName = xSemaphoreCreateMutex()
+	#ifdef NRC_WINDOWS_SIMULATOR
+		#define NRC_INIT_TASK(taskName,stackSize,priority) \
+			TaskHandle_t taskName##TaskHandle; \
+			xTaskCreate(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, &taskName##TaskHandle)
+	#elif NRC_STM32
+		#define NRC_INIT_TASK(taskName,stackSize,priority) \
+			osThreadDef(taskName##Task, money_##taskName##Task, priority - 3, 0, stackSize); \
+			osThreadId taskName##TaskHandle = osThreadCreate(osThread(taskName##Task), NULL)
+	#endif
+	#define nrc_timerCreate(timerName,period,autoReload,id,callback) \
+		xTimerHandle timerName##Handle = xTimerCreate(#timerName,period,autoReload,id,callback)
+#endif
+
 // буфер, которым раздельно владеют DMA и процессор
 typedef volatile struct {
 	uint8_t *arr; // указатель на массив с данными
 	uint16_t size;
 	uint16_t countBytes; // количество актуальных байт в буфере
-	xSemaphoreHandle sem; // семафор, блокирующий задачу обработки этого буфера до тех пор пока он не заполнится
+	nrc_defineSemaphore(sem); // семафор, блокирующий задачу обработки этого буфера до тех пор пока он не заполнится
 	BetaBufState state; // вся структура volatile только из-за этой переменной
 } NrcUartBufBeta;
 
@@ -62,7 +100,7 @@ typedef struct {
 	uint8_t *dataBuf; // указатель на выделенный массив данных для этой очереди
 	const uint16_t itemDataSize; // размер единицы структуры данных в этой очереди, грубо говоря sizeof(*items[i].data)
 	const uint8_t maxItemsCount; // максимальное количество элементов в очереди
-	xSemaphoreHandle mutex; // мютекс, предоставляет доступ к очереди для какой-то одной задачи
+	nrc_defineSemaphore(mutex); // мютекс, предоставляет доступ к очереди для какой-то одной задачи
 	const PB_MsgType msgType; // тип структур данных в этой очереди
 	const pb_field_t* protobufFields; // указатель на специальную область данных, которая используется как шифр при
 										// кодировании/декодировании структуры данных элемента очереди в nanopb 

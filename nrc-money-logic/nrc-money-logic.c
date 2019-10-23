@@ -65,13 +65,14 @@ NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueu
 NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
-xTimerHandle tempMeasureTimer;
+nrc_defineSemaphore(pidControllerTaskSem);
+nrc_defineSemaphore(defaultTaskSem);
+nrc_defineSemaphore(termometerMutex);
+nrc_defineSemaphore(semCounterIncomingMessages); // семафор - счетчик для ВХОДЯЩИХ сообщений
+nrc_defineSemaphore(semCounterOutgoingMessages); // семафор - счетчик для ИСХОДЯЩИХ сообщений
+
+xTimerHandle tempMeasureTimerHandle;
 uint32_t timerPeriod = 500 / NRC_TIME_ACCELERATION;
-xSemaphoreHandle pidControllerTaskSem = NULL;
-xSemaphoreHandle defaultTaskSem = NULL;
-xSemaphoreHandle termometerMutex = NULL;
-xSemaphoreHandle semCounterIncomingMessages = NULL; // семафор - счетчик для ВХОДЯЩИХ сообщений
-xSemaphoreHandle semCounterOutgoingMessages = NULL; // семафор - счетчик для ИСХОДЯЩИХ сообщений
 
 #ifdef NRC_WINDOWS_SIMULATOR
 // некоторые вспомогательные данные для симулятора
@@ -552,35 +553,27 @@ void money_init()
 		for (uint8_t i = 0; i < queue->maxItemsCount; i++) {
 			queue->items[i].data = &(queue->dataBuf[queue->itemDataSize * i]);
 		}
-		queue->mutex = xSemaphoreCreateMutex();
+		nrc_semaphoreCreateMutex(queue->mutex);
 	}
 
 	// семафоры для входящих/исходящих сообщений
-	semCounterIncomingMessages = xSemaphoreCreateCounting(10, 0);
-	semCounterOutgoingMessages = xSemaphoreCreateCounting(10, 0);
+	nrc_semaphoreCreateCounting(semCounterIncomingMessages, 10, 0);
+	nrc_semaphoreCreateCounting(semCounterOutgoingMessages, 10, 0);
 
 	// инициализация буферов приема/передачи по uart
-	RxBuf.sem = xSemaphoreCreateBinary();
-	TxBuf.sem = xSemaphoreCreateBinary();
+	nrc_semaphoreCreateBinary(RxBuf.sem);
+	nrc_semaphoreCreateBinary(TxBuf.sem);
 	xSemaphoreGive(TxBuf.sem); // семафор для буфера передачи по умолчанию не занят
 
 	// задаем температурный профиль
 	Oven_setDefaultTempProfile(&cd.tempProfile);
 
-	// кодируем термопрофиль с помощью Protocol Buffers(nanopb)
-	//uint8_t buffer[TempProfile_size];
-	//pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	//bool ostatus = pb_encode(&ostream, TempProfile_fields, &cd.tempProfile);
+	nrc_timerCreate(tempMeasureTimer, timerPeriod, pdTRUE, 0, timerFunc);
+	xTimerReset(tempMeasureTimerHandle, 0);
 
-	//TempProfile inputMsg = TempProfile_init_default;
-	//pb_istream_t istream = pb_istream_from_buffer(buffer, sizeof(buffer));
-	//bool istatus = pb_decode(&istream, TempProfile_fields, &inputMsg);
-
-	tempMeasureTimer = xTimerCreate("AutoReloadTimer", timerPeriod, pdTRUE, 0, timerFunc);
-	xTimerReset(tempMeasureTimer, 0);
-	pidControllerTaskSem = xSemaphoreCreateBinary();
-	defaultTaskSem = xSemaphoreCreateBinary();
-	termometerMutex = xSemaphoreCreateMutex();
+	nrc_semaphoreCreateBinary(pidControllerTaskSem);
+	nrc_semaphoreCreateBinary(defaultTaskSem);
+	nrc_semaphoreCreateBinary(termometerMutex);
 
 	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, semCounterOutgoingMessages);
@@ -588,16 +581,7 @@ void money_init()
 
 void money_initTasks()
 {
-#ifdef NRC_WINDOWS_SIMULATOR
-#define NRC_INIT_TASK(taskName,stackSize,priority) \
-	TaskHandle_t taskName##TaskHandle; \
-	xTaskCreate(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, &taskName##TaskHandle)
-#elif NRC_STM32
-#define NRC_INIT_TASK(taskName,stackSize,priority) \
-	osThreadDef(taskName##Task, money_##taskName##Task, priority - 3, 0, stackSize); \
-	osThreadId taskName##TaskHandle = osThreadCreate(osThread(taskName##Task), NULL)
-#endif
-	NRC_INIT_TASK(cmdManager, configMINIMAL_STACK_SIZE, 2);
+	NRC_INIT_TASK(default, configMINIMAL_STACK_SIZE, 0);
 	NRC_INIT_TASK(msgReceiver, configMINIMAL_STACK_SIZE, 3);
 	NRC_INIT_TASK(msgSender, configMINIMAL_STACK_SIZE, 1);
 	NRC_INIT_TASK(pidController, configMINIMAL_STACK_SIZE, 4);

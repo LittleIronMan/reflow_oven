@@ -127,8 +127,6 @@ static void prvCheckTask( void *pvParameters );
 int main(void)
 {
 	money_init();
-	TaskHandle_t defaultTask;
-	xTaskCreate(money_defaultTask, "defaultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &defaultTask);
 	money_initTasks();
 	money_initReceiverIRQ();
 
