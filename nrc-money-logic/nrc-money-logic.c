@@ -65,9 +65,8 @@ NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueu
 NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
-nrc_defineSemaphore(pidControllerTaskSem);
 nrc_defineSemaphore(defaultTaskSem);
-nrc_defineSemaphore(termometerMutex);
+//nrc_defineSemaphore(termometerMutex);
 nrc_defineSemaphore(semCounterIncomingMessages); // семафор - счетчик для ВХОДЯЩИХ сообщений
 nrc_defineSemaphore(semCounterOutgoingMessages); // семафор - счетчик для ИСХОДЯЩИХ сообщений
 
@@ -84,12 +83,7 @@ float simulator_prevV = 0.0f; // предыдущая скорость изме�
 
 void timerFunc(xTimerHandle xTimer) {
 	// nrcLogD("Temp measure timer callback");
-	if (cd.state == PB_State_LAUNCHED) {
-		xSemaphoreGive(pidControllerTaskSem);
-	}
-	else {
-		xSemaphoreGive(defaultTaskSem);
-	}
+	xSemaphoreGive(defaultTaskSem);
 	// xTimerChangePeriod(xTimer, uiAutoReloadTimerPeriod, 0);
 }
 
@@ -149,48 +143,6 @@ void money_cmdManagerTask(void const *argument)
 	}
 }
 
-void money_pidControllerTask(void const *argument)
-{
-	nrcLogD("Start pidControllerTask");
-	for(;;) {
-		xSemaphoreTake(pidControllerTaskSem, portMAX_DELAY);
-
-		uint16_t receivedData = 0;
-		uint8_t err = 0;
-		float temp = Oven_getTemp(&receivedData, &err);
-		
-		if (err) {
-			nrcLog("SPI Receive error, errcode == %u", err);
-		}
-		else {
-			//myPrint("Received data == %x", receivedData);
-			uint8_t coupleDisconnected = (receivedData & ((uint16_t)(1 << 2)));				
-			if (coupleDisconnected) {
-				nrcLog("Disconnected termocouple");
-			}
-			else {
-				NRC_Time currentTime;
-				NRC_getTime(&currentTime, NULL);
-				uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
-				if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time * 1000) {
-					Oven_finishHeatingProgram();
-					nrcLogD("Heating program finished");
-				}
-				else {
-					uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &cd.lastIterationTime);
-					float setpoint = Oven_getInterpolatedTempProfileValue(&cd.tempProfile, millsSinceStart);
-					float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
-					Oven_applyControl(control);
-
-					nrcLogD("Time %.2f, Temp %.2f, control %.2f", millsSinceStart / 1000.0f, temp, control);
-					PB_TempMeasure tempMeasure = { currentTime.unixSeconds, currentTime.mills, temp };
-					addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
-				}
-			}
-		}
-	}
-}
-
 // в штатном режиме ОС будет просто периодически измерять температуру
 void money_defaultTask(void const *argument)
 {
@@ -212,9 +164,28 @@ void money_defaultTask(void const *argument)
 				nrcLog("Disconnected termocouple");
 			}
 			else {
-				nrcLogD("Temp %.2f", temp);
-				NRC_Time curTime; NRC_getTime(&curTime, NULL);
-				PB_TempMeasure tempMeasure = { curTime.unixSeconds, curTime.mills, temp };
+				NRC_Time currentTime; NRC_getTime(&currentTime, NULL);
+
+				if (cd.state == PB_State_LAUNCHED) {
+					uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
+					if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time * 1000) {
+						Oven_finishHeatingProgram();
+						nrcLogD("Heating program finished");
+					}
+					else {
+						uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &cd.lastIterationTime);
+						float setpoint = Oven_getInterpolatedTempProfileValue(&cd.tempProfile, millsSinceStart);
+						float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
+						Oven_applyControl(control);
+
+						nrcLogD("Time %.2f, Temp %.2f, control %.2f", millsSinceStart / 1000.0f, temp, control);
+					}
+				}
+				else {
+					nrcLogD("Temp %.2f", temp);
+				}
+
+				PB_TempMeasure tempMeasure = { currentTime.unixSeconds, currentTime.mills, temp };
 				addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
 			}
 		}
@@ -464,7 +435,7 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 {
 	float temp;
 
-	xSemaphoreTake(termometerMutex, portMAX_DELAY);
+	//xSemaphoreTake(termometerMutex, portMAX_DELAY);
 #ifdef NRC_WINDOWS_SIMULATOR
 	*err = 0;
 	*receivedData = 0;
@@ -504,7 +475,7 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 	temp = ((*receivedData >> 3) & 0xfff) * 0.25f;
 #endif
-	xSemaphoreGive(termometerMutex);
+	//xSemaphoreGive(termometerMutex);
 
 	return temp;
 }
@@ -571,9 +542,8 @@ void money_init()
 	nrc_timerCreate(tempMeasureTimer, timerPeriod, pdTRUE, 0, timerFunc);
 	xTimerReset(tempMeasureTimerHandle, 0);
 
-	nrc_semaphoreCreateBinary(pidControllerTaskSem);
 	nrc_semaphoreCreateBinary(defaultTaskSem);
-	nrc_semaphoreCreateMutex(termometerMutex);
+	//nrc_semaphoreCreateMutex(termometerMutex);
 
 	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, semCounterOutgoingMessages);
@@ -581,13 +551,10 @@ void money_init()
 
 void money_initTasks()
 {
-#ifdef NRC_WINDOWS_SIMULATOR
-	NRC_INIT_TASK(default, configMINIMAL_STACK_SIZE, 0);
-#endif
-	NRC_INIT_TASK(cmdManager, configMINIMAL_STACK_SIZE, 2);
-	NRC_INIT_TASK(msgReceiver, configMINIMAL_STACK_SIZE, 3);
-	NRC_INIT_TASK(msgSender, configMINIMAL_STACK_SIZE, 1);
-	NRC_INIT_TASK(pidController, configMINIMAL_STACK_SIZE, 4);
+	NRC_INIT_TASK(default, 134, 3);
+	NRC_INIT_TASK(cmdManager, 146, 2);
+	NRC_INIT_TASK(msgReceiver, 202, 3);
+	NRC_INIT_TASK(msgSender, 134, 1);
 }
 
 bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSemaphoreHandle semCounter)
