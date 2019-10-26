@@ -31,6 +31,11 @@ volatile bool allowSyncTime = true;
 NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
 uint32_t prevTickCount = 0;
 
+TaskHandle_t defaultTaskHandle = NULL,
+			cmdManagerTaskHandle = NULL,
+			msgReceiverTaskHandle = NULL,
+			msgSenderTaskHandle = NULL;
+
 NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, OvenState_TurnOFF};
 PID_Data pidData = { 0.0f, 0.0f,
 	100.0f /* пропорциональный */,
@@ -42,8 +47,8 @@ PID_Data pidData = { 0.0f, 0.0f,
 uint8_t RxArr[UART_RECEIVE_BUF_SIZE]; // массив с принятыми и упакованными данными
 uint8_t TxArr[UART_TRANSMIT_BUF_SIZE]; // массив для буфера ПЕРЕДАЧИ данных
 uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклического буфера ПРИЕМА данных по uart
-NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, BufState_USED_BY_HARDWARE, NULL },
-				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, BufState_USED_BY_PROC, NULL };
+NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, BufState_USED_BY_HARDWARE },
+				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, BufState_USED_BY_PROC };
 NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
 
 // макрофункция для статического выделения памяти для очередей
@@ -65,10 +70,7 @@ NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueu
 NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
-nrc_defineSemaphore(defaultTaskSem);
 //nrc_defineSemaphore(termometerMutex);
-nrc_defineSemaphore(semCounterIncomingMessages); // семафор - счетчик для ВХОДЯЩИХ сообщений
-nrc_defineSemaphore(semCounterOutgoingMessages); // семафор - счетчик для ИСХОДЯЩИХ сообщений
 
 xTimerHandle tempMeasureTimerHandle;
 uint32_t timerPeriod = 500 / NRC_TIME_ACCELERATION;
@@ -83,7 +85,7 @@ float simulator_prevV = 0.0f; // предыдущая скорость изме�
 
 void timerFunc(xTimerHandle xTimer) {
 	// nrcLogD("Temp measure timer callback");
-	xSemaphoreGive(defaultTaskSem);
+	xTaskNotifyGive(defaultTaskHandle);
 	// xTimerChangePeriod(xTimer, uiAutoReloadTimerPeriod, 0);
 }
 
@@ -94,7 +96,7 @@ void money_cmdManagerTask(void const *argument)
 	PB_Command cmd;
 	PB_Response response;
 	for (;;) {
-		xSemaphoreTake(semCounterIncomingMessages, portMAX_DELAY);
+		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
 		do {
 			if (!commandQueue.firstItem) {
@@ -110,7 +112,7 @@ void money_cmdManagerTask(void const *argument)
 				pidData.integralErr = 0.0f;
 				cd.state = PB_State_LAUNCHED;
 				response = (PB_Response) { PB_CmdType_START, cmd.id, true, PB_State_LAUNCHED, PB_ErrorType_NONE, cd.startTime.unixSeconds, cd.startTime.mills };
-				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
+				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 			else if (cmd.cmdType == PB_CmdType_STOP) {
 				Oven_finishHeatingProgram();
@@ -119,7 +121,7 @@ void money_cmdManagerTask(void const *argument)
 				PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
 				response2->success = true;
 				response2->profile = cd.tempProfile;
-				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, semCounterOutgoingMessages);
+				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
 			}
 			else if (cmd.cmdType == PB_CmdType_CLIENT_REQUIRES_RESET) {
 				Oven_finishHeatingProgram();
@@ -132,12 +134,12 @@ void money_cmdManagerTask(void const *argument)
 				pidData.integralErr = 0.0f;
 
 				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
-				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
+				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 			else {
 				// сразу посылаем ответ на команду
 				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
-				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, semCounterOutgoingMessages);
+				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 		} while (false);
 	}
@@ -148,7 +150,7 @@ void money_defaultTask(void const *argument)
 {
 	for (;;)
 	{
-		xSemaphoreTake(defaultTaskSem, portMAX_DELAY);
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 		uint16_t receivedData = 0;
 		uint8_t err = 0;
@@ -186,7 +188,7 @@ void money_defaultTask(void const *argument)
 				}
 
 				PB_TempMeasure tempMeasure = { currentTime.unixSeconds, currentTime.mills, temp };
-				addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, semCounterOutgoingMessages);
+				addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, msgSenderTaskHandle);
 			}
 		}
 	}
@@ -198,7 +200,8 @@ void money_msgReceiverTask(void const *argument)
 	PB_Command RxCmd;
 	nrcLogD("Start msgReceiver");
 	for (;;) {
-		xSemaphoreTake(RxBuf.sem, portMAX_DELAY);
+		uint32_t ulNotifiedValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
 		RxBuf.state = BufState_USED_BY_PROC; // устанавливаем флаг того что сейчас буфер будет использоваться процессором
 
 		PB_MsgType msgType = getMsgType(RxBuf.arr, RxBuf.countBytes);
@@ -225,7 +228,7 @@ void money_msgReceiverTask(void const *argument)
 		// добавляем новую команду в очередь команд
 		if (decodeStatus) {
 			if (msgType == PB_MsgType_CMD) {
-				bool success = addItemToQueue(&commandQueue, (uint8_t*)&RxCmd, RxCmd.priority, semCounterIncomingMessages);
+				bool success = addItemToQueue(&commandQueue, (uint8_t*)&RxCmd, RxCmd.priority, cmdManagerTaskHandle);
 				if (!success){
 					nrcLogD("Error: Failed to add command to queue");
 				}
@@ -246,7 +249,7 @@ void money_msgSenderTask(void const *argument)
 	static uint8_t plainTxData[sizeof(PB_ResponseGetTempProfile)];
 
 	for(;;) {
-		xSemaphoreTake(semCounterOutgoingMessages, portMAX_DELAY);
+		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 		for (uint8_t i = 0; i < outgoingQueuesCount; i++) {
 			NRC_Queue *const queue = outgoingQueues[i];
 
@@ -258,7 +261,7 @@ void money_msgSenderTask(void const *argument)
 			bool status = pb_encode(&ostream, queue->protobufFields, plainTxData);
 			if (status) {
 				// ждем пока uart завершит передачу предыдущего сообщения
-				xSemaphoreTake(TxBuf.sem, portMAX_DELAY);
+				xSemaphoreTake(TxBufSem, portMAX_DELAY);
 				TxBuf.state = BufState_USED_BY_PROC;
 				long result = transmitMsg(queue->msgType, pbEncodedTxData, ostream.bytes_written, TxBuf.arr);
 				if (result == 0) {
@@ -268,7 +271,7 @@ void money_msgSenderTask(void const *argument)
 					nrcLogV("Message successful transmitted");
 				}
 				#ifdef NRC_WINDOWS_SIMULATOR
-				xSemaphoreGive(TxBuf.sem); // симулятор завершает оправку сообщения при вызове функции transmitMsg, поэтому семафор можно возвращать сразу
+				xSemaphoreGive(TxBufSem); // симулятор завершает оправку сообщения при вызове функции transmitMsg, поэтому семафор можно возвращать сразу
 				#else
 				// на реальном железе семафор освобождается в прерывании по завершению отправки
 				#endif
@@ -321,7 +324,7 @@ void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR)
 				RxUartDmaOveflow = false;
 			}
 			else {
-				xSemaphoreGiveFromISR(RxBuf.sem, NULL); // буфером можно пользоваться
+				vTaskNotifyGiveFromISR(msgReceiverTaskHandle, NULL); // буфером можно пользоваться
 				nrcLogD("NRC_UART_RxEvent: Received %d bytes", RxBuf.countBytes);
 			}
 		}
@@ -527,14 +530,9 @@ void money_init()
 		nrc_semaphoreCreateMutex(queue->mutex);
 	}
 
-	// семафоры для входящих/исходящих сообщений
-	nrc_semaphoreCreateCounting(semCounterIncomingMessages, 10, 0);
-	nrc_semaphoreCreateCounting(semCounterOutgoingMessages, 10, 0);
-
 	// инициализация буферов приема/передачи по uart
-	nrc_semaphoreCreateBinary(RxBuf.sem);
-	nrc_semaphoreCreateBinary(TxBuf.sem);
-	xSemaphoreGive(TxBuf.sem); // семафор для буфера передачи по умолчанию не занят
+	nrc_semaphoreCreateBinary(TxBufSem);
+	xSemaphoreGive(TxBufSem); // семафор для буфера передачи по умолчанию не занят
 
 	// задаем температурный профиль
 	Oven_setDefaultTempProfile(&cd.tempProfile);
@@ -542,11 +540,7 @@ void money_init()
 	nrc_timerCreate(tempMeasureTimer, timerPeriod, pdTRUE, 0, timerFunc);
 	xTimerReset(tempMeasureTimerHandle, 0);
 
-	nrc_semaphoreCreateBinary(defaultTaskSem);
 	//nrc_semaphoreCreateMutex(termometerMutex);
-
-	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
-	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, semCounterOutgoingMessages);
 }
 
 void money_initTasks()
@@ -555,9 +549,12 @@ void money_initTasks()
 	NRC_INIT_TASK(cmdManager, 146, 2);
 	NRC_INIT_TASK(msgReceiver, 202, 3);
 	NRC_INIT_TASK(msgSender, 134, 1);
+
+	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
+	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, msgSenderTaskHandle);
 }
 
-bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSemaphoreHandle semCounter)
+bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, TaskHandle_t taskToNotify)
 {
 	NRC_QueueItem *freePlace = NULL,
 		*moreImportantItem = NULL,
@@ -598,7 +595,7 @@ bool addItemToQueue(NRC_Queue *queue, uint8_t *newData, uint8_t newPriority, xSe
 		}
 		freePlace->isActual = true;
 		if (needUpdateCounter) {
-			xSemaphoreGive(semCounter); // увеличиваем количество сообщений в очереди
+			xTaskNotifyGive(taskToNotify); // увеличиваем количество сообщений в очереди
 		}
 		success = true;
 	}

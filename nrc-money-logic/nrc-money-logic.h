@@ -35,7 +35,7 @@ typedef enum {
 	#define NRC_INIT_TASK(taskName,stackSize,priority) \
 		static StaticTask_t taskName##Buffer; \
 		static StackType_t taskName##Stack[stackSize]; \
-		TaskHandle_t taskName##TaskHandle = xTaskCreateStatic(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, taskName##Stack, &taskName##Buffer)
+		taskName##TaskHandle = xTaskCreateStatic(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, taskName##Stack, &taskName##Buffer)
 	#define nrc_timerCreate(timerName,period,autoReload,id,callback) \
 		static StaticTimer_t timerName##Buffer; \
 		xTimerHandle timerName##Handle = xTimerCreateStatic(#timerName,period,autoReload,id,callback,&timerName##Buffer)
@@ -45,7 +45,6 @@ typedef enum {
 	#define nrc_semaphoreCreateBinary(semaphoreName) semaphoreName = xSemaphoreCreateBinary()
 	#define nrc_semaphoreCreateMutex(semaphoreName) semaphoreName = xSemaphoreCreateMutex()
 	#define NRC_INIT_TASK(taskName,stackSize,priority) \
-		TaskHandle_t taskName##TaskHandle; \
 		xTaskCreate(money_##taskName##Task, #taskName "Task", stackSize, NULL, tskIDLE_PRIORITY + priority, &taskName##TaskHandle)
 	#define nrc_timerCreate(timerName,period,autoReload,id,callback) \
 		xTimerHandle timerName##Handle = xTimerCreate(#timerName,period,autoReload,id,callback)
@@ -57,8 +56,8 @@ typedef volatile struct {
 	uint16_t size;
 	uint16_t countBytes; // количество актуальных байт в буфере
 	BetaBufState state; // вся структура volatile только из-за этой переменной
-	nrc_defineSemaphore(sem); // семафор, блокирующий задачу обработки этого буфера до тех пор пока он не заполнится
 } NrcUartBufBeta;
+nrc_defineSemaphore(TxBufSem); // семафор, блокирующий задачу отправки сообщений до тех пор пока не завершится предыдущая отправка
 
 // циклический буфер, который используется DMA
 typedef struct {
