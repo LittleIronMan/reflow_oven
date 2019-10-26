@@ -20,26 +20,28 @@ class TempMonitor extends Component {
 
     render() {
         return <div className={style.tempMonitor}>
-            current temperature = {this.state.tempValue}&deg;C
+            <div className={style.row}>
+                <div className={style.label}>current temperature</div>
+                <div className={style.value}>{this.state.tempValue}&deg;C</div>
+            </div>
         </div>;
     }
 }
 
 class ControlButtons extends Component {
-    startProcess = () => {
-        socket.emit('client cmd', {cmdTypeStr: 'START'});
-    };
-    finishProcess = () => {
-        socket.emit('client cmd', {cmdTypeStr: 'STOP'});
-    };
-    requestReset = () => {
-        socket.emit('client cmd', {cmdTypeStr: 'CLIENT_REQUIRES_RESET'});
+    sendCommand = (cmd) => {
+        socket.emit('client cmd', {cmdTypeStr: cmd});
     };
     render() {
         return <div className={style.controlButtons}>
-            <button className={style.start} onClick={this.startProcess}>Start Program</button>
-            <button className={style.stop} onClick={this.finishProcess}>Stop Program</button>
-            <button className={style.reset} onClick={this.requestReset}>Reset</button>
+            <button className={style.start} onClick={() => this.sendCommand('START')}>Start Program</button>
+            <button className={style.stop} onClick={() => this.sendCommand('STOP')}>Stop Program</button>
+            <button className={style.reset} onClick={() => this.sendCommand('CLIENT_REQUIRES_RESET')}>Reset</button>
+            <br/>
+            <button className={style.manualControl} onClick={() => this.sendCommand('SET_MANUAL_CONTROL')}>manual control</button>
+            <button className={style.on} onClick={() => this.sendCommand('MANUAL_TURN_ON')}>on</button>
+            <button className={style.off} onClick={() => this.sendCommand('MANUAL_TURN_OFF')}>off</button>
+            <button className={style.automaticControl} onClick={() => this.sendCommand('SET_AUTOMATIC_CONTROL')}>automatic control</button>
         </div>;
     }
 }
