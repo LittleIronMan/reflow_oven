@@ -439,7 +439,7 @@ void StartDefaultTask(void const * argument)
 
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
-	money_defaultTask(argument);
+
   /* USER CODE END 5 */ 
 }
 

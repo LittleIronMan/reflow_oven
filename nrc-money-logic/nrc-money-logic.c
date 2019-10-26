@@ -31,7 +31,7 @@ volatile bool allowSyncTime = true;
 NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
 uint32_t prevTickCount = 0;
 
-TaskHandle_t defaultTaskHandle = NULL,
+TaskHandle_t pidControllerTaskHandle = NULL,
 			cmdManagerTaskHandle = NULL,
 			msgReceiverTaskHandle = NULL,
 			msgSenderTaskHandle = NULL;
@@ -50,6 +50,7 @@ uint8_t RxDmaArr[UART_RECEIVE_BUF_SIZE / 2]; // массив для циклич
 NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, BufState_USED_BY_HARDWARE },
 				TxBuf = { TxArr, UART_TRANSMIT_BUF_SIZE, 0, BufState_USED_BY_PROC };
 NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
+nrc_defineSemaphore(TxBufSem); // семафор, блокирующий задачу отправки сообщений до тех пор пока не завершится предыдущая отправка
 
 // макрофункция для статического выделения памяти для очередей
 #define NRC_CREATE_QUEUE(queueName,type,countItems,msgType,protobufFields) \
@@ -85,7 +86,7 @@ float simulator_prevV = 0.0f; // предыдущая скорость изме�
 
 void timerFunc(xTimerHandle xTimer) {
 	// nrcLogD("Temp measure timer callback");
-	xTaskNotifyGive(defaultTaskHandle);
+	xTaskNotifyGive(pidControllerTaskHandle);
 	// xTimerChangePeriod(xTimer, uiAutoReloadTimerPeriod, 0);
 }
 
@@ -146,7 +147,7 @@ void money_cmdManagerTask(void const *argument)
 }
 
 // в штатном режиме ОС будет просто периодически измерять температуру
-void money_defaultTask(void const *argument)
+void money_pidControllerTask(void const *argument)
 {
 	for (;;)
 	{
@@ -545,7 +546,7 @@ void money_init()
 
 void money_initTasks()
 {
-	NRC_INIT_TASK(default, 134, 3);
+	NRC_INIT_TASK(pidController, 134, 3);
 	NRC_INIT_TASK(cmdManager, 146, 2);
 	NRC_INIT_TASK(msgReceiver, 202, 3);
 	NRC_INIT_TASK(msgSender, 134, 1);

@@ -57,7 +57,7 @@ typedef volatile struct {
 	uint16_t countBytes; // количество актуальных байт в буфере
 	BetaBufState state; // вся структура volatile только из-за этой переменной
 } NrcUartBufBeta;
-nrc_defineSemaphore(TxBufSem); // семафор, блокирующий задачу отправки сообщений до тех пор пока не завершится предыдущая отправка
+extern xSemaphoreHandle TxBufSem;
 
 // циклический буфер, который используется DMA
 typedef struct {
