@@ -2,7 +2,6 @@ const child_process = require('child_process');
 const pb = require('./reflow_oven.pb.js');
 const protobuf = require('protobufjs/minimal');
 const base64 = protobuf.util.base64;
-const ovenDataStore = require('./reflow_oven_store.js');
 
 const isLinux = process.platform === 'linux';
 const ProgramReceiver = isLinux ?  '../raspberry/uart-Rx.exe' :
@@ -11,6 +10,7 @@ const ProgramTransmitter = isLinux ?   '../raspberry/uart-Tx.exe' :
     'C:/reflow_oven/raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe';
 
 var io;
+var reduxStore;
 
 function PB_decode(pbMsgStruct, binaryData, binLength) {
     try {
@@ -65,27 +65,22 @@ function receiveMsgFromStm32 (data) {
     }
 
     // применяем обновление для глобальной структуры данных
-    let updateItem = {
-        syncId: ovenDataStore.globalStore.data.syncId + 1,
-        type: msgProto,
-        data: dataObj
-    };
-    let result = ovenDataStore.sync(updateItem);
-    if (!result) {
-        console.log('Error: cannot sync data from message with prototype ', msgProto);
-        return;
-    }
-    else {
-        // при успешном обновлении данных - принуждаем всех подключенных клиентов тоже обновиться
-        //console.log('Successful update server store');
-        io.sockets.emit('server sync update', updateItem);
-
-        // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)
-        // и при этом сервер не знает термопрофиля мк, то отправляем запрос на получение термопрофиля
-        if (ovenDataStore.globalStore.data.tempProfile.length === 0) {
-            sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_TEMP_PROFILE}, 2);
-        }
-    }
+    reduxStore.dispatch({type: msgProto, data: dataObj});
+    // if (!result) {
+    //     console.log('Error: cannot sync data from message with prototype ', msgProto);
+    //     return;
+    // }
+    // else {
+    //     // при успешном обновлении данных - принуждаем всех подключенных клиентов тоже обновиться
+    //     //console.log('Successful update server store');
+    //     io.sockets.emit('server sync update', updateItem);
+    //
+    //     // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)
+    //     // и при этом сервер не знает термопрофиля мк, то отправляем запрос на получение термопрофиля
+    //     if (ovenDataStore.globalStore.data.tempProfile.length === 0) {
+    //         sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_TEMP_PROFILE}, 2);
+    //     }
+    // }
 }
 
 // функция отправки сообщений микроконтроллеру
@@ -130,8 +125,11 @@ function sendMsgToMCU (msgType, data, priority) {
 }
 
 // функция приема сообщений от микроконтроллера
-function startReceiveMsgFromMCU(socket_io) {
-    io = socket_io;
+function startReceiveMsgFromMCU(argSocket_io, argReduxStore) {
+
+    io = argSocket_io;
+    reduxStore = argReduxStore;
+
     const uartRx = child_process.spawn(ProgramReceiver);
     //uartListener = child_process.spawn('python', ['-u', '../rpi-uart/uart-listener-win32-emulate.py']);
     uartRx.stdout.on('data', receiveMsgFromStm32);

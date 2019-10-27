@@ -1,16 +1,16 @@
 import ReactDOM from 'react-dom';
 import MainPage from 'pages/main/PageMain.jsx';
 import 'styles/main.scss';
-import {globalStore, sync} from '../reflow_oven_store.js';
+
+import {createStore} from 'redux';
+import reducer from '../reducer.js';
+import {Provider} from 'react-redux';
+import * as a from '../actions.js';
+
+var reduxStore = createStore(reducer);
 
 if (module.hot) {
     module.hot.accept();
-}
-
-function call(method) {
-    if (globalVar.hasOwnProperty(method)) {
-        globalVar[method]();
-    }
 }
 
 // при первом подключении или обновлении страницы -
@@ -19,24 +19,17 @@ socket.emit('client sync all');
 
 // сервер отправил всю свою БД
 socket.on('server sync all', function(newStore) {
-    globalStore.data = newStore;
-    call('updateRealTimeView');
-    call('updateTempLabel');
+    console.log('server sync all ', newStore);
+    reduxStore.dispatch({type: a.SERVER_SYNC_ALL, data: newStore});
 });
 // сервер требует обновить БД
-socket.on('server sync update', function(updateItem) {
-    let success = sync(updateItem);
-    if (success) {
-        call('updateRealTimeView');
-        call('updateTempLabel');
-    }
-    else {
-        console.log('Error sync store!')
-        //socket.emit('client sync all');
-    }
+socket.on('server sync update', function(action) {
+    reduxStore.dispatch(action);
 });
 
 ReactDOM.render(
-    <MainPage/>,
+    <Provider store={reduxStore}>
+        <MainPage/>
+    </Provider>,
     document.getElementById('app')
 );

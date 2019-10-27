@@ -2,9 +2,16 @@
 const webpack = require('webpack');
 const middleware = require('webpack-dev-middleware');
 const webpackConfig = require('./webpack.config');
-const stm32 = require('./nrc-stm32.js');
-const ovenDataStore = require('./reflow_oven_store.js');
 let compiler = webpack(webpackConfig);
+
+const reducer = require('./reducer.js');
+const redux = require('redux');
+const a = require('./actions.js');
+
+const stm32 = require('./nrc-stm32.js');
+
+
+var reduxStore = redux.createStore(reducer);
 
 const express = require('express');
 const app = express();
@@ -30,7 +37,7 @@ io.on('connection', function(socket){
 
     // клиент требует синхронизации всех данных с сервером
     socket.on('client sync all', function() {
-        socket.emit('server sync all', ovenDataStore.globalStore.data);
+        socket.emit('server sync all', reduxStore.getState());
     });
     // команда от клиента микроконтроллеру
     socket.on('client cmd', stm32.sendCmdFromClientToMCU);
@@ -45,7 +52,7 @@ http.listen(PORT, () => {
 });
 
 // запускаем программу для приема сообщений от контроллера
-stm32.startReceiveMsgFromMCU(io);
+stm32.startReceiveMsgFromMCU(io, reduxStore);
 
 
 

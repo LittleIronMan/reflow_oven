@@ -13,8 +13,7 @@ module.exports = {
         // useful if you run your app from another point like django
         'webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000',
         // And then the actual application
-        './app/app.jsx', // входная точка - исходный файл
-        './reflow_oven_store.js'
+        './app/app.jsx' // входная точка - исходный файл
     ],
     output: {
         path: path.resolve(__dirname, './public'), // путь к каталогу выходных файлов - папка public
