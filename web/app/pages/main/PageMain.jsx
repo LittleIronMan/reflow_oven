@@ -11,13 +11,13 @@ class TempMonitor extends Component {
     }
 
     render() {
-        let arr = this.props.realPoints;
+        console.log('Render TempMonitor');
         return <div className={'col-6 ' + style.tempMonitor}>
             <table><tbody>
                 <tr>
                     <td className={style.label}>current temperature</td>
                     <td className={style.value}>
-                        {arr.length > 0 ? arr[arr.length - 1].temp : 0}&deg;C
+                        {this.props.currentTemp}&deg;C
                     </td>
                 </tr>
                 <tr>
@@ -37,8 +37,9 @@ class TempMonitor extends Component {
     }
 }
 const TempMonitorRedux = connect((state, ownProps) => {
+    let arr = state.get('realPoints');
     return {
-        realPoints: state.get('realPoints'),
+        currentTemp: (arr.length > 0 ? arr[arr.length - 1].temp : 0),
         programState: state.get('programState'),
         ovenState: state.get('ovenState'),
         controlMode: state.get('controlMode')
