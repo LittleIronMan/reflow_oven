@@ -1,4 +1,4 @@
-const SERVER_SYNC_ALL = 'SERVER_SYNC_ALL';
+const SET_STATE = 'SET_STATE';
 const PB_TempMeasure = 'PB_TempMeasure';
 const PB_Response = 'PB_Response';
 const PB_ResponseGetTempProfile = 'PB_ResponseGetTempProfile';
@@ -16,4 +16,4 @@ const PB_ResponseGetTempProfile = 'PB_ResponseGetTempProfile';
 //     }
 // };
 
-module.exports = {SERVER_SYNC_ALL, PB_TempMeasure, PB_Response, PB_ResponseGetTempProfile};
+module.exports = {SET_STATE, PB_TempMeasure, PB_Response, PB_ResponseGetTempProfile};

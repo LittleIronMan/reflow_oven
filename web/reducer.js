@@ -14,7 +14,7 @@ const initState = {
 
 var reducer = function(state = Map(initState), action) {
     switch (action.type) {
-        case a.SERVER_SYNC_ALL:
+        case a.SET_STATE:
             //return Map(action.data);
             return state.merge(action.data);
 
@@ -25,7 +25,7 @@ var reducer = function(state = Map(initState), action) {
                 delete newMeasure['mills'];
             }
             let result = state;
-            if (newMeasure.time > state.lastRealTimeMeasure) {
+            if (newMeasure.time > state.get('lastRealTimeMeasure')) {
                 result = state.update('lastRealTimeMeasure', newMeasure.time);
             }
             result.update('realPoints', (arr) => {
@@ -74,4 +74,4 @@ var reducer = function(state = Map(initState), action) {
     return state;
 };
 
-module.exports = reducer;
+module.exports = {reducer, initState};

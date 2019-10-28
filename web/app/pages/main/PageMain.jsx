@@ -10,7 +10,6 @@ class TempMonitor extends Component {
     }
 
     render() {
-        console.log(this.props);
         let arr = this.props.realPoints;
         return <div className={'col-6 ' + style.tempMonitor}>
             <table>
@@ -36,7 +35,13 @@ class TempMonitor extends Component {
         </div>;
     }
 }
-const TempMonitorRedux = connect()(TempMonitor);
+const TempMonitorRedux = connect((state, ownProps) => {
+    return {
+        realPoints: state.get('realPoints'),
+        programState: state.get('programState'),
+        ovenState: 'UNKNOWN'
+    }
+})(TempMonitor);
 
 class ControlButtons extends Component {
     sendCommand = (cmd) => {
@@ -91,7 +96,7 @@ class ControlButtons extends Component {
                                    type="range"
                                    min="1"
                                    max="100"
-                                   value={this.state.processPercent}
+                                   value='50'/*{this.state.processPercent}*/
                                    onChange={()=>{
                                        this.setState({processPercent: event.target.value});
                                    }}
@@ -151,11 +156,12 @@ class GraphLayer extends Component {
         }
 
         let firstPoint = true;
-        let firstPointTime = reduxStore.getState().lastRealTimeMeasure - params.viewPeriod;
+        let lastRealTimeMeasure = reduxStore.getState().get('lastRealTimeMeasure');
+        let firstPointTime = lastRealTimeMeasure - params.viewPeriod;
         for (let i = 0; i < arr.length; i++) {
             if (!firstPoint && arr[i].time === 0) { break; } // выходим из цикла, если наткнулись на невалидный элемент массива
             let data = { temp: arr[i].temp, time: arr[i].time + timeOffset};
-            if ((reduxStore.getState().lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
+            if ((lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
 
             let x = ((data.time - firstPointTime) / params.viewPeriod) * canvas.width;
             let y = (1 - data.temp/params.maxTemp) * canvas.height;
@@ -187,10 +193,10 @@ class GraphView extends Component {
     updateGraphView = () => {
         let state = reduxStore.getState();
         if (this._realMeasureGraph) {
-            this._realMeasureGraph.drawGraph(state.realPoints, this.state.viewParams, 0);
+            this._realMeasureGraph.drawGraph(state.get('realPoints'), this.state.viewParams, 0);
         }
         if (this._idealGraph) {
-            this._idealGraph.drawGraph(state.tempProfile, this.state.viewParams, state.startTime);
+            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, state.startTime);
         }
     };
 
@@ -199,6 +205,7 @@ class GraphView extends Component {
             this.updateGraphView();
         };
         window.addEventListener("resize", this.updateGraphView);
+        console.log(reduxStore);
         this.unsubscribe = reduxStore.subscribe(this.updateGraphView);
     }
 

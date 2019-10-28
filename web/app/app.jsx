@@ -3,11 +3,11 @@ import MainPage from 'pages/main/PageMain.jsx';
 import 'styles/main.scss';
 
 import {createStore} from 'redux';
-import reducer from '../reducer.js';
 import {Provider} from 'react-redux';
 import * as a from '../actions.js';
+import r from '../reducer.js';
 
-var reduxStore = createStore(reducer);
+const reduxStore = createStore(r.reducer);
 
 if (module.hot) {
     module.hot.accept();
@@ -19,8 +19,7 @@ socket.emit('client sync all');
 
 // сервер отправил всю свою БД
 socket.on('server sync all', function(newStore) {
-    console.log('server sync all ', newStore);
-    reduxStore.dispatch({type: a.SERVER_SYNC_ALL, data: newStore});
+    reduxStore.dispatch({type: a.SET_STATE, data: newStore});
 });
 // сервер требует обновить БД
 socket.on('server sync update', function(action) {
@@ -33,3 +32,5 @@ ReactDOM.render(
     </Provider>,
     document.getElementById('app')
 );
+
+export default reduxStore;
