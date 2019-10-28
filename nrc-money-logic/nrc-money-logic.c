@@ -116,89 +116,110 @@ void money_cmdManagerTask(void const *argument)
 	nrcLogD("Start cmdManagerTask");
 	PB_Command cmd;
 	PB_Response response;
+	NRC_Time currentTime;
 	for (;;) {
 		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
-		do {
-			if (!commandQueue.firstItem) {
-				continue;
-			}
-			popItemFromQueue(&commandQueue, (uint8_t*)&cmd);
-			nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
-			if (cmd.cmdType == PB_CmdType_START) {
-				// сброс начальных данных ПИД регулятора
-				NRC_getTime(&cd.startTime, NULL);
-				cd.lastIterationTime = cd.startTime;
-				pidData.lastProcessValue = 0.0f;
-				pidData.integralErr = 0.0f;
-				cd.programState = PB_ProgramState_LAUNCHED;
-				response = (PB_Response) {
-					.cmdType = PB_CmdType_START,
-					.cmdId = cmd.id,
-					.success = true,
-					.controlMode = cd.controlMode,
-					.programState = PB_ProgramState_LAUNCHED,
-					.ovenState = cd.ovenState,
-					.error = PB_ErrorType_NONE,
-					.time = cd.startTime.unixSeconds,
-					.mills = cd.startTime.mills
-				};
-				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
-			}
-			else if (cmd.cmdType == PB_CmdType_STOP) {
-				Oven_finishHeatingProgram();
-			}
-			else if (cmd.cmdType == PB_CmdType_GET_TEMP_PROFILE) {
-				PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
-				response2->success = true;
-				response2->profile = cd.tempProfile;
-				bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
-			}
-			else if (cmd.cmdType == PB_CmdType_CLIENT_REQUIRES_RESET) {
-				Oven_finishHeatingProgram();
+		if (!commandQueue.firstItem) {
+			continue;
+		}
+		popItemFromQueue(&commandQueue, (uint8_t*)&cmd);
+		nrcLogD("Money: handle command type %d, with id %d", cmd.cmdType, cmd.id);
+
+		NRC_getTime(&currentTime, NULL);
+
+		switch (cmd.cmdType) {
+		case PB_CmdType_START: {
+			// сброс начальных данных ПИД регулятора
+			NRC_getTime(&cd.startTime, NULL);
+			cd.lastIterationTime = cd.startTime;
+			pidData.lastProcessValue = 0.0f;
+			pidData.integralErr = 0.0f;
+			cd.programState = PB_ProgramState_LAUNCHED;
+			response = (PB_Response){
+				.cmdType = PB_CmdType_START,
+				.cmdId = cmd.id,
+				.success = true,
+				.controlMode = cd.controlMode,
+				.programState = PB_ProgramState_LAUNCHED,
+				.ovenState = cd.ovenState,
+				.error = PB_ErrorType_NONE,
+				.time = cd.startTime.unixSeconds,
+				.mills = cd.startTime.mills
+			};
+			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			break;
+		}
+		case PB_CmdType_STOP: {
+			Oven_finishHeatingProgram();
+			break;
+		}
+		case PB_CmdType_GET_TEMP_PROFILE: {
+			PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
+			response2->success = true;
+			response2->profile = cd.tempProfile;
+			bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
+			break;
+		}
+		case PB_CmdType_CLIENT_REQUIRES_RESET: {
+			Oven_finishHeatingProgram();
 #ifdef NRC_WINDOWS_SIMULATOR
-				simulator_prevTempMeasureTime = (NRC_Time) { 0, 0 };
-				simulator_prevTemp = -1.0f;
-				simulator_prevV = 0.0f;
+			simulator_prevTempMeasureTime = (NRC_Time){ 0, 0 };
+			simulator_prevTemp = -1.0f;
+			simulator_prevV = 0.0f;
 #endif
-				pidData.lastProcessValue = 0.0f;
-				pidData.integralErr = 0.0f;
+			pidData.lastProcessValue = 0.0f;
+			pidData.integralErr = 0.0f;
 
-				response = (PB_Response) {
-					.cmdType = cmd.cmdType,
-					.cmdId = cmd.id,
-					.success = true,
-					.controlMode = cd.controlMode,
-					.programState = cd.programState,
-					.ovenState = cd.ovenState,
-					.error = PB_ErrorType_NONE,
-					.time = 0,
-					.mills = 0
-				};
-				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
-			}
-			else if (cmd.cmdType == PB_CmdType_MANUAL_OFF) {
-
-			}
-			else if (cmd.cmdType == PB_CmdType_MANUAL_ON) {
-
-			}
-			else {
-				// сразу посылаем ответ на команду
-				response = (PB_Response) {
-					.cmdType = cmd.cmdType,
-					.cmdId = cmd.id,
-					.success = false,
-					.controlMode = cd.controlMode,
-					.programState = cd.programState,
-					.ovenState = cd.ovenState,
-					.error = PB_ErrorType_UNKNOWN_COMMAND,
-					.time = 0,
-					.mills = 0
-				};
-				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
-			}
-		} while (false);
+			response = (PB_Response){
+				.cmdType = cmd.cmdType,
+				.cmdId = cmd.id,
+				.success = true,
+				.controlMode = cd.controlMode,
+				.programState = cd.programState,
+				.ovenState = cd.ovenState,
+				.error = PB_ErrorType_NONE,
+				.time = currentTime.unixSeconds,
+				.mills = currentTime.mills
+			};
+			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			break;
+		}
+		case PB_CmdType_MANUAL_ON:
+		case PB_CmdType_MANUAL_OFF: {
+			cd.controlMode = PB_ControlMode_MANUAL;
+			Oven_setState(cmd.cmdType == PB_CmdType_MANUAL_ON ? PB_OvenState_ON : PB_OvenState_OFF);
+			response = (PB_Response){
+				.cmdType = cmd.cmdType,
+				.cmdId = cmd.id,
+				.success = true,
+				.controlMode = cd.controlMode,
+				.programState = cd.programState,
+				.ovenState = cd.ovenState,
+				.error = PB_ErrorType_NONE,
+				.time = 0,
+				.mills = 0
+			};
+			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			break;
+		}
+		default: {
+			// сразу посылаем ответ на команду
+			response = (PB_Response){
+				.cmdType = cmd.cmdType,
+				.cmdId = cmd.id,
+				.success = false,
+				.controlMode = cd.controlMode,
+				.programState = cd.programState,
+				.ovenState = cd.ovenState,
+				.error = PB_ErrorType_UNKNOWN_COMMAND,
+				.time = 0,
+				.mills = 0
+			};
+			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			break;
+		}
+		}
 	}
 }
 
