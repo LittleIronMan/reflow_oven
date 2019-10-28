@@ -81,14 +81,15 @@ NRC_Queue aQueueName = { \
 NRC_CREATE_QUEUE(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields); // очередь входящих сообщений
 NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields); // очередь сообщений для отправки
 NRC_CREATE_QUEUE(tempMeasureQueue, PB_TempMeasure, 3, PB_MsgType_TEMP_MEASURE, PB_TempMeasure_fields); // очередь измерений температуры для отправки
+NRC_CREATE_QUEUE(switchOvenStateQueue, PB_SwitchOvenState, 2, PB_MsgType_SWITCH_OVEN_STATE, PB_SwitchOvenState_fields); // очередь сообщений об изменении(переключении) состояния печки(вкл/выкл)
 NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPONSE_GET_TEMP_PROFILE, PB_ResponseGetTempProfile_fields);
 
 // массив всех очередей
-NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
+NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue };
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
 
 // массив очередей с исходящими данными(при отправке бОльший приоритет имеют очереди в начале массива)
-NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue };
+NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 //nrc_defineSemaphore(termometerMutex);
@@ -129,29 +130,31 @@ void money_cmdManagerTask(void const *argument)
 		NRC_getTime(&currentTime, NULL);
 
 		switch (cmd.cmdType) {
+		case PB_CmdType_STOP:
 		case PB_CmdType_START: {
 			// сброс начальных данных ПИД регулятора
-			NRC_getTime(&cd.startTime, NULL);
-			cd.lastIterationTime = cd.startTime;
-			pidData.lastProcessValue = 0.0f;
-			pidData.integralErr = 0.0f;
-			cd.programState = PB_ProgramState_LAUNCHED;
+			if (cmd.cmdType == PB_CmdType_START) {
+				NRC_getTime(&cd.startTime, NULL);
+				cd.lastIterationTime = cd.startTime;
+				pidData.lastProcessValue = 0.0f;
+				pidData.integralErr = 0.0f;
+				cd.programState = PB_ProgramState_LAUNCHED;
+			}
+			else {
+				Oven_finishHeatingProgram();
+			}
 			response = (PB_Response){
-				.cmdType = PB_CmdType_START,
+				.cmdType = cmd.cmdType,
 				.cmdId = cmd.id,
 				.success = true,
 				.controlMode = cd.controlMode,
-				.programState = PB_ProgramState_LAUNCHED,
+				.programState = cd.programState,
 				.ovenState = cd.ovenState,
 				.error = PB_ErrorType_NONE,
-				.time = cd.startTime.unixSeconds,
-				.mills = cd.startTime.mills
+				.time = (cmd.cmdType == PB_CmdType_START ? cd.startTime.unixSeconds : 0),
+				.mills = (cmd.cmdType == PB_CmdType_START ? cd.startTime.mills : 0)
 			};
 			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
-			break;
-		}
-		case PB_CmdType_STOP: {
-			Oven_finishHeatingProgram();
 			break;
 		}
 		case PB_CmdType_GET_TEMP_PROFILE: {
@@ -582,7 +585,22 @@ void Oven_setState(PB_OvenState newState)
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
 	}
 #endif
-	cd.ovenState = newState;
+	if (newState != cd.ovenState) {
+		cd.ovenState = newState;
+
+		// в случае изменения состояния печки - отправляем соответствующее сообщение серверу
+		if (msgSenderTaskHandle == NULL) { return; }
+
+		static NRC_Time currentTime;
+		NRC_getTime(&currentTime, NULL);
+		static PB_SwitchOvenState newStateMsg;
+		newStateMsg = (PB_SwitchOvenState) {
+			.time = currentTime.unixSeconds,
+			.mills = currentTime.mills,
+			.ovenState = newState
+		};
+		addItemToQueue(&switchOvenStateQueue, (uint8_t*)&newStateMsg, 0, msgSenderTaskHandle);
+	}
 }
 
 void Oven_finishHeatingProgram()
@@ -628,7 +646,7 @@ void money_initTasks()
 	NRC_INIT_TASK(pidController, 134, 2);
 	NRC_INIT_TASK(msgSender, 134, 1);
 
-	PB_Response response = (PB_Response){
+	PB_Response response = (PB_Response) {
 		.cmdType = PB_CmdType_HARD_RESET,
 		.cmdId = 0,
 		.success = true,
@@ -705,7 +723,7 @@ void popItemFromQueue(NRC_Queue *const queue, uint8_t *resultBuf)
 
 void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
 {
-	uint32_t tickCount, mills, seconds;
+	static uint32_t tickCount, mills, seconds;
 
 	if (argTickCount) { tickCount = *argTickCount; }
 	else { tickCount = xTaskGetTickCount() * NRC_TIME_ACCELERATION; }

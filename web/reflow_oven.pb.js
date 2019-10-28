@@ -28,6 +28,7 @@
      * @property {number} RESPONSE_TEMP_MEASURE=5 RESPONSE_TEMP_MEASURE value
      * @property {number} FINISH_PROGRAM=6 FINISH_PROGRAM value
      * @property {number} PLAIN_TEXT=7 PLAIN_TEXT value
+     * @property {number} SWITCH_OVEN_STATE=8 SWITCH_OVEN_STATE value
      */
     $root.PB_MsgType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -39,6 +40,7 @@
         values[valuesById[5] = "RESPONSE_TEMP_MEASURE"] = 5;
         values[valuesById[6] = "FINISH_PROGRAM"] = 6;
         values[valuesById[7] = "PLAIN_TEXT"] = 7;
+        values[valuesById[8] = "SWITCH_OVEN_STATE"] = 8;
         return values;
     })();
     
@@ -1569,6 +1571,251 @@
         };
     
         return PB_Response;
+    })();
+    
+    $root.PB_SwitchOvenState = (function() {
+    
+        /**
+         * Properties of a PB_SwitchOvenState.
+         * @exports IPB_SwitchOvenState
+         * @interface IPB_SwitchOvenState
+         * @property {number|null} [time] PB_SwitchOvenState time
+         * @property {number|null} [mills] PB_SwitchOvenState mills
+         * @property {PB_OvenState|null} [ovenState] PB_SwitchOvenState ovenState
+         */
+    
+        /**
+         * Constructs a new PB_SwitchOvenState.
+         * @exports PB_SwitchOvenState
+         * @classdesc Represents a PB_SwitchOvenState.
+         * @implements IPB_SwitchOvenState
+         * @constructor
+         * @param {IPB_SwitchOvenState=} [properties] Properties to set
+         */
+        function PB_SwitchOvenState(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+    
+        /**
+         * PB_SwitchOvenState time.
+         * @member {number} time
+         * @memberof PB_SwitchOvenState
+         * @instance
+         */
+        PB_SwitchOvenState.prototype.time = 0;
+    
+        /**
+         * PB_SwitchOvenState mills.
+         * @member {number} mills
+         * @memberof PB_SwitchOvenState
+         * @instance
+         */
+        PB_SwitchOvenState.prototype.mills = 0;
+    
+        /**
+         * PB_SwitchOvenState ovenState.
+         * @member {PB_OvenState} ovenState
+         * @memberof PB_SwitchOvenState
+         * @instance
+         */
+        PB_SwitchOvenState.prototype.ovenState = 0;
+    
+        /**
+         * Creates a new PB_SwitchOvenState instance using the specified properties.
+         * @function create
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {IPB_SwitchOvenState=} [properties] Properties to set
+         * @returns {PB_SwitchOvenState} PB_SwitchOvenState instance
+         */
+        PB_SwitchOvenState.create = function create(properties) {
+            return new PB_SwitchOvenState(properties);
+        };
+    
+        /**
+         * Encodes the specified PB_SwitchOvenState message. Does not implicitly {@link PB_SwitchOvenState.verify|verify} messages.
+         * @function encode
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {IPB_SwitchOvenState} message PB_SwitchOvenState message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_SwitchOvenState.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.time != null && message.hasOwnProperty("time"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.time);
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                writer.uint32(/* id 2, wireType 5 =*/21).float(message.mills);
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.ovenState);
+            return writer;
+        };
+    
+        /**
+         * Encodes the specified PB_SwitchOvenState message, length delimited. Does not implicitly {@link PB_SwitchOvenState.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {IPB_SwitchOvenState} message PB_SwitchOvenState message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_SwitchOvenState.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+    
+        /**
+         * Decodes a PB_SwitchOvenState message from the specified reader or buffer.
+         * @function decode
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {PB_SwitchOvenState} PB_SwitchOvenState
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_SwitchOvenState.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PB_SwitchOvenState();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.time = reader.uint32();
+                    break;
+                case 2:
+                    message.mills = reader.float();
+                    break;
+                case 3:
+                    message.ovenState = reader.int32();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+    
+        /**
+         * Decodes a PB_SwitchOvenState message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PB_SwitchOvenState} PB_SwitchOvenState
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_SwitchOvenState.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+    
+        /**
+         * Verifies a PB_SwitchOvenState message.
+         * @function verify
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PB_SwitchOvenState.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.time != null && message.hasOwnProperty("time"))
+                if (!$util.isInteger(message.time))
+                    return "time: integer expected";
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                if (typeof message.mills !== "number")
+                    return "mills: number expected";
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                switch (message.ovenState) {
+                default:
+                    return "ovenState: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            return null;
+        };
+    
+        /**
+         * Creates a PB_SwitchOvenState message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {PB_SwitchOvenState} PB_SwitchOvenState
+         */
+        PB_SwitchOvenState.fromObject = function fromObject(object) {
+            if (object instanceof $root.PB_SwitchOvenState)
+                return object;
+            var message = new $root.PB_SwitchOvenState();
+            if (object.time != null)
+                message.time = object.time >>> 0;
+            if (object.mills != null)
+                message.mills = Number(object.mills);
+            switch (object.ovenState) {
+            case "OFF":
+            case 0:
+                message.ovenState = 0;
+                break;
+            case "ON":
+            case 1:
+                message.ovenState = 1;
+                break;
+            }
+            return message;
+        };
+    
+        /**
+         * Creates a plain object from a PB_SwitchOvenState message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof PB_SwitchOvenState
+         * @static
+         * @param {PB_SwitchOvenState} message PB_SwitchOvenState
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PB_SwitchOvenState.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.time = 0;
+                object.mills = 0;
+                object.ovenState = options.enums === String ? "OFF" : 0;
+            }
+            if (message.time != null && message.hasOwnProperty("time"))
+                object.time = message.time;
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                object.ovenState = options.enums === String ? $root.PB_OvenState[message.ovenState] : message.ovenState;
+            return object;
+        };
+    
+        /**
+         * Converts this PB_SwitchOvenState to JSON.
+         * @function toJSON
+         * @memberof PB_SwitchOvenState
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PB_SwitchOvenState.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+    
+        return PB_SwitchOvenState;
     })();
 
     return $root;

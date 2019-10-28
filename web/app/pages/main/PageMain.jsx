@@ -64,13 +64,13 @@ class ControlButtons extends Component {
                     </tr>
                     <tr>
                         <td>
-                            <button className={style.off} onClick={() => this.sendCommand('MANUAL_TURN_OFF')}>turn off</button>
+                            <button className={style.off} onClick={() => this.sendCommand('MANUAL_OFF')}>turn off</button>
                         </td>
                         <td>
-                            <button className={style.on} onClick={() => this.sendCommand('MANUAL_TURN_ON')}>keep current</button>
+                            <button className={style.on} onClick={() => this.sendCommand('MANUAL_ON')}>keep current</button>
                         </td>
                         <td>
-                            <button className={style.on} onClick={() => this.sendCommand('MANUAL_TURN_ON')}>turn on</button>
+                            <button className={style.on} onClick={() => this.sendCommand('MANUAL_ON')}>turn on</button>
                         </td>
                     </tr>
                 </tbody></table>

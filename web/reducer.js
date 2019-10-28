@@ -40,7 +40,9 @@ function reducer (state = Map(initState), action) {
         }
         case a.PB_Response: {
             let response = action.data;
-            let result = state.set('programState', response.state);
+            let result = state.set('programState', response.programState);
+            result = state.set('ovenState', response.ovenState);
+            result = state.set('controlMode', response.controlMode);
             switch (response.cmdType) {
                 case 'START':
                     result = result.set('startTime', response.time + ((response.mills == null) ? 0 : response.mills / 1000));

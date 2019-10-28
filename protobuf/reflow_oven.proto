@@ -13,6 +13,7 @@ enum PB_MsgType {
 	RESPONSE_TEMP_MEASURE = 5; // сервер отвечает что измерение было успешно принято
 	FINISH_PROGRAM = 6; // котроллер оправляет серверу команду что он успешно завершил программу
 	PLAIN_TEXT = 7; // простой текст
+	SWITCH_OVEN_STATE = 8; // сообщение от контроллера с информацией о переключении состояния печки(включена/выключена)
 }
 
 enum PB_CmdType {
@@ -34,7 +35,7 @@ message PB_Command {
 
 message PB_TempMeasure {
 	uint32 time = 1;
-	float mills = 2 [(nanopb).int_size = IS_16]; // миллисекунды времени
+	float mills = 2; // [(nanopb).int_size = IS_16]; // миллисекунды времени
 	float temp = 3;
 }
 
@@ -83,4 +84,10 @@ message PB_Response {
 	PB_ErrorType error = 7; // [default = NONE];
 	uint32 time = 8; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
 	float mills = 9; // [(nanopb).int_size = IS_16]; // миллисекунды времени
+}
+
+message PB_SwitchOvenState {
+	uint32 time = 1;
+	float mills = 2;
+	PB_OvenState ovenState = 3;
 }

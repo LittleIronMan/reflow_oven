@@ -49,6 +49,13 @@ const pb_field_t PB_Response_fields[10] = {
     PB_LAST_FIELD
 };
 
+const pb_field_t PB_SwitchOvenState_fields[4] = {
+    PB_FIELD(  1, UINT32  , SINGULAR, STATIC  , FIRST, PB_SwitchOvenState, time, time, 0),
+    PB_FIELD(  2, FLOAT   , SINGULAR, STATIC  , OTHER, PB_SwitchOvenState, mills, time, 0),
+    PB_FIELD(  3, UENUM   , SINGULAR, STATIC  , OTHER, PB_SwitchOvenState, ovenState, mills, 0),
+    PB_LAST_FIELD
+};
+
 
 
 
@@ -65,7 +72,7 @@ const pb_field_t PB_Response_fields[10] = {
  * numbers or field sizes that are larger than what can fit in 8 or 16 bit
  * field descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(PB_TempProfile, data[0]) < 65536 && pb_membersize(PB_ResponseGetTempProfile, profile) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_PB_Command_PB_TempMeasure_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response)
+PB_STATIC_ASSERT((pb_membersize(PB_TempProfile, data[0]) < 65536 && pb_membersize(PB_ResponseGetTempProfile, profile) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_PB_Command_PB_TempMeasure_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response_PB_SwitchOvenState)
 #endif
 
 #if !defined(PB_FIELD_16BIT) && !defined(PB_FIELD_32BIT)
@@ -76,7 +83,7 @@ PB_STATIC_ASSERT((pb_membersize(PB_TempProfile, data[0]) < 65536 && pb_membersiz
  * numbers or field sizes that are larger than what can fit in the default
  * 8 bit descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(PB_TempProfile, data[0]) < 256 && pb_membersize(PB_ResponseGetTempProfile, profile) < 256), YOU_MUST_DEFINE_PB_FIELD_16BIT_FOR_MESSAGES_PB_Command_PB_TempMeasure_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response)
+PB_STATIC_ASSERT((pb_membersize(PB_TempProfile, data[0]) < 256 && pb_membersize(PB_ResponseGetTempProfile, profile) < 256), YOU_MUST_DEFINE_PB_FIELD_16BIT_FOR_MESSAGES_PB_Command_PB_TempMeasure_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response_PB_SwitchOvenState)
 #endif
 
 
