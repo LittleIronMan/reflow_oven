@@ -35,19 +35,39 @@ typedef enum _PB_CmdType {
     PB_CmdType_START = 2,
     PB_CmdType_STOP = 3,
     PB_CmdType_HARD_RESET = 4,
-    PB_CmdType_CLIENT_REQUIRES_RESET = 5
+    PB_CmdType_CLIENT_REQUIRES_RESET = 5,
+    PB_CmdType_MANUAL_ON = 6,
+    PB_CmdType_MANUAL_OFF = 7
 } PB_CmdType;
 #define _PB_CmdType_MIN PB_CmdType_GET_TEMP_PROFILE
-#define _PB_CmdType_MAX PB_CmdType_CLIENT_REQUIRES_RESET
-#define _PB_CmdType_ARRAYSIZE ((PB_CmdType)(PB_CmdType_CLIENT_REQUIRES_RESET+1))
+#define _PB_CmdType_MAX PB_CmdType_MANUAL_OFF
+#define _PB_CmdType_ARRAYSIZE ((PB_CmdType)(PB_CmdType_MANUAL_OFF+1))
 
-typedef enum _PB_State {
-    PB_State_STOPPED = 0,
-    PB_State_LAUNCHED = 1
-} PB_State;
-#define _PB_State_MIN PB_State_STOPPED
-#define _PB_State_MAX PB_State_LAUNCHED
-#define _PB_State_ARRAYSIZE ((PB_State)(PB_State_LAUNCHED+1))
+typedef enum _PB_ProgramState {
+    PB_ProgramState_STOPPED = 0,
+    PB_ProgramState_LAUNCHED = 1
+} PB_ProgramState;
+#define _PB_ProgramState_MIN PB_ProgramState_STOPPED
+#define _PB_ProgramState_MAX PB_ProgramState_LAUNCHED
+#define _PB_ProgramState_ARRAYSIZE ((PB_ProgramState)(PB_ProgramState_LAUNCHED+1))
+
+typedef enum _PB_OvenState {
+    PB_OvenState_ON = 0,
+    PB_OvenState_OFF = 1
+} PB_OvenState;
+#define _PB_OvenState_MIN PB_OvenState_ON
+#define _PB_OvenState_MAX PB_OvenState_OFF
+#define _PB_OvenState_ARRAYSIZE ((PB_OvenState)(PB_OvenState_OFF+1))
+
+typedef enum _PB_ControlMode {
+    PB_ControlMode_DEFAULT_OFF = 0,
+    PB_ControlMode_TEMP_PROFILE = 1,
+    PB_ControlMode_HOLD_CONST_TEMP = 2,
+    PB_ControlMode_MANUAL = 3
+} PB_ControlMode;
+#define _PB_ControlMode_MIN PB_ControlMode_DEFAULT_OFF
+#define _PB_ControlMode_MAX PB_ControlMode_MANUAL
+#define _PB_ControlMode_ARRAYSIZE ((PB_ControlMode)(PB_ControlMode_MANUAL+1))
 
 typedef enum _PB_ErrorType {
     PB_ErrorType_NONE = 0,
@@ -71,7 +91,9 @@ typedef struct _PB_Response {
     PB_CmdType cmdType;
     uint32_t cmdId;
     bool success;
-    PB_State state;
+    PB_ControlMode controlMode;
+    PB_ProgramState programState;
+    PB_OvenState ovenState;
     PB_ErrorType error;
     uint32_t time;
     float mills;
@@ -104,12 +126,12 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_TempMeasure_init_default              {0, 0, 0}
 #define PB_TempProfile_init_default              {0, {PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default}}
 #define PB_ResponseGetTempProfile_init_default   {0, PB_TempProfile_init_default}
-#define PB_Response_init_default                 {_PB_CmdType_MIN, 0, 0, _PB_State_MIN, _PB_ErrorType_MIN, 0, 0}
+#define PB_Response_init_default                 {_PB_CmdType_MIN, 0, 0, _PB_ControlMode_MIN, _PB_ProgramState_MIN, _PB_OvenState_MIN, _PB_ErrorType_MIN, 0, 0}
 #define PB_Command_init_zero                     {_PB_CmdType_MIN, 0, 0}
 #define PB_TempMeasure_init_zero                 {0, 0, 0}
 #define PB_TempProfile_init_zero                 {0, {PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero}}
 #define PB_ResponseGetTempProfile_init_zero      {0, PB_TempProfile_init_zero}
-#define PB_Response_init_zero                    {_PB_CmdType_MIN, 0, 0, _PB_State_MIN, _PB_ErrorType_MIN, 0, 0}
+#define PB_Response_init_zero                    {_PB_CmdType_MIN, 0, 0, _PB_ControlMode_MIN, _PB_ProgramState_MIN, _PB_OvenState_MIN, _PB_ErrorType_MIN, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define PB_Command_cmdType_tag                   1
@@ -118,10 +140,12 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_Response_cmdType_tag                  1
 #define PB_Response_cmdId_tag                    2
 #define PB_Response_success_tag                  3
-#define PB_Response_state_tag                    4
-#define PB_Response_error_tag                    5
-#define PB_Response_time_tag                     6
-#define PB_Response_mills_tag                    7
+#define PB_Response_controlMode_tag              4
+#define PB_Response_programState_tag             5
+#define PB_Response_ovenState_tag                6
+#define PB_Response_error_tag                    7
+#define PB_Response_time_tag                     8
+#define PB_Response_mills_tag                    9
 #define PB_TempMeasure_time_tag                  1
 #define PB_TempMeasure_mills_tag                 2
 #define PB_TempMeasure_temp_tag                  3
@@ -135,14 +159,14 @@ extern const pb_field_t PB_Command_fields[4];
 extern const pb_field_t PB_TempMeasure_fields[4];
 extern const pb_field_t PB_TempProfile_fields[3];
 extern const pb_field_t PB_ResponseGetTempProfile_fields[3];
-extern const pb_field_t PB_Response_fields[8];
+extern const pb_field_t PB_Response_fields[10];
 
 /* Maximum encoded size of messages (where known) */
 #define PB_Command_size                          14
 #define PB_TempMeasure_size                      16
 #define PB_TempProfile_size                      186
 #define PB_ResponseGetTempProfile_size           191
-#define PB_Response_size                         25
+#define PB_Response_size                         29
 
 /* Message IDs (where set with "msgid" option) */
 #ifdef PB_MSGID

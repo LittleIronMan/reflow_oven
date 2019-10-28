@@ -75,7 +75,7 @@ for prog in progs:
 		compilerDefines[i] = "-D" + compilerDefines[i]
 
 	print("--------------->>> compile " + prog + " <<<-----------------")
-	args = compilerArgs + compileLibs + incDirs + compileSrc + compilerDefines + ["-o", outFile]
+	args = compilerArgs + compileLibs + incDirs + compileSrc + compilerDefines + ["-fstack-usage", "-o", outFile]
 	if chDir != "":
 		tmpCwd = os.getcwd() # запоминаем на всякий current working directory, чтобы потом вернуть её на место
 		os.chdir(chDir)

@@ -52,6 +52,8 @@
      * @property {number} STOP=3 STOP value
      * @property {number} HARD_RESET=4 HARD_RESET value
      * @property {number} CLIENT_REQUIRES_RESET=5 CLIENT_REQUIRES_RESET value
+     * @property {number} MANUAL_ON=6 MANUAL_ON value
+     * @property {number} MANUAL_OFF=7 MANUAL_OFF value
      */
     $root.PB_CmdType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -61,6 +63,8 @@
         values[valuesById[3] = "STOP"] = 3;
         values[valuesById[4] = "HARD_RESET"] = 4;
         values[valuesById[5] = "CLIENT_REQUIRES_RESET"] = 5;
+        values[valuesById[6] = "MANUAL_ON"] = 6;
+        values[valuesById[7] = "MANUAL_OFF"] = 7;
         return values;
     })();
     
@@ -232,6 +236,8 @@
                 case 3:
                 case 4:
                 case 5:
+                case 6:
+                case 7:
                     break;
                 }
             if (message.id != null && message.hasOwnProperty("id"))
@@ -279,6 +285,14 @@
             case "CLIENT_REQUIRES_RESET":
             case 5:
                 message.cmdType = 5;
+                break;
+            case "MANUAL_ON":
+            case 6:
+                message.cmdType = 6;
+                break;
+            case "MANUAL_OFF":
+            case 7:
+                message.cmdType = 7;
                 break;
             }
             if (object.id != null)
@@ -1008,16 +1022,48 @@
     })();
     
     /**
-     * PB_State enum.
-     * @exports PB_State
+     * PB_ProgramState enum.
+     * @exports PB_ProgramState
      * @enum {string}
      * @property {number} STOPPED=0 STOPPED value
      * @property {number} LAUNCHED=1 LAUNCHED value
      */
-    $root.PB_State = (function() {
+    $root.PB_ProgramState = (function() {
         var valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "STOPPED"] = 0;
         values[valuesById[1] = "LAUNCHED"] = 1;
+        return values;
+    })();
+    
+    /**
+     * PB_OvenState enum.
+     * @exports PB_OvenState
+     * @enum {string}
+     * @property {number} ON=0 ON value
+     * @property {number} OFF=1 OFF value
+     */
+    $root.PB_OvenState = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "ON"] = 0;
+        values[valuesById[1] = "OFF"] = 1;
+        return values;
+    })();
+    
+    /**
+     * PB_ControlMode enum.
+     * @exports PB_ControlMode
+     * @enum {string}
+     * @property {number} DEFAULT_OFF=0 DEFAULT_OFF value
+     * @property {number} TEMP_PROFILE=1 TEMP_PROFILE value
+     * @property {number} HOLD_CONST_TEMP=2 HOLD_CONST_TEMP value
+     * @property {number} MANUAL=3 MANUAL value
+     */
+    $root.PB_ControlMode = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "DEFAULT_OFF"] = 0;
+        values[valuesById[1] = "TEMP_PROFILE"] = 1;
+        values[valuesById[2] = "HOLD_CONST_TEMP"] = 2;
+        values[valuesById[3] = "MANUAL"] = 3;
         return values;
     })();
     
@@ -1048,7 +1094,9 @@
          * @property {PB_CmdType|null} [cmdType] PB_Response cmdType
          * @property {number|null} [cmdId] PB_Response cmdId
          * @property {boolean|null} [success] PB_Response success
-         * @property {PB_State|null} [state] PB_Response state
+         * @property {PB_ControlMode|null} [controlMode] PB_Response controlMode
+         * @property {PB_ProgramState|null} [programState] PB_Response programState
+         * @property {PB_OvenState|null} [ovenState] PB_Response ovenState
          * @property {PB_ErrorType|null} [error] PB_Response error
          * @property {number|null} [time] PB_Response time
          * @property {number|null} [mills] PB_Response mills
@@ -1094,12 +1142,28 @@
         PB_Response.prototype.success = false;
     
         /**
-         * PB_Response state.
-         * @member {PB_State} state
+         * PB_Response controlMode.
+         * @member {PB_ControlMode} controlMode
          * @memberof PB_Response
          * @instance
          */
-        PB_Response.prototype.state = 0;
+        PB_Response.prototype.controlMode = 0;
+    
+        /**
+         * PB_Response programState.
+         * @member {PB_ProgramState} programState
+         * @memberof PB_Response
+         * @instance
+         */
+        PB_Response.prototype.programState = 0;
+    
+        /**
+         * PB_Response ovenState.
+         * @member {PB_OvenState} ovenState
+         * @memberof PB_Response
+         * @instance
+         */
+        PB_Response.prototype.ovenState = 0;
     
         /**
          * PB_Response error.
@@ -1155,14 +1219,18 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.cmdId);
             if (message.success != null && message.hasOwnProperty("success"))
                 writer.uint32(/* id 3, wireType 0 =*/24).bool(message.success);
-            if (message.state != null && message.hasOwnProperty("state"))
-                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.state);
+            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
+                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.controlMode);
+            if (message.programState != null && message.hasOwnProperty("programState"))
+                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.programState);
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.ovenState);
             if (message.error != null && message.hasOwnProperty("error"))
-                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.error);
+                writer.uint32(/* id 7, wireType 0 =*/56).int32(message.error);
             if (message.time != null && message.hasOwnProperty("time"))
-                writer.uint32(/* id 6, wireType 0 =*/48).uint32(message.time);
+                writer.uint32(/* id 8, wireType 0 =*/64).uint32(message.time);
             if (message.mills != null && message.hasOwnProperty("mills"))
-                writer.uint32(/* id 7, wireType 5 =*/61).float(message.mills);
+                writer.uint32(/* id 9, wireType 5 =*/77).float(message.mills);
             return writer;
         };
     
@@ -1207,15 +1275,21 @@
                     message.success = reader.bool();
                     break;
                 case 4:
-                    message.state = reader.int32();
+                    message.controlMode = reader.int32();
                     break;
                 case 5:
-                    message.error = reader.int32();
+                    message.programState = reader.int32();
                     break;
                 case 6:
-                    message.time = reader.uint32();
+                    message.ovenState = reader.int32();
                     break;
                 case 7:
+                    message.error = reader.int32();
+                    break;
+                case 8:
+                    message.time = reader.uint32();
+                    break;
+                case 9:
                     message.mills = reader.float();
                     break;
                 default:
@@ -1263,6 +1337,8 @@
                 case 3:
                 case 4:
                 case 5:
+                case 6:
+                case 7:
                     break;
                 }
             if (message.cmdId != null && message.hasOwnProperty("cmdId"))
@@ -1271,10 +1347,28 @@
             if (message.success != null && message.hasOwnProperty("success"))
                 if (typeof message.success !== "boolean")
                     return "success: boolean expected";
-            if (message.state != null && message.hasOwnProperty("state"))
-                switch (message.state) {
+            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
+                switch (message.controlMode) {
                 default:
-                    return "state: enum value expected";
+                    return "controlMode: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
+            if (message.programState != null && message.hasOwnProperty("programState"))
+                switch (message.programState) {
+                default:
+                    return "programState: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                switch (message.ovenState) {
+                default:
+                    return "ovenState: enum value expected";
                 case 0:
                 case 1:
                     break;
@@ -1335,19 +1429,55 @@
             case 5:
                 message.cmdType = 5;
                 break;
+            case "MANUAL_ON":
+            case 6:
+                message.cmdType = 6;
+                break;
+            case "MANUAL_OFF":
+            case 7:
+                message.cmdType = 7;
+                break;
             }
             if (object.cmdId != null)
                 message.cmdId = object.cmdId >>> 0;
             if (object.success != null)
                 message.success = Boolean(object.success);
-            switch (object.state) {
+            switch (object.controlMode) {
+            case "DEFAULT_OFF":
+            case 0:
+                message.controlMode = 0;
+                break;
+            case "TEMP_PROFILE":
+            case 1:
+                message.controlMode = 1;
+                break;
+            case "HOLD_CONST_TEMP":
+            case 2:
+                message.controlMode = 2;
+                break;
+            case "MANUAL":
+            case 3:
+                message.controlMode = 3;
+                break;
+            }
+            switch (object.programState) {
             case "STOPPED":
             case 0:
-                message.state = 0;
+                message.programState = 0;
                 break;
             case "LAUNCHED":
             case 1:
-                message.state = 1;
+                message.programState = 1;
+                break;
+            }
+            switch (object.ovenState) {
+            case "ON":
+            case 0:
+                message.ovenState = 0;
+                break;
+            case "OFF":
+            case 1:
+                message.ovenState = 1;
                 break;
             }
             switch (object.error) {
@@ -1392,7 +1522,9 @@
                 object.cmdType = options.enums === String ? "GET_TEMP_PROFILE" : 0;
                 object.cmdId = 0;
                 object.success = false;
-                object.state = options.enums === String ? "STOPPED" : 0;
+                object.controlMode = options.enums === String ? "DEFAULT_OFF" : 0;
+                object.programState = options.enums === String ? "STOPPED" : 0;
+                object.ovenState = options.enums === String ? "ON" : 0;
                 object.error = options.enums === String ? "NONE" : 0;
                 object.time = 0;
                 object.mills = 0;
@@ -1403,8 +1535,12 @@
                 object.cmdId = message.cmdId;
             if (message.success != null && message.hasOwnProperty("success"))
                 object.success = message.success;
-            if (message.state != null && message.hasOwnProperty("state"))
-                object.state = options.enums === String ? $root.PB_State[message.state] : message.state;
+            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
+                object.controlMode = options.enums === String ? $root.PB_ControlMode[message.controlMode] : message.controlMode;
+            if (message.programState != null && message.hasOwnProperty("programState"))
+                object.programState = options.enums === String ? $root.PB_ProgramState[message.programState] : message.programState;
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                object.ovenState = options.enums === String ? $root.PB_OvenState[message.ovenState] : message.ovenState;
             if (message.error != null && message.hasOwnProperty("error"))
                 object.error = options.enums === String ? $root.PB_ErrorType[message.error] : message.error;
             if (message.time != null && message.hasOwnProperty("time"))
