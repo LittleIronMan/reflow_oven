@@ -13,7 +13,7 @@ class TempMonitor extends Component {
     render() {
         let arr = this.props.realPoints;
         return <div className={'col-6 ' + style.tempMonitor}>
-            <table>
+            <table><tbody>
                 <tr>
                     <td className={style.label}>current temperature</td>
                     <td className={style.value}>
@@ -32,7 +32,7 @@ class TempMonitor extends Component {
                     <td className={style.label}>program state</td>
                     <td className={style.value}>{this.props.programState}</td>
                 </tr>
-            </table>
+            </tbody></table>
         </div>;
     }
 }
@@ -55,9 +55,9 @@ class ControlButtons extends Component {
     render() {
         return <div className={'col-6 ' + style.controlButtons}>
             <div className={style.selectable}>
-                <table className={style.manualControl}>
+                <table className={style.manualControl}><tbody>
                     <tr>
-                        <td colspan="3">
+                        <td colSpan="3">
                             manual control
                         </td>
                     </tr>
@@ -72,12 +72,12 @@ class ControlButtons extends Component {
                             <button className={style.on} onClick={() => this.sendCommand('MANUAL_TURN_ON')}>turn on</button>
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
             <div className={style.selectable}>
-                <table className={style.automaticControl}>
+                <table className={style.automaticControl}><tbody>
                     <tr>
-                        <td colspan="3">
+                        <td colSpan="3">
                             follow temp profile
                         </td>
                     </tr>
@@ -93,7 +93,7 @@ class ControlButtons extends Component {
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="3">
+                        <td colSpan="3">
                             <input className={style.processSlider}
                                    type="range"
                                    min="1"
@@ -105,10 +105,10 @@ class ControlButtons extends Component {
                             />
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
             <div className={style.selectable}>
-                <table>
+                <table><tbody>
                     <tr>
                         <td>
                             hold const temp
@@ -125,7 +125,7 @@ class ControlButtons extends Component {
                             />
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
             <button className={style.sudoHalt} onClick={() => this.sendCommand('SUDO_HALT')}>sudo halt</button>
             <button className={style.reset} onClick={() => this.sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
