@@ -1039,13 +1039,13 @@
      * PB_OvenState enum.
      * @exports PB_OvenState
      * @enum {string}
-     * @property {number} ON=0 ON value
-     * @property {number} OFF=1 OFF value
+     * @property {number} OFF=0 OFF value
+     * @property {number} ON=1 ON value
      */
     $root.PB_OvenState = (function() {
         var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "ON"] = 0;
-        values[valuesById[1] = "OFF"] = 1;
+        values[valuesById[0] = "OFF"] = 0;
+        values[valuesById[1] = "ON"] = 1;
         return values;
     })();
     
@@ -1074,14 +1074,16 @@
      * @property {number} NONE=0 NONE value
      * @property {number} FAULTY_TEMPERATURE_SENSOR=1 FAULTY_TEMPERATURE_SENSOR value
      * @property {number} FAULTY_RELAY=2 FAULTY_RELAY value
-     * @property {number} UNKNOWN_ERROR=3 UNKNOWN_ERROR value
+     * @property {number} UNKNOWN_COMMAND=3 UNKNOWN_COMMAND value
+     * @property {number} UNKNOWN_ERROR=4 UNKNOWN_ERROR value
      */
     $root.PB_ErrorType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "NONE"] = 0;
         values[valuesById[1] = "FAULTY_TEMPERATURE_SENSOR"] = 1;
         values[valuesById[2] = "FAULTY_RELAY"] = 2;
-        values[valuesById[3] = "UNKNOWN_ERROR"] = 3;
+        values[valuesById[3] = "UNKNOWN_COMMAND"] = 3;
+        values[valuesById[4] = "UNKNOWN_ERROR"] = 4;
         return values;
     })();
     
@@ -1381,6 +1383,7 @@
                 case 1:
                 case 2:
                 case 3:
+                case 4:
                     break;
                 }
             if (message.time != null && message.hasOwnProperty("time"))
@@ -1471,11 +1474,11 @@
                 break;
             }
             switch (object.ovenState) {
-            case "ON":
+            case "OFF":
             case 0:
                 message.ovenState = 0;
                 break;
-            case "OFF":
+            case "ON":
             case 1:
                 message.ovenState = 1;
                 break;
@@ -1493,9 +1496,13 @@
             case 2:
                 message.error = 2;
                 break;
-            case "UNKNOWN_ERROR":
+            case "UNKNOWN_COMMAND":
             case 3:
                 message.error = 3;
+                break;
+            case "UNKNOWN_ERROR":
+            case 4:
+                message.error = 4;
                 break;
             }
             if (object.time != null)
@@ -1524,7 +1531,7 @@
                 object.success = false;
                 object.controlMode = options.enums === String ? "DEFAULT_OFF" : 0;
                 object.programState = options.enums === String ? "STOPPED" : 0;
-                object.ovenState = options.enums === String ? "ON" : 0;
+                object.ovenState = options.enums === String ? "OFF" : 0;
                 object.error = options.enums === String ? "NONE" : 0;
                 object.time = 0;
                 object.mills = 0;

@@ -51,7 +51,7 @@ typedef enum {
 #endif
 
 // буфер, которым раздельно владеют DMA и процессор
-typedef volatile struct {
+typedef volatile struct _NrcUartBufBeta {
 	uint8_t *arr; // указатель на массив с данными
 	uint16_t size;
 	uint16_t countBytes; // количество актуальных байт в буфере
@@ -60,7 +60,7 @@ typedef volatile struct {
 extern xSemaphoreHandle TxBufSem;
 
 // циклический буфер, который используется DMA
-typedef struct {
+typedef struct _NrcUartBufAlpha {
 	uint8_t *arr; // указатель на массив с данными
 	uint16_t size;
 	uint16_t prevCNDTR; // предыдущая позиция DMA-указателя в буфере

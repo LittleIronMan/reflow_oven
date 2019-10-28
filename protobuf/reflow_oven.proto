@@ -69,7 +69,8 @@ enum PB_ErrorType {
 	NONE = 0;
 	FAULTY_TEMPERATURE_SENSOR = 1;
 	FAULTY_RELAY = 2;
-	UNKNOWN_ERROR = 3;
+	UNKNOWN_COMMAND = 3;
+	UNKNOWN_ERROR = 4;
 }
 
 message PB_Response {

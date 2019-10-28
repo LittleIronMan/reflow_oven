@@ -63,10 +63,20 @@ NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_B
 nrc_defineSemaphore(TxBufSem); // семафор, блокирующий задачу отправки сообщений до тех пор пока не завершится предыдущая отправка
 
 // макрофункция для статического выделения памяти для очередей
-#define NRC_CREATE_QUEUE(queueName,type,countItems,msgType,protobufFields) \
-uint8_t queueName##DataBuf[sizeof(type) * (countItems)]; \
-NRC_QueueItem queueName##ItemsBuf[(countItems)]; \
-NRC_Queue queueName = { #queueName, NULL, queueName##ItemsBuf, queueName##DataBuf, sizeof(type), (countItems), (msgType), protobufFields, NULL}
+#define NRC_CREATE_QUEUE(aQueueName,aType,aCountItems,aMsgType,aProtobufFields) \
+uint8_t aQueueName##DataBuf[sizeof(aType) * (aCountItems)]; \
+NRC_QueueItem aQueueName##ItemsBuf[(aCountItems)]; \
+NRC_Queue aQueueName = { \
+	.queueName = #aQueueName, \
+	.firstItem = NULL, \
+	.items = aQueueName##ItemsBuf, \
+	.dataBuf = aQueueName##DataBuf, \
+	.itemDataSize = sizeof(aType), \
+	.maxItemsCount = (aCountItems), \
+	.msgType = (aMsgType), \
+	.protobufFields = aProtobufFields, \
+	.mutex = NULL \
+}
 
 NRC_CREATE_QUEUE(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields); // очередь входящих сообщений
 NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields); // очередь сообщений для отправки
@@ -122,7 +132,17 @@ void money_cmdManagerTask(void const *argument)
 				pidData.lastProcessValue = 0.0f;
 				pidData.integralErr = 0.0f;
 				cd.programState = PB_ProgramState_LAUNCHED;
-				response = (PB_Response) { PB_CmdType_START, cmd.id, true, cd.controlMode, PB_ProgramState_LAUNCHED, cd.ovenState, PB_ErrorType_NONE, cd.startTime.unixSeconds, cd.startTime.mills };
+				response = (PB_Response) {
+					.cmdType = PB_CmdType_START,
+					.cmdId = cmd.id,
+					.success = true,
+					.controlMode = cd.controlMode,
+					.programState = PB_ProgramState_LAUNCHED,
+					.ovenState = cd.ovenState,
+					.error = PB_ErrorType_NONE,
+					.time = cd.startTime.unixSeconds,
+					.mills = cd.startTime.mills
+				};
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 			else if (cmd.cmdType == PB_CmdType_STOP) {
@@ -144,7 +164,17 @@ void money_cmdManagerTask(void const *argument)
 				pidData.lastProcessValue = 0.0f;
 				pidData.integralErr = 0.0f;
 
-				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.controlMode, cd.programState, cd.ovenState, PB_ErrorType_NONE, 0, 0 };
+				response = (PB_Response) {
+					.cmdType = cmd.cmdType,
+					.cmdId = cmd.id,
+					.success = true,
+					.controlMode = cd.controlMode,
+					.programState = cd.programState,
+					.ovenState = cd.ovenState,
+					.error = PB_ErrorType_NONE,
+					.time = 0,
+					.mills = 0
+				};
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 			else if (cmd.cmdType == PB_CmdType_MANUAL_OFF) {
@@ -155,7 +185,17 @@ void money_cmdManagerTask(void const *argument)
 			}
 			else {
 				// сразу посылаем ответ на команду
-				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.controlMode, cd.programState, cd.ovenState, PB_ErrorType_NONE, 0, 0 };
+				response = (PB_Response) {
+					.cmdType = cmd.cmdType,
+					.cmdId = cmd.id,
+					.success = false,
+					.controlMode = cd.controlMode,
+					.programState = cd.programState,
+					.ovenState = cd.ovenState,
+					.error = PB_ErrorType_UNKNOWN_COMMAND,
+					.time = 0,
+					.mills = 0
+				};
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 		} while (false);
@@ -567,7 +607,17 @@ void money_initTasks()
 	NRC_INIT_TASK(pidController, 134, 2);
 	NRC_INIT_TASK(msgSender, 134, 1);
 
-	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.controlMode, cd.programState, cd.ovenState, PB_ErrorType_NONE, 0, 0 };
+	PB_Response response = (PB_Response){
+		.cmdType = PB_CmdType_HARD_RESET,
+		.cmdId = 0,
+		.success = true,
+		.controlMode = cd.controlMode,
+		.programState = cd.programState,
+		.ovenState = cd.ovenState,
+		.error = PB_ErrorType_NONE,
+		.time = 0,
+		.mills = 0
+	};
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, msgSenderTaskHandle);
 }
 

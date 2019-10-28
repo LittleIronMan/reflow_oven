@@ -52,12 +52,12 @@ typedef enum _PB_ProgramState {
 #define _PB_ProgramState_ARRAYSIZE ((PB_ProgramState)(PB_ProgramState_LAUNCHED+1))
 
 typedef enum _PB_OvenState {
-    PB_OvenState_ON = 0,
-    PB_OvenState_OFF = 1
+    PB_OvenState_OFF = 0,
+    PB_OvenState_ON = 1
 } PB_OvenState;
-#define _PB_OvenState_MIN PB_OvenState_ON
-#define _PB_OvenState_MAX PB_OvenState_OFF
-#define _PB_OvenState_ARRAYSIZE ((PB_OvenState)(PB_OvenState_OFF+1))
+#define _PB_OvenState_MIN PB_OvenState_OFF
+#define _PB_OvenState_MAX PB_OvenState_ON
+#define _PB_OvenState_ARRAYSIZE ((PB_OvenState)(PB_OvenState_ON+1))
 
 typedef enum _PB_ControlMode {
     PB_ControlMode_DEFAULT_OFF = 0,
@@ -73,7 +73,8 @@ typedef enum _PB_ErrorType {
     PB_ErrorType_NONE = 0,
     PB_ErrorType_FAULTY_TEMPERATURE_SENSOR = 1,
     PB_ErrorType_FAULTY_RELAY = 2,
-    PB_ErrorType_UNKNOWN_ERROR = 3
+    PB_ErrorType_UNKNOWN_COMMAND = 3,
+    PB_ErrorType_UNKNOWN_ERROR = 4
 } PB_ErrorType;
 #define _PB_ErrorType_MIN PB_ErrorType_NONE
 #define _PB_ErrorType_MAX PB_ErrorType_UNKNOWN_ERROR
