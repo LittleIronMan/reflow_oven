@@ -48,7 +48,7 @@ http.listen(PORT, () => {
 });
 
 // запускаем программу для приема сообщений от контроллера
-stm32.startReceiveMsgFromMCU(io, reduxStore);
+stm32.startReceiveMsgFromMCU(io);
 
 
 
