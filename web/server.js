@@ -4,14 +4,10 @@ const middleware = require('webpack-dev-middleware');
 const webpackConfig = require('./webpack.config');
 let compiler = webpack(webpackConfig);
 
-const redux = require('redux');
-const r = require('./reducer.js');
-const a = require('./actions.js');
-
 const stm32 = require('./nrc-stm32.js');
 
 
-var reduxStore = redux.createStore(r.reducer);
+const reduxStore = require('./store.js');
 
 const express = require('express');
 const app = express();

@@ -3,6 +3,7 @@ import page from 'styles/page.scss';
 import style from './PageMain.scss';
 import {connect} from 'react-redux';
 //import {actions} from '../../../actions.js';
+import reduxStore from'../../../store.js';
 
 class TempMonitor extends Component {
     constructor(props) {
@@ -205,7 +206,6 @@ class GraphView extends Component {
             this.updateGraphView();
         };
         window.addEventListener("resize", this.updateGraphView);
-        console.log(reduxStore);
         this.unsubscribe = reduxStore.subscribe(this.updateGraphView);
     }
 
