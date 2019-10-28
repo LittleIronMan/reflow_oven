@@ -9,10 +9,11 @@ const initState = {
     lastRealTimeMeasure: 0,
     ovenState: 0, // состояние печки(включена/выключена)
     programState: 'STOPPED', // состояние программы нагревания STOPPED / LAUNCHED
-    startTime: 0 // время начала программы нагревания
+    startTime: 0, // время начала программы нагревания
+    controlMode: 'DEFAULT_OFF' // режим управления печкой: выключен / следовать термопрофилю / ручной контроль / удерживать заданную температуру
 };
 
-var reducer = function(state = Map(initState), action) {
+function reducer (state = Map(initState), action) {
     switch (action.type) {
         case a.SET_STATE:
             //return Map(action.data);
@@ -26,7 +27,7 @@ var reducer = function(state = Map(initState), action) {
             }
             let result = state;
             if (newMeasure.time > state.get('lastRealTimeMeasure')) {
-                result = state.update('lastRealTimeMeasure', newMeasure.time);
+                result = state.set('lastRealTimeMeasure', newMeasure.time);
             }
             result.update('realPoints', (arr) => {
                 arr.push(newMeasure);
@@ -39,18 +40,18 @@ var reducer = function(state = Map(initState), action) {
         }
         case a.PB_Response: {
             let response = action.data;
-            let result = state.update('programState', response.state);
+            let result = state.set('programState', response.state);
             switch (response.cmdType) {
                 case 'START':
-                    result = result.update('startTime', response.time + ((response.mills == null) ? 0 : response.mills / 1000));
+                    result = result.set('startTime', response.time + ((response.mills == null) ? 0 : response.mills / 1000));
                     break;
                 case 'STOP':
                     break;
                 case 'HARD_RESET':
                 case 'CLIENT_REQUIRES_RESET':
-                    result = result.update('lastRealTimeMeasure', 0);
-                    result = result.update('tempProfile', []);
-                    result = result.update('realPoints', []);
+                    result = result.set('lastRealTimeMeasure', 0);
+                    result = result.set('tempProfile', []);
+                    result = result.set('realPoints', []);
                     break;
                 default:
                     break;
@@ -58,7 +59,7 @@ var reducer = function(state = Map(initState), action) {
             return result;
         }
         case a.PB_ResponseGetTempProfile: {
-            let result = state.update('tempProfile', action.data.profile.data);
+            let result = state.set('tempProfile', action.data.profile.data);
             result = result.update('tempProfile', (arr) => {
                 for (let measure in arr) {
                     if (measure.mills != null) {

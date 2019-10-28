@@ -36,11 +36,21 @@ TaskHandle_t pidControllerTaskHandle = NULL,
 			msgReceiverTaskHandle = NULL,
 			msgSenderTaskHandle = NULL;
 
-NRC_ControlData cd = { PB_TempProfile_init_default, 0, PB_State_STOPPED, OvenState_TurnOFF};
-PID_Data pidData = { 0.0f, 0.0f,
-	100.0f /* пропорциональный */,
-	1000000.0f/* интегральный */,
-	0.1f/* дифференциальный */
+NRC_ControlData cd = {
+	.tempProfile = PB_TempProfile_init_default,
+	.startTime = 0,
+	.lastIterationTime = 0,
+	.controlMode = PB_ControlMode_DEFAULT_OFF,
+	.programState = PB_ProgramState_STOPPED,
+	.ovenState = PB_OvenState_OFF
+};
+
+PID_Data pidData = {
+	.lastProcessValue = 0.0f,
+	.integralErr = 0.0f,
+	.Kp = 100.0f,
+	.Ti = 1000000.0f,
+	.Td = 0.1f
 };
 
 // соответствующие массивы
@@ -111,8 +121,8 @@ void money_cmdManagerTask(void const *argument)
 				cd.lastIterationTime = cd.startTime;
 				pidData.lastProcessValue = 0.0f;
 				pidData.integralErr = 0.0f;
-				cd.state = PB_State_LAUNCHED;
-				response = (PB_Response) { PB_CmdType_START, cmd.id, true, PB_State_LAUNCHED, PB_ErrorType_NONE, cd.startTime.unixSeconds, cd.startTime.mills };
+				cd.programState = PB_ProgramState_LAUNCHED;
+				response = (PB_Response) { PB_CmdType_START, cmd.id, true, cd.controlMode, PB_ProgramState_LAUNCHED, cd.ovenState, PB_ErrorType_NONE, cd.startTime.unixSeconds, cd.startTime.mills };
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 			else if (cmd.cmdType == PB_CmdType_STOP) {
@@ -134,12 +144,18 @@ void money_cmdManagerTask(void const *argument)
 				pidData.lastProcessValue = 0.0f;
 				pidData.integralErr = 0.0f;
 
-				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
+				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.controlMode, cd.programState, cd.ovenState, PB_ErrorType_NONE, 0, 0 };
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			}
+			else if (cmd.cmdType == PB_CmdType_MANUAL_OFF) {
+
+			}
+			else if (cmd.cmdType == PB_CmdType_MANUAL_ON) {
+
 			}
 			else {
 				// сразу посылаем ответ на команду
-				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.state, PB_ErrorType_NONE, 0, 0 };
+				response = (PB_Response) { cmd.cmdType, cmd.id, true, cd.controlMode, cd.programState, cd.ovenState, PB_ErrorType_NONE, 0, 0 };
 				bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			}
 		} while (false);
@@ -169,7 +185,7 @@ void money_pidControllerTask(void const *argument)
 			else {
 				NRC_Time currentTime; NRC_getTime(&currentTime, NULL);
 
-				if (cd.state == PB_State_LAUNCHED) {
+				if (cd.programState == PB_ProgramState_LAUNCHED) {
 					uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
 					if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time * 1000) {
 						Oven_finishHeatingProgram();
@@ -454,7 +470,7 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 #define dVcooling -0.5f // "ускорение" температуры при ОХЛАЖДЕНИИ
 #define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
 	if (deltaTime != 0.0f) {
-		bool ovenIsHeating = (cd.ovenState == OvenState_TurnON);
+		bool ovenIsHeating = (cd.ovenState == PB_OvenState_ON);
 		float V = simulator_prevV; // скорость изменения температуры
 		if (ovenIsHeating) {
 			V = (simulator_prevV + (dVheating * deltaTime));
@@ -487,18 +503,18 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 void Oven_applyControl(float controlValue)
 {
 	if (controlValue > 1.0f) {
-		Oven_setState(OvenState_TurnON);
+		Oven_setState(PB_OvenState_ON);
 	}
 	else if (controlValue < -1.0f) {
-		Oven_setState(OvenState_TurnOFF);
+		Oven_setState(PB_OvenState_OFF);
 	}
 }
 
-void Oven_setState(OvenState newState)
+void Oven_setState(PB_OvenState newState)
 {
 #ifdef NRC_WINDOWS_SIMULATOR
 #elif NRC_STM32
-	if (newState == OvenState_TurnOFF) {
+	if (newState == PB_OvenState_OFF) {
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 	}
 	else {
@@ -511,8 +527,8 @@ void Oven_setState(OvenState newState)
 void Oven_finishHeatingProgram()
 {
 	// TODO: проверить, безопасно ли такое выключение. Могут ли другие задачи/таймеры/перывания это как-то прервать?
-	cd.state = PB_State_STOPPED;
-	Oven_setState(OvenState_TurnOFF);
+	cd.programState = PB_ProgramState_STOPPED;
+	Oven_setState(PB_OvenState_OFF);
 }
 
 void money_init()
@@ -551,7 +567,7 @@ void money_initTasks()
 	NRC_INIT_TASK(pidController, 134, 2);
 	NRC_INIT_TASK(msgSender, 134, 1);
 
-	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.state, PB_ErrorType_NONE, 0, 0 };
+	PB_Response response = { PB_CmdType_HARD_RESET, 0, true, cd.controlMode, cd.programState, cd.ovenState, PB_ErrorType_NONE, 0, 0 };
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, msgSenderTaskHandle);
 }
 

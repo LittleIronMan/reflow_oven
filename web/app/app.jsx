@@ -2,12 +2,10 @@ import ReactDOM from 'react-dom';
 import MainPage from 'pages/main/PageMain.jsx';
 import 'styles/main.scss';
 
-import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import * as a from '../actions.js';
-import r from '../reducer.js';
 
-const reduxStore = createStore(r.reducer);
+import reduxStore from '../store.js';
 
 if (module.hot) {
     module.hot.accept();

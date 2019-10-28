@@ -9,8 +9,11 @@ const ProgramReceiver = isLinux ?  '../raspberry/uart-Rx.exe' :
 const ProgramTransmitter = isLinux ?   '../raspberry/uart-Tx.exe' :
     'C:/reflow_oven/raspberry_uart-Tx_simulator/Release/uart-Tx_simulator.exe';
 
+const reduxStore = require('./store.js');
+
+
 var io;
-var reduxStore;
+var lastActions = [];
 
 function PB_decode(pbMsgStruct, binaryData, binLength) {
     try {
@@ -65,22 +68,10 @@ function receiveMsgFromStm32 (data) {
     }
 
     // применяем обновление для глобальной структуры данных
+    let action = {type: msgProto, data: dataObj};
     reduxStore.dispatch({type: msgProto, data: dataObj});
-    // if (!result) {
-    //     console.log('Error: cannot sync data from message with prototype ', msgProto);
-    //     return;
-    // }
-    // else {
-    //     // при успешном обновлении данных - принуждаем всех подключенных клиентов тоже обновиться
-    //     //console.log('Successful update server store');
-    //     io.sockets.emit('server sync update', updateItem);
-    //
-    //     // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)
-    //     // и при этом сервер не знает термопрофиля мк, то отправляем запрос на получение термопрофиля
-    //     if (ovenDataStore.globalStore.data.tempProfile.length === 0) {
-    //         sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_TEMP_PROFILE}, 2);
-    //     }
-    // }
+    //reduxStore.dispatch(action);
+    lastActions.push(action);
 }
 
 // функция отправки сообщений микроконтроллеру
@@ -125,10 +116,24 @@ function sendMsgToMCU (msgType, data, priority) {
 }
 
 // функция приема сообщений от микроконтроллера
-function startReceiveMsgFromMCU(argSocket_io, argReduxStore) {
+function startReceiveMsgFromMCU(argSocket_io) {
 
     io = argSocket_io;
-    reduxStore = argReduxStore;
+
+    // при обновлении серверного хранилища от контроллера - принуждаем всех подключенных клиентов тоже обновить свое хранилище
+    reduxStore.subscribe(() => {
+        lastActions.forEach(function(action, index, arr) {
+            io.sockets.emit('server sync update', action);
+            arr.splice(index, 1);
+        });
+        //console.log('Successful update server store');
+
+        // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)
+        // и при этом сервер не знает термопрофиля мк, то отправляем запрос на получение термопрофиля
+        if (reduxStore.getState().get('tempProfile').length === 0) {
+            sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_TEMP_PROFILE}, 2);
+        }
+    });
 
     const uartRx = child_process.spawn(ProgramReceiver);
     //uartListener = child_process.spawn('python', ['-u', '../rpi-uart/uart-listener-win32-emulate.py']);

@@ -22,6 +22,8 @@ enum PB_CmdType {
 	STOP = 3;
 	HARD_RESET = 4; // сигнал(не команда) от микроконтроллера серверу и клиенту сбросить все свои данные, отдается или при перезапуске контроллера
 	CLIENT_REQUIRES_RESET = 5; // запрос от веб-клиента микроконтроллеру на сброс всех данных(например по нажатию специальной кнопки в веб-интерфейсе), после этого контроллер должен дать серверу команду на сброс
+	MANUAL_ON = 6; // ручное переключение нагревателя, если до этого была включена какая-то автоматическая программа стабилизации температуры, то она продолжит выполняться фоном(т.е. время для неё продолжить тикать, но печка переключаться не будет)
+	MANUAL_OFF = 7;
 }
 
 message PB_Command {
@@ -46,9 +48,21 @@ message PB_ResponseGetTempProfile {
 	PB_TempProfile profile = 2;
 }
 
-enum PB_State {
+enum PB_ProgramState {
 	STOPPED = 0;
 	LAUNCHED = 1;
+}
+
+enum PB_OvenState {
+	OFF = 0;
+	ON = 1;
+}
+
+enum PB_ControlMode {
+	DEFAULT_OFF = 0;
+	TEMP_PROFILE = 1;
+	HOLD_CONST_TEMP = 2;
+	MANUAL = 3;
 }
 
 enum PB_ErrorType {
@@ -62,35 +76,10 @@ message PB_Response {
 	PB_CmdType cmdType = 1;
 	uint32 cmdId = 2;
 	bool success = 3;
-	PB_State state = 4;
-	PB_ErrorType error = 5; // [default = NONE];
-	uint32 time = 6; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
-	float mills = 7 [(nanopb).int_size = IS_16]; // миллисекунды времени
+	PB_ControlMode controlMode = 4;
+	PB_ProgramState programState = 5;
+	PB_OvenState ovenState = 6;
+	PB_ErrorType error = 7; // [default = NONE];
+	uint32 time = 8; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
+	float mills = 9; // [(nanopb).int_size = IS_16]; // миллисекунды времени
 }
-
-// другие примеры кода
-/*
-syntax = "proto3";
-
-message Car {
-  required string model = 1;
-
-  enum BodyType {
-    sedan = 0;
-    hatchback = 1;
-    SUV = 2;
-  }
-
-  required BodyType type = 2 [default = sedan];
-  optional string color = 3;
-  required int32 year = 4;
-
-  message Owner {
-    required string name = 1;
-    required string lastName = 2; 
-    required int64 driverLicense = 3;
-  }
-
-  repeated Owner previousOwner = 5;
-}
-*/

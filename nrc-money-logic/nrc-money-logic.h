@@ -98,17 +98,13 @@ typedef struct {
 	uint16_t mills; // миллисекунды последней секунды
 } NRC_Time;
 
-typedef enum {
-	OvenState_TurnOFF,
-	OvenState_TurnON
-} OvenState;
-
 typedef struct {
 	PB_TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
 	NRC_Time startTime; // веремя начала программы
 	NRC_Time lastIterationTime; // веремя последней итерации пид регулятора
-	PB_State state; // состояние программы управления
-	OvenState ovenState; // состояние самой печки(включена/выключена)
+	PB_ControlMode controlMode; // режим управления печкой
+	PB_ProgramState programState; // состояние программы управления
+	PB_OvenState ovenState; // состояние самой печки(включена/выключена)
 } NRC_ControlData;
 
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
@@ -127,7 +123,7 @@ void money_initReceiverIRQ(void);
 
 float Oven_getTemp(uint16_t *receivedData, uint8_t *err);
 void Oven_applyControl(float controlValue);
-void Oven_setState(OvenState newState);
+void Oven_setState(PB_OvenState newState);
 void Oven_finishHeatingProgram(void);
 void Oven_setDefaultTempProfile(PB_TempProfile* profile);
 float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */ );

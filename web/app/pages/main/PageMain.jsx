@@ -3,6 +3,7 @@ import page from 'styles/page.scss';
 import style from './PageMain.scss';
 import {connect} from 'react-redux';
 //import {actions} from '../../../actions.js';
+import reduxStore from'../../../store.js';
 
 class TempMonitor extends Component {
     constructor(props) {
@@ -10,36 +11,38 @@ class TempMonitor extends Component {
     }
 
     render() {
-        let arr = this.props.realPoints;
+        console.log('Render TempMonitor');
         return <div className={'col-6 ' + style.tempMonitor}>
-            <table>
+            <table><tbody>
                 <tr>
                     <td className={style.label}>current temperature</td>
                     <td className={style.value}>
-                        {arr.length > 0 ? arr[arr.length - 1].temp : 0}&deg;C
+                        {this.props.currentTemp}&deg;C
                     </td>
                 </tr>
                 <tr>
                     <td className={style.label}>oven state</td>
-                    <td className={style.value}>{this.props.ovenState}</td>
+                    <td className={style.value}>{this.props.ovenState === 0 ? 'OFF' : 'ON'}</td>
                 </tr>
                 <tr>
                     <td className={style.label}>control mode</td>
-                    <td className={style.value}>{/*this.props.controlMode*/}</td>
+                    <td className={style.value}>{this.props.controlMode}</td>
                 </tr>
                 <tr>
                     <td className={style.label}>program state</td>
                     <td className={style.value}>{this.props.programState}</td>
                 </tr>
-            </table>
+            </tbody></table>
         </div>;
     }
 }
 const TempMonitorRedux = connect((state, ownProps) => {
+    let arr = state.get('realPoints');
     return {
-        realPoints: state.get('realPoints'),
+        currentTemp: (arr.length > 0 ? arr[arr.length - 1].temp : 0),
         programState: state.get('programState'),
-        ovenState: 'UNKNOWN'
+        ovenState: state.get('ovenState'),
+        controlMode: state.get('controlMode')
     }
 })(TempMonitor);
 
@@ -53,10 +56,10 @@ class ControlButtons extends Component {
     render() {
         return <div className={'col-6 ' + style.controlButtons}>
             <div className={style.selectable}>
-                <table className={style.manualControl}>
+                <table className={style.manualControl}><tbody>
                     <tr>
-                        <td colspan="3">
-                            <button className={style.manualControl} onClick={() => this.sendCommand('SET_MANUAL_CONTROL')}>manual control</button>
+                        <td colSpan="3">
+                            manual control
                         </td>
                     </tr>
                     <tr>
@@ -70,28 +73,28 @@ class ControlButtons extends Component {
                             <button className={style.on} onClick={() => this.sendCommand('MANUAL_TURN_ON')}>turn on</button>
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
             <div className={style.selectable}>
-                <table className={style.automaticControl}>
+                <table className={style.automaticControl}><tbody>
                     <tr>
-                        <td colspan="3">
-                            <button className={style.automaticControl} onClick={() => this.sendCommand('SET_AUTOMATIC_CONTROL')}>follow temp profile</button>
+                        <td colSpan="3">
+                            follow temp profile
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <button className={style.start} onClick={() => this.sendCommand('START')}>start</button>
+                            <button className={style.stop} onClick={() => this.sendCommand('STOP')}>stop</button>
                         </td>
                         <td>
-                            <button className={style.stop} onClick={() => this.sendCommand('STOP')}>run in background</button>
+                            <button className={style.start} onClick={() => this.sendCommand('START')}>run in background</button>
                         </td>
                         <td>
-                            <button className={style.stop} onClick={() => this.sendCommand('STOP')}>run</button>
+                            <button className={style.start} onClick={() => this.sendCommand('START')}>run</button>
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2">
+                        <td colSpan="3">
                             <input className={style.processSlider}
                                    type="range"
                                    min="1"
@@ -103,13 +106,13 @@ class ControlButtons extends Component {
                             />
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
             <div className={style.selectable}>
-                <table>
+                <table><tbody>
                     <tr>
                         <td>
-                            <button className={style.holdConstTemp} onClick={() => this.sendCommand('HOLD_CONST_TEMP')}>hold const temp</button>
+                            hold const temp
                         </td>
                     </tr>
                     <tr>
@@ -123,7 +126,7 @@ class ControlButtons extends Component {
                             />
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
             <button className={style.sudoHalt} onClick={() => this.sendCommand('SUDO_HALT')}>sudo halt</button>
             <button className={style.reset} onClick={() => this.sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
@@ -161,7 +164,14 @@ class GraphLayer extends Component {
         for (let i = 0; i < arr.length; i++) {
             if (!firstPoint && arr[i].time === 0) { break; } // выходим из цикла, если наткнулись на невалидный элемент массива
             let data = { temp: arr[i].temp, time: arr[i].time + timeOffset};
-            if ((lastRealTimeMeasure - data.time) > params.viewPeriod) { continue; } // слишком старые данные не рисуем
+            if ((lastRealTimeMeasure - data.time) > params.viewPeriod) {
+                if ((i + 1 < arr.length) && (lastRealTimeMeasure - (arr[i + 1].time + timeOffset) <= params.viewPeriod)) {
+                    // отрезок можно рисовать, если хотябы одна из его точек входит в видимую область
+                }
+                else {
+                    continue; // а те что не входят в видимую область - не рисуем(слишком старые данные)
+                }
+            }
 
             let x = ((data.time - firstPointTime) / params.viewPeriod) * canvas.width;
             let y = (1 - data.temp/params.maxTemp) * canvas.height;
@@ -196,7 +206,7 @@ class GraphView extends Component {
             this._realMeasureGraph.drawGraph(state.get('realPoints'), this.state.viewParams, 0);
         }
         if (this._idealGraph) {
-            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, state.startTime);
+            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, state.get('startTime'));
         }
     };
 
@@ -205,7 +215,6 @@ class GraphView extends Component {
             this.updateGraphView();
         };
         window.addEventListener("resize", this.updateGraphView);
-        console.log(reduxStore);
         this.unsubscribe = reduxStore.subscribe(this.updateGraphView);
     }
 
@@ -215,10 +224,12 @@ class GraphView extends Component {
     }
 
     render() {
-        return <div className={'col-12 ' + style.graphView}>
-            <GraphLayer id='backLayer' superClass={style.backLayer}/>
-            <GraphLayer id='layerIdeal' ref={(domNode) => {this._idealGraph = domNode;}}/>
-            <GraphLayer id='layerReal' strokeStyle={'#ff5a88'} ref={(domNode) => {this._realMeasureGraph = domNode;}}/>
+        return <div className={'col-12'}>
+            <div className={style.graphView}>
+                <GraphLayer id='backLayer' superClass={style.backLayer}/>
+                <GraphLayer id='layerIdeal' ref={(domNode) => {this._idealGraph = domNode;}}/>
+                <GraphLayer id='layerReal' strokeStyle={'#ff5a88'} ref={(domNode) => {this._realMeasureGraph = domNode;}}/>
+            </div>
         </div>;
     }
 }
