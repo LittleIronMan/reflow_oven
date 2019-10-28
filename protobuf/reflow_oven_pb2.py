@@ -13,7 +13,10 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import nanopb_pb2 as nanopb__pb2
+import importlib.util
+spec = importlib.util.spec_from_file_location("nanopb_pb2", "../protobuf/nanopb/generator/proto/nanopb_pb2.py")
+nanopb__pb2 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(nanopb__pb2)
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
