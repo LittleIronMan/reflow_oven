@@ -66,6 +66,12 @@ enum PB_ControlMode {
 	MANUAL = 3;
 }
 
+enum PB_ControlState {
+	DISABLED = 0;
+	BACKGROUND = 1;
+	ENABLED = 2;
+}
+
 enum PB_ErrorType {
 	NONE = 0;
 	FAULTY_TEMPERATURE_SENSOR = 1;
@@ -90,4 +96,12 @@ message PB_SwitchOvenState {
 	uint32 time = 1;
 	float mills = 2;
 	PB_OvenState ovenState = 3;
+}
+
+message PB_ControlData {
+	PB_ControlMode mode = 1;
+	PB_ControlState state = 2;
+	uint32 elapsedTime = 3;
+	uint32 finishTime = 4; // (только для режима HOLD_CONST_TEMP??? потому-что для режима FOLLOW эта величину можно посчитать из профиля)
+	float constTempValue = 5; // (только для режима HOLD_CONST_TEMP, в других случаях == 0)
 }

@@ -11,9 +11,16 @@
 .ui table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+  border: 1px solid $mainBorderColor;
   & td {
-    border: 1px solid $mainBorderColor;
+    //border: 1px solid $mainBorderColor;
     padding: 0.2rem;
+    & button {
+      &.x2 {
+        height: 2.4rem;
+      }
+    }
   }
 }
 
@@ -46,34 +53,8 @@
     //padding: 0.2rem;
     //border: solid 0.5px;
     //border-radius: 10px;
-    &.start {
-      background-color: #74ff74;
-    }
-    &.stop {
-      background-color: #ff7474;
-    }
-    &.reset {
-      background-color: #6193ff;
-    }
-    &.manualControl {
-      background-color: #ffbf73;
-    }
-    &.on {
-      background-color: #ff573f;
-    }
-    &.off {
-      background-color: #6bd8ff;
-    }
-    &.automaticControl {
-      background-color: #cf57ff;
-    }
-    &.holdConstTemp {
-      background-color: #c6ff42;
-    }
-    &.sudoHalt {
-      color: lighten($mainColor, 30%);
-      background-color: darken($mainColor, 30%);
-    }
+    width: 100%;
+    text-align: center;
   }
 }
 

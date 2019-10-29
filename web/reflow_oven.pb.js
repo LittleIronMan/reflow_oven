@@ -1070,6 +1070,22 @@
     })();
     
     /**
+     * PB_ControlState enum.
+     * @exports PB_ControlState
+     * @enum {string}
+     * @property {number} DISABLED=0 DISABLED value
+     * @property {number} BACKGROUND=1 BACKGROUND value
+     * @property {number} ENABLED=2 ENABLED value
+     */
+    $root.PB_ControlState = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "DISABLED"] = 0;
+        values[valuesById[1] = "BACKGROUND"] = 1;
+        values[valuesById[2] = "ENABLED"] = 2;
+        return values;
+    })();
+    
+    /**
      * PB_ErrorType enum.
      * @exports PB_ErrorType
      * @enum {string}
@@ -1816,6 +1832,323 @@
         };
     
         return PB_SwitchOvenState;
+    })();
+    
+    $root.PB_ControlData = (function() {
+    
+        /**
+         * Properties of a PB_ControlData.
+         * @exports IPB_ControlData
+         * @interface IPB_ControlData
+         * @property {PB_ControlMode|null} [mode] PB_ControlData mode
+         * @property {PB_ControlState|null} [state] PB_ControlData state
+         * @property {number|null} [elapsedTime] PB_ControlData elapsedTime
+         * @property {number|null} [finishTime] PB_ControlData finishTime
+         * @property {number|null} [constTempValue] PB_ControlData constTempValue
+         */
+    
+        /**
+         * Constructs a new PB_ControlData.
+         * @exports PB_ControlData
+         * @classdesc Represents a PB_ControlData.
+         * @implements IPB_ControlData
+         * @constructor
+         * @param {IPB_ControlData=} [properties] Properties to set
+         */
+        function PB_ControlData(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+    
+        /**
+         * PB_ControlData mode.
+         * @member {PB_ControlMode} mode
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.mode = 0;
+    
+        /**
+         * PB_ControlData state.
+         * @member {PB_ControlState} state
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.state = 0;
+    
+        /**
+         * PB_ControlData elapsedTime.
+         * @member {number} elapsedTime
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.elapsedTime = 0;
+    
+        /**
+         * PB_ControlData finishTime.
+         * @member {number} finishTime
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.finishTime = 0;
+    
+        /**
+         * PB_ControlData constTempValue.
+         * @member {number} constTempValue
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.constTempValue = 0;
+    
+        /**
+         * Creates a new PB_ControlData instance using the specified properties.
+         * @function create
+         * @memberof PB_ControlData
+         * @static
+         * @param {IPB_ControlData=} [properties] Properties to set
+         * @returns {PB_ControlData} PB_ControlData instance
+         */
+        PB_ControlData.create = function create(properties) {
+            return new PB_ControlData(properties);
+        };
+    
+        /**
+         * Encodes the specified PB_ControlData message. Does not implicitly {@link PB_ControlData.verify|verify} messages.
+         * @function encode
+         * @memberof PB_ControlData
+         * @static
+         * @param {IPB_ControlData} message PB_ControlData message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_ControlData.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.mode != null && message.hasOwnProperty("mode"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.mode);
+            if (message.state != null && message.hasOwnProperty("state"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.state);
+            if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.elapsedTime);
+            if (message.finishTime != null && message.hasOwnProperty("finishTime"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.finishTime);
+            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
+                writer.uint32(/* id 5, wireType 5 =*/45).float(message.constTempValue);
+            return writer;
+        };
+    
+        /**
+         * Encodes the specified PB_ControlData message, length delimited. Does not implicitly {@link PB_ControlData.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PB_ControlData
+         * @static
+         * @param {IPB_ControlData} message PB_ControlData message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_ControlData.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+    
+        /**
+         * Decodes a PB_ControlData message from the specified reader or buffer.
+         * @function decode
+         * @memberof PB_ControlData
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {PB_ControlData} PB_ControlData
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_ControlData.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PB_ControlData();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.mode = reader.int32();
+                    break;
+                case 2:
+                    message.state = reader.int32();
+                    break;
+                case 3:
+                    message.elapsedTime = reader.uint32();
+                    break;
+                case 4:
+                    message.finishTime = reader.uint32();
+                    break;
+                case 5:
+                    message.constTempValue = reader.float();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+    
+        /**
+         * Decodes a PB_ControlData message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PB_ControlData
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PB_ControlData} PB_ControlData
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_ControlData.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+    
+        /**
+         * Verifies a PB_ControlData message.
+         * @function verify
+         * @memberof PB_ControlData
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PB_ControlData.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.mode != null && message.hasOwnProperty("mode"))
+                switch (message.mode) {
+                default:
+                    return "mode: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
+            if (message.state != null && message.hasOwnProperty("state"))
+                switch (message.state) {
+                default:
+                    return "state: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                    break;
+                }
+            if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
+                if (!$util.isInteger(message.elapsedTime))
+                    return "elapsedTime: integer expected";
+            if (message.finishTime != null && message.hasOwnProperty("finishTime"))
+                if (!$util.isInteger(message.finishTime))
+                    return "finishTime: integer expected";
+            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
+                if (typeof message.constTempValue !== "number")
+                    return "constTempValue: number expected";
+            return null;
+        };
+    
+        /**
+         * Creates a PB_ControlData message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof PB_ControlData
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {PB_ControlData} PB_ControlData
+         */
+        PB_ControlData.fromObject = function fromObject(object) {
+            if (object instanceof $root.PB_ControlData)
+                return object;
+            var message = new $root.PB_ControlData();
+            switch (object.mode) {
+            case "DEFAULT_OFF":
+            case 0:
+                message.mode = 0;
+                break;
+            case "TEMP_PROFILE":
+            case 1:
+                message.mode = 1;
+                break;
+            case "HOLD_CONST_TEMP":
+            case 2:
+                message.mode = 2;
+                break;
+            case "MANUAL":
+            case 3:
+                message.mode = 3;
+                break;
+            }
+            switch (object.state) {
+            case "DISABLED":
+            case 0:
+                message.state = 0;
+                break;
+            case "BACKGROUND":
+            case 1:
+                message.state = 1;
+                break;
+            case "ENABLED":
+            case 2:
+                message.state = 2;
+                break;
+            }
+            if (object.elapsedTime != null)
+                message.elapsedTime = object.elapsedTime >>> 0;
+            if (object.finishTime != null)
+                message.finishTime = object.finishTime >>> 0;
+            if (object.constTempValue != null)
+                message.constTempValue = Number(object.constTempValue);
+            return message;
+        };
+    
+        /**
+         * Creates a plain object from a PB_ControlData message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof PB_ControlData
+         * @static
+         * @param {PB_ControlData} message PB_ControlData
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PB_ControlData.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.mode = options.enums === String ? "DEFAULT_OFF" : 0;
+                object.state = options.enums === String ? "DISABLED" : 0;
+                object.elapsedTime = 0;
+                object.finishTime = 0;
+                object.constTempValue = 0;
+            }
+            if (message.mode != null && message.hasOwnProperty("mode"))
+                object.mode = options.enums === String ? $root.PB_ControlMode[message.mode] : message.mode;
+            if (message.state != null && message.hasOwnProperty("state"))
+                object.state = options.enums === String ? $root.PB_ControlState[message.state] : message.state;
+            if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
+                object.elapsedTime = message.elapsedTime;
+            if (message.finishTime != null && message.hasOwnProperty("finishTime"))
+                object.finishTime = message.finishTime;
+            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
+                object.constTempValue = options.json && !isFinite(message.constTempValue) ? String(message.constTempValue) : message.constTempValue;
+            return object;
+        };
+    
+        /**
+         * Converts this PB_ControlData to JSON.
+         * @function toJSON
+         * @memberof PB_ControlData
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PB_ControlData.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+    
+        return PB_ControlData;
     })();
 
     return $root;

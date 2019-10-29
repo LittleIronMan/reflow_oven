@@ -47,6 +47,12 @@ const TempMonitorRedux = connect((state, ownProps) => {
 })(TempMonitor);
 
 class ControlButtons extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            processPercent: 50
+        };
+    }
     sendCommand = (cmd) => {
         socket.emit('client cmd', {
             cmdTypeStr: cmd,
@@ -62,15 +68,17 @@ class ControlButtons extends Component {
                             manual control
                         </td>
                     </tr>
+
+                    {/*кнопки для ручного управления*/}
                     <tr>
                         <td>
-                            <button className={style.off} onClick={() => this.sendCommand('MANUAL_OFF')}>turn off</button>
+                            <button style={{backgroundColor: "#6bd8ff"}} onClick={() => this.sendCommand('MANUAL_OFF')}>turn off</button>
                         </td>
                         <td>
-                            <button className={style.on} onClick={() => this.sendCommand('MANUAL_ON')}>keep current</button>
+                            <button style={{backgroundColor: "rgba(255,16,10,0.38)"}} onClick={() => this.sendCommand('MANUAL_ON')}>keep current</button>
                         </td>
                         <td>
-                            <button className={style.on} onClick={() => this.sendCommand('MANUAL_ON')}>turn on</button>
+                            <button style={{backgroundColor: "#ff573f"}} className={style.on} onClick={() => this.sendCommand('MANUAL_ON')}>turn on</button>
                         </td>
                     </tr>
                 </tbody></table>
@@ -82,15 +90,30 @@ class ControlButtons extends Component {
                             follow temp profile
                         </td>
                     </tr>
+
+                    {/*кнопки управления процесса нагревания с термопрофилем*/}
                     <tr>
                         <td>
-                            <button className={style.stop} onClick={() => this.sendCommand('STOP')}>stop</button>
+                            <button className={style.x2} style={{backgroundColor: "#ff7474"}} onClick={() => this.sendCommand('STOP')}>stop</button>
                         </td>
                         <td>
-                            <button className={style.start} onClick={() => this.sendCommand('START')}>run in background</button>
+                            <button className={style.x2} style={{backgroundColor: "rgba(116,255,116,0.53)"}} onClick={() => this.sendCommand('START')}>run in background</button>
                         </td>
                         <td>
-                            <button className={style.start} onClick={() => this.sendCommand('START')}>run</button>
+                            <button className={style.x2} style={{backgroundColor: "#74ff74"}} onClick={() => this.sendCommand('START')}>run</button>
+                        </td>
+                    </tr>
+
+                    {/*кнопки управления ВРЕМЕНЕМ процесса нагревания с термопрофилем*/}
+                    <tr>
+                        <td>
+                            {this.state.processPercent}%
+                        </td>
+                        <td>
+                            00:56/2:10
+                        </td>
+                        <td>
+                            <button>pause</button>
                         </td>
                     </tr>
                     <tr>
@@ -99,8 +122,17 @@ class ControlButtons extends Component {
                                    type="range"
                                    min="1"
                                    max="100"
-                                   value='50'/*{this.state.processPercent}*/
+                                   value={this.state.processPercent}
+                                   onMouseDown={()=>{
+                                       this.setState({processPercent: event.target.value});
+                                       console.log('onMouseDown ', this.state.processPercent);
+                                   }}
+                                   onMouseUp={()=>{
+                                       this.setState({processPercent: event.target.value});
+                                       console.log('onMouseUp ', this.state.processPercent);
+                                   }}
                                    onChange={()=>{
+                                       console.log('onChange');
                                        this.setState({processPercent: event.target.value});
                                    }}
                             />
@@ -108,28 +140,28 @@ class ControlButtons extends Component {
                     </tr>
                 </tbody></table>
             </div>
-            <div className={style.selectable}>
-                <table><tbody>
-                    <tr>
-                        <td>
-                            hold const temp
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="range"
-                                   min="1"
-                                   max="100"
-                                   value='50'
-                                   onChange={()=>{
-                                   }}
-                            />
-                        </td>
-                    </tr>
-                </tbody></table>
-            </div>
-            <button className={style.sudoHalt} onClick={() => this.sendCommand('SUDO_HALT')}>sudo halt</button>
-            <button className={style.reset} onClick={() => this.sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
+            {/*<div className={style.selectable}>*/}
+            {/*    <table><tbody>*/}
+            {/*        <tr>*/}
+            {/*            <td>*/}
+            {/*                hold const temp*/}
+            {/*            </td>*/}
+            {/*        </tr>*/}
+            {/*        <tr>*/}
+            {/*            <td>*/}
+            {/*                <input type="range"*/}
+            {/*                       min="1"*/}
+            {/*                       max="100"*/}
+            {/*                       value='50'*/}
+            {/*                       onChange={()=>{*/}
+            {/*                       }}*/}
+            {/*                />*/}
+            {/*            </td>*/}
+            {/*        </tr>*/}
+            {/*    </tbody></table>*/}
+            {/*</div>*/}
+            <button style={{backgroundColor: "#6193ff"}} onClick={() => this.sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
+            <button style={{backgroundColor: "#0c0d29", color: "#c7d4ff"}} onClick={() => this.sendCommand('SUDO_HALT')}>sudo halt</button>
         </div>;
     }
 }
