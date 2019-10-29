@@ -7,7 +7,7 @@ const initState = {
     tempProfile: [], // термопрофиль программы нагревания
     realPoints: [], // некоторое количество последних измерений температуры
     lastRealTimeMeasure: 0,
-    ovenState: 0, // состояние печки(включена/выключена)
+    ovenState: 'OFF', // состояние печки(включена/выключена)
     programState: 'STOPPED', // состояние программы нагревания STOPPED / LAUNCHED
     startTime: 0, // время начала программы нагревания
     controlMode: 'DEFAULT_OFF' // режим управления печкой: выключен / следовать термопрофилю / ручной контроль / удерживать заданную температуру
@@ -36,6 +36,10 @@ function reducer (state = Map(initState), action) {
                 }
                 return arr;
             });
+            return result;
+        }
+        case a.PB_SwitchOvenState: {
+            let result = state.set('ovenState', action.data.ovenState);
             return result;
         }
         case a.PB_Response: {

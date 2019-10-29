@@ -22,7 +22,7 @@ class TempMonitor extends Component {
                 </tr>
                 <tr>
                     <td className={style.label}>oven state</td>
-                    <td className={style.value}>{this.props.ovenState === 0 ? 'OFF' : 'ON'}</td>
+                    <td className={style.value}>{this.props.ovenState}</td>
                 </tr>
                 <tr>
                     <td className={style.label}>control mode</td>

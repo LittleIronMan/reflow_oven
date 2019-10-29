@@ -31,7 +31,8 @@ function PB_decode(pbMsgStruct, binaryData, binLength) {
 const msgPrototypeBinder = {
     PB_Response : pb.PB_MsgType.RESPONSE,
     PB_TempMeasure : pb.PB_MsgType.TEMP_MEASURE,
-    PB_ResponseGetTempProfile : pb.PB_MsgType.RESPONSE_GET_TEMP_PROFILE
+    PB_ResponseGetTempProfile : pb.PB_MsgType.RESPONSE_GET_TEMP_PROFILE,
+    PB_SwitchOvenState : pb.PB_MsgType.SWITCH_OVEN_STATE
 };
 
 function getMsgPrototype(num) {
@@ -46,32 +47,42 @@ function getMsgPrototype(num) {
 var binaryDataBuf = new Uint8Array(150);
 function receiveMsgFromStm32 (data) {
     let str = data.toString();
-    let msgType = parseInt(str.substring(0, 2));
-    //console.log("Received msg with type ", type);
-    if (msgType === pb.PB_MsgType.UNDEFINED) {
-        console.log('Error: message type number == 0(Undefined)');
-        return;
-    }
-    // декодируем base64 строку в массив байт
-    let b64data = str.substring(2);
-    let pbLength = base64.decode(b64data, binaryDataBuf, 0);
+    // в одной строке может быть несколько сообщений
+    let splittedStr = str.split(" ");
+    splittedStr.forEach((item) => {
+        if (item === "") { return; }
 
-    let msgProto = getMsgPrototype(msgType);
-    if (msgProto == null) {
-        console.log('Error: Cannot find prototype for msgType ', msgType); return;
-    }
+        // определяем тип сообщения
+        let msgType = parseInt(item.substring(0, 2));
+        //console.log("Received msg with type ", type);
+        if (msgType === pb.PB_MsgType.UNDEFINED) {
+            console.log('Error: message type number == 0(Undefined)');
+            return;
+        }
 
-    // декодируем сообщение
-    let dataObj = PB_decode(msgProto, binaryDataBuf, pbLength);
-    if (dataObj == null) {
-        console.log('Error: Cannot decode message with prototype ', msgProto); return;
-    }
+        // декодируем base64 строку в массив байт
+        let b64data = item.substring(2);
+        let pbLength = base64.decode(b64data, binaryDataBuf, 0);
 
-    // применяем обновление для глобальной структуры данных
-    let action = {type: msgProto, data: dataObj};
-    reduxStore.dispatch({type: msgProto, data: dataObj});
-    //reduxStore.dispatch(action);
-    lastActions.push(action);
+        let msgProto = getMsgPrototype(msgType);
+        if (msgProto == null) {
+            console.log('Error: Cannot find prototype for msgType ', msgType);
+            return;
+        }
+
+        // декодируем сообщение из protobuf-массива байт в javascript-объект
+        let dataObj = PB_decode(msgProto, binaryDataBuf, pbLength);
+        if (dataObj == null) {
+            console.log('Error: Cannot decode message with prototype ', msgProto);
+            return;
+        }
+
+        // применяем обновление для глобальной структуры данных
+        let action = {type: msgProto, data: dataObj};
+        reduxStore.dispatch({type: msgProto, data: dataObj});
+        //reduxStore.dispatch(action);
+        lastActions.push(action);
+    });
 }
 
 // функция отправки сообщений микроконтроллеру

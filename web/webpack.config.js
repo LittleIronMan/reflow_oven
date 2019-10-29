@@ -78,7 +78,7 @@ module.exports = {
                         query: {
                             modules: {
                                 mode: 'local',
-                                localIdentName: env === 'development' ? '[local]_[hash:base64:3]' : '[hash:base64:5]',
+                                localIdentName: env === 'development' ? '[local]_[hash:base64:3]' : '[local]_[hash:base64:5]',
                                 // localIdentName: '[path][name]__[local]--[hash:base64:5]',
                                 // context: path.resolve(__dirname, 'src'),
                                 // hashPrefix: 'my-custom-hash',

@@ -88,8 +88,8 @@ NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPO
 NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue };
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
 
-// массив очередей с исходящими данными(при отправке бОльший приоритет имеют очереди в начале массива)
-NRC_Queue *const outgoingQueues[] = { &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue };
+// массив очередей с исходящими данными(при отправке бОльший приоритет имеют те очереди, которые в начале этого массива)
+NRC_Queue *const outgoingQueues[] = { &switchOvenStateQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 //nrc_defineSemaphore(termometerMutex);

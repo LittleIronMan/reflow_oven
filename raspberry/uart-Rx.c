@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 			char *b64encoded = base64(pbEncodedMsgContent, msgLen, &b64Len);
 			//nrcLogD("Received message with type %d and length %d bytes!", msgType, msgLen);
 			//nrcLogD("base64 content: %s", b64encoded);
-			nrcPrintf("%d%d%s", msgType / 10, msgType % 10, b64encoded);
+			nrcPrintf("%d%d%s ", msgType / 10, msgType % 10, b64encoded); // пробел в конце не случайно!!!
 		}
 	}
 	//close(fifoDescriptor); 
