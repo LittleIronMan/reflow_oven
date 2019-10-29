@@ -50,23 +50,33 @@
      * @enum {string}
      * @property {number} GET_TEMP_PROFILE=0 GET_TEMP_PROFILE value
      * @property {number} GET_STATE=1 GET_STATE value
-     * @property {number} START=2 START value
-     * @property {number} STOP=3 STOP value
-     * @property {number} HARD_RESET=4 HARD_RESET value
-     * @property {number} CLIENT_REQUIRES_RESET=5 CLIENT_REQUIRES_RESET value
-     * @property {number} MANUAL_ON=6 MANUAL_ON value
-     * @property {number} MANUAL_OFF=7 MANUAL_OFF value
+     * @property {number} HARD_RESET=2 HARD_RESET value
+     * @property {number} CLIENT_REQUIRES_RESET=3 CLIENT_REQUIRES_RESET value
+     * @property {number} MANUAL_ON=4 MANUAL_ON value
+     * @property {number} MANUAL_OFF=5 MANUAL_OFF value
+     * @property {number} MANUAL_KEEP_CURRENT=6 MANUAL_KEEP_CURRENT value
+     * @property {number} FTP_STOP=7 FTP_STOP value
+     * @property {number} FTP_START=8 FTP_START value
+     * @property {number} FTP_START_BG=9 FTP_START_BG value
+     * @property {number} FTP_SET_TIME=10 FTP_SET_TIME value
+     * @property {number} FTP_PAUSE=11 FTP_PAUSE value
+     * @property {number} FTP_RESUME=12 FTP_RESUME value
      */
     $root.PB_CmdType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "GET_TEMP_PROFILE"] = 0;
         values[valuesById[1] = "GET_STATE"] = 1;
-        values[valuesById[2] = "START"] = 2;
-        values[valuesById[3] = "STOP"] = 3;
-        values[valuesById[4] = "HARD_RESET"] = 4;
-        values[valuesById[5] = "CLIENT_REQUIRES_RESET"] = 5;
-        values[valuesById[6] = "MANUAL_ON"] = 6;
-        values[valuesById[7] = "MANUAL_OFF"] = 7;
+        values[valuesById[2] = "HARD_RESET"] = 2;
+        values[valuesById[3] = "CLIENT_REQUIRES_RESET"] = 3;
+        values[valuesById[4] = "MANUAL_ON"] = 4;
+        values[valuesById[5] = "MANUAL_OFF"] = 5;
+        values[valuesById[6] = "MANUAL_KEEP_CURRENT"] = 6;
+        values[valuesById[7] = "FTP_STOP"] = 7;
+        values[valuesById[8] = "FTP_START"] = 8;
+        values[valuesById[9] = "FTP_START_BG"] = 9;
+        values[valuesById[10] = "FTP_SET_TIME"] = 10;
+        values[valuesById[11] = "FTP_PAUSE"] = 11;
+        values[valuesById[12] = "FTP_RESUME"] = 12;
         return values;
     })();
     
@@ -79,6 +89,7 @@
          * @property {PB_CmdType|null} [cmdType] PB_Command cmdType
          * @property {number|null} [id] PB_Command id
          * @property {number|null} [priority] PB_Command priority
+         * @property {number|null} [value] PB_Command value
          */
     
         /**
@@ -121,6 +132,14 @@
         PB_Command.prototype.priority = 0;
     
         /**
+         * PB_Command value.
+         * @member {number} value
+         * @memberof PB_Command
+         * @instance
+         */
+        PB_Command.prototype.value = 0;
+    
+        /**
          * Creates a new PB_Command instance using the specified properties.
          * @function create
          * @memberof PB_Command
@@ -150,6 +169,8 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.id);
             if (message.priority != null && message.hasOwnProperty("priority"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.priority);
+            if (message.value != null && message.hasOwnProperty("value"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.value);
             return writer;
         };
     
@@ -192,6 +213,9 @@
                     break;
                 case 3:
                     message.priority = reader.uint32();
+                    break;
+                case 4:
+                    message.value = reader.uint32();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -240,6 +264,11 @@
                 case 5:
                 case 6:
                 case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
                     break;
                 }
             if (message.id != null && message.hasOwnProperty("id"))
@@ -248,6 +277,9 @@
             if (message.priority != null && message.hasOwnProperty("priority"))
                 if (!$util.isInteger(message.priority))
                     return "priority: integer expected";
+            if (message.value != null && message.hasOwnProperty("value"))
+                if (!$util.isInteger(message.value))
+                    return "value: integer expected";
             return null;
         };
     
@@ -272,35 +304,57 @@
             case 1:
                 message.cmdType = 1;
                 break;
-            case "START":
+            case "HARD_RESET":
             case 2:
                 message.cmdType = 2;
                 break;
-            case "STOP":
+            case "CLIENT_REQUIRES_RESET":
             case 3:
                 message.cmdType = 3;
                 break;
-            case "HARD_RESET":
+            case "MANUAL_ON":
             case 4:
                 message.cmdType = 4;
                 break;
-            case "CLIENT_REQUIRES_RESET":
+            case "MANUAL_OFF":
             case 5:
                 message.cmdType = 5;
                 break;
-            case "MANUAL_ON":
+            case "MANUAL_KEEP_CURRENT":
             case 6:
                 message.cmdType = 6;
                 break;
-            case "MANUAL_OFF":
+            case "FTP_STOP":
             case 7:
                 message.cmdType = 7;
+                break;
+            case "FTP_START":
+            case 8:
+                message.cmdType = 8;
+                break;
+            case "FTP_START_BG":
+            case 9:
+                message.cmdType = 9;
+                break;
+            case "FTP_SET_TIME":
+            case 10:
+                message.cmdType = 10;
+                break;
+            case "FTP_PAUSE":
+            case 11:
+                message.cmdType = 11;
+                break;
+            case "FTP_RESUME":
+            case 12:
+                message.cmdType = 12;
                 break;
             }
             if (object.id != null)
                 message.id = object.id >>> 0;
             if (object.priority != null)
                 message.priority = object.priority >>> 0;
+            if (object.value != null)
+                message.value = object.value >>> 0;
             return message;
         };
     
@@ -321,6 +375,7 @@
                 object.cmdType = options.enums === String ? "GET_TEMP_PROFILE" : 0;
                 object.id = 0;
                 object.priority = 0;
+                object.value = 0;
             }
             if (message.cmdType != null && message.hasOwnProperty("cmdType"))
                 object.cmdType = options.enums === String ? $root.PB_CmdType[message.cmdType] : message.cmdType;
@@ -328,6 +383,8 @@
                 object.id = message.id;
             if (message.priority != null && message.hasOwnProperty("priority"))
                 object.priority = message.priority;
+            if (message.value != null && message.hasOwnProperty("value"))
+                object.value = message.value;
             return object;
         };
     
@@ -1024,20 +1081,6 @@
     })();
     
     /**
-     * PB_ProgramState enum.
-     * @exports PB_ProgramState
-     * @enum {string}
-     * @property {number} STOPPED=0 STOPPED value
-     * @property {number} LAUNCHED=1 LAUNCHED value
-     */
-    $root.PB_ProgramState = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "STOPPED"] = 0;
-        values[valuesById[1] = "LAUNCHED"] = 1;
-        return values;
-    })();
-    
-    /**
      * PB_OvenState enum.
      * @exports PB_OvenState
      * @enum {string}
@@ -1056,14 +1099,14 @@
      * @exports PB_ControlMode
      * @enum {string}
      * @property {number} DEFAULT_OFF=0 DEFAULT_OFF value
-     * @property {number} TEMP_PROFILE=1 TEMP_PROFILE value
+     * @property {number} FOLLOW_TEMP_PROFILE=1 FOLLOW_TEMP_PROFILE value
      * @property {number} HOLD_CONST_TEMP=2 HOLD_CONST_TEMP value
      * @property {number} MANUAL=3 MANUAL value
      */
     $root.PB_ControlMode = (function() {
         var valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "DEFAULT_OFF"] = 0;
-        values[valuesById[1] = "TEMP_PROFILE"] = 1;
+        values[valuesById[1] = "FOLLOW_TEMP_PROFILE"] = 1;
         values[valuesById[2] = "HOLD_CONST_TEMP"] = 2;
         values[valuesById[3] = "MANUAL"] = 3;
         return values;
@@ -1114,8 +1157,6 @@
          * @property {PB_CmdType|null} [cmdType] PB_Response cmdType
          * @property {number|null} [cmdId] PB_Response cmdId
          * @property {boolean|null} [success] PB_Response success
-         * @property {PB_ControlMode|null} [controlMode] PB_Response controlMode
-         * @property {PB_ProgramState|null} [programState] PB_Response programState
          * @property {PB_OvenState|null} [ovenState] PB_Response ovenState
          * @property {PB_ErrorType|null} [error] PB_Response error
          * @property {number|null} [time] PB_Response time
@@ -1160,22 +1201,6 @@
          * @instance
          */
         PB_Response.prototype.success = false;
-    
-        /**
-         * PB_Response controlMode.
-         * @member {PB_ControlMode} controlMode
-         * @memberof PB_Response
-         * @instance
-         */
-        PB_Response.prototype.controlMode = 0;
-    
-        /**
-         * PB_Response programState.
-         * @member {PB_ProgramState} programState
-         * @memberof PB_Response
-         * @instance
-         */
-        PB_Response.prototype.programState = 0;
     
         /**
          * PB_Response ovenState.
@@ -1239,18 +1264,14 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.cmdId);
             if (message.success != null && message.hasOwnProperty("success"))
                 writer.uint32(/* id 3, wireType 0 =*/24).bool(message.success);
-            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
-                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.controlMode);
-            if (message.programState != null && message.hasOwnProperty("programState"))
-                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.programState);
             if (message.ovenState != null && message.hasOwnProperty("ovenState"))
-                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.ovenState);
+                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.ovenState);
             if (message.error != null && message.hasOwnProperty("error"))
-                writer.uint32(/* id 7, wireType 0 =*/56).int32(message.error);
+                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.error);
             if (message.time != null && message.hasOwnProperty("time"))
-                writer.uint32(/* id 8, wireType 0 =*/64).uint32(message.time);
+                writer.uint32(/* id 6, wireType 0 =*/48).uint32(message.time);
             if (message.mills != null && message.hasOwnProperty("mills"))
-                writer.uint32(/* id 9, wireType 5 =*/77).float(message.mills);
+                writer.uint32(/* id 7, wireType 5 =*/61).float(message.mills);
             return writer;
         };
     
@@ -1295,21 +1316,15 @@
                     message.success = reader.bool();
                     break;
                 case 4:
-                    message.controlMode = reader.int32();
-                    break;
-                case 5:
-                    message.programState = reader.int32();
-                    break;
-                case 6:
                     message.ovenState = reader.int32();
                     break;
-                case 7:
+                case 5:
                     message.error = reader.int32();
                     break;
-                case 8:
+                case 6:
                     message.time = reader.uint32();
                     break;
-                case 9:
+                case 7:
                     message.mills = reader.float();
                     break;
                 default:
@@ -1359,6 +1374,11 @@
                 case 5:
                 case 6:
                 case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
                     break;
                 }
             if (message.cmdId != null && message.hasOwnProperty("cmdId"))
@@ -1367,24 +1387,6 @@
             if (message.success != null && message.hasOwnProperty("success"))
                 if (typeof message.success !== "boolean")
                     return "success: boolean expected";
-            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
-                switch (message.controlMode) {
-                default:
-                    return "controlMode: enum value expected";
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                    break;
-                }
-            if (message.programState != null && message.hasOwnProperty("programState"))
-                switch (message.programState) {
-                default:
-                    return "programState: enum value expected";
-                case 0:
-                case 1:
-                    break;
-                }
             if (message.ovenState != null && message.hasOwnProperty("ovenState"))
                 switch (message.ovenState) {
                 default:
@@ -1434,63 +1436,55 @@
             case 1:
                 message.cmdType = 1;
                 break;
-            case "START":
+            case "HARD_RESET":
             case 2:
                 message.cmdType = 2;
                 break;
-            case "STOP":
+            case "CLIENT_REQUIRES_RESET":
             case 3:
                 message.cmdType = 3;
                 break;
-            case "HARD_RESET":
+            case "MANUAL_ON":
             case 4:
                 message.cmdType = 4;
                 break;
-            case "CLIENT_REQUIRES_RESET":
+            case "MANUAL_OFF":
             case 5:
                 message.cmdType = 5;
                 break;
-            case "MANUAL_ON":
+            case "MANUAL_KEEP_CURRENT":
             case 6:
                 message.cmdType = 6;
                 break;
-            case "MANUAL_OFF":
+            case "FTP_STOP":
             case 7:
                 message.cmdType = 7;
+                break;
+            case "FTP_START":
+            case 8:
+                message.cmdType = 8;
+                break;
+            case "FTP_START_BG":
+            case 9:
+                message.cmdType = 9;
+                break;
+            case "FTP_SET_TIME":
+            case 10:
+                message.cmdType = 10;
+                break;
+            case "FTP_PAUSE":
+            case 11:
+                message.cmdType = 11;
+                break;
+            case "FTP_RESUME":
+            case 12:
+                message.cmdType = 12;
                 break;
             }
             if (object.cmdId != null)
                 message.cmdId = object.cmdId >>> 0;
             if (object.success != null)
                 message.success = Boolean(object.success);
-            switch (object.controlMode) {
-            case "DEFAULT_OFF":
-            case 0:
-                message.controlMode = 0;
-                break;
-            case "TEMP_PROFILE":
-            case 1:
-                message.controlMode = 1;
-                break;
-            case "HOLD_CONST_TEMP":
-            case 2:
-                message.controlMode = 2;
-                break;
-            case "MANUAL":
-            case 3:
-                message.controlMode = 3;
-                break;
-            }
-            switch (object.programState) {
-            case "STOPPED":
-            case 0:
-                message.programState = 0;
-                break;
-            case "LAUNCHED":
-            case 1:
-                message.programState = 1;
-                break;
-            }
             switch (object.ovenState) {
             case "OFF":
             case 0:
@@ -1547,8 +1541,6 @@
                 object.cmdType = options.enums === String ? "GET_TEMP_PROFILE" : 0;
                 object.cmdId = 0;
                 object.success = false;
-                object.controlMode = options.enums === String ? "DEFAULT_OFF" : 0;
-                object.programState = options.enums === String ? "STOPPED" : 0;
                 object.ovenState = options.enums === String ? "OFF" : 0;
                 object.error = options.enums === String ? "NONE" : 0;
                 object.time = 0;
@@ -1560,10 +1552,6 @@
                 object.cmdId = message.cmdId;
             if (message.success != null && message.hasOwnProperty("success"))
                 object.success = message.success;
-            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
-                object.controlMode = options.enums === String ? $root.PB_ControlMode[message.controlMode] : message.controlMode;
-            if (message.programState != null && message.hasOwnProperty("programState"))
-                object.programState = options.enums === String ? $root.PB_ProgramState[message.programState] : message.programState;
             if (message.ovenState != null && message.hasOwnProperty("ovenState"))
                 object.ovenState = options.enums === String ? $root.PB_OvenState[message.ovenState] : message.ovenState;
             if (message.error != null && message.hasOwnProperty("error"))
@@ -1840,11 +1828,11 @@
          * Properties of a PB_ControlData.
          * @exports IPB_ControlData
          * @interface IPB_ControlData
-         * @property {PB_ControlMode|null} [mode] PB_ControlData mode
-         * @property {PB_ControlState|null} [state] PB_ControlData state
+         * @property {PB_ControlMode|null} [controlMode] PB_ControlData controlMode
+         * @property {PB_ControlState|null} [controlState] PB_ControlData controlState
+         * @property {boolean|null} [isPaused] PB_ControlData isPaused
          * @property {number|null} [elapsedTime] PB_ControlData elapsedTime
          * @property {number|null} [finishTime] PB_ControlData finishTime
-         * @property {number|null} [constTempValue] PB_ControlData constTempValue
          */
     
         /**
@@ -1863,20 +1851,28 @@
         }
     
         /**
-         * PB_ControlData mode.
-         * @member {PB_ControlMode} mode
+         * PB_ControlData controlMode.
+         * @member {PB_ControlMode} controlMode
          * @memberof PB_ControlData
          * @instance
          */
-        PB_ControlData.prototype.mode = 0;
+        PB_ControlData.prototype.controlMode = 0;
     
         /**
-         * PB_ControlData state.
-         * @member {PB_ControlState} state
+         * PB_ControlData controlState.
+         * @member {PB_ControlState} controlState
          * @memberof PB_ControlData
          * @instance
          */
-        PB_ControlData.prototype.state = 0;
+        PB_ControlData.prototype.controlState = 0;
+    
+        /**
+         * PB_ControlData isPaused.
+         * @member {boolean} isPaused
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.isPaused = false;
     
         /**
          * PB_ControlData elapsedTime.
@@ -1893,14 +1889,6 @@
          * @instance
          */
         PB_ControlData.prototype.finishTime = 0;
-    
-        /**
-         * PB_ControlData constTempValue.
-         * @member {number} constTempValue
-         * @memberof PB_ControlData
-         * @instance
-         */
-        PB_ControlData.prototype.constTempValue = 0;
     
         /**
          * Creates a new PB_ControlData instance using the specified properties.
@@ -1926,16 +1914,16 @@
         PB_ControlData.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.mode != null && message.hasOwnProperty("mode"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.mode);
-            if (message.state != null && message.hasOwnProperty("state"))
-                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.state);
+            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.controlMode);
+            if (message.controlState != null && message.hasOwnProperty("controlState"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.controlState);
+            if (message.isPaused != null && message.hasOwnProperty("isPaused"))
+                writer.uint32(/* id 3, wireType 0 =*/24).bool(message.isPaused);
             if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
-                writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.elapsedTime);
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.elapsedTime);
             if (message.finishTime != null && message.hasOwnProperty("finishTime"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.finishTime);
-            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
-                writer.uint32(/* id 5, wireType 5 =*/45).float(message.constTempValue);
+                writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.finishTime);
             return writer;
         };
     
@@ -1971,19 +1959,19 @@
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.mode = reader.int32();
+                    message.controlMode = reader.int32();
                     break;
                 case 2:
-                    message.state = reader.int32();
+                    message.controlState = reader.int32();
                     break;
                 case 3:
-                    message.elapsedTime = reader.uint32();
+                    message.isPaused = reader.bool();
                     break;
                 case 4:
-                    message.finishTime = reader.uint32();
+                    message.elapsedTime = reader.uint32();
                     break;
                 case 5:
-                    message.constTempValue = reader.float();
+                    message.finishTime = reader.uint32();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -2020,34 +2008,34 @@
         PB_ControlData.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.mode != null && message.hasOwnProperty("mode"))
-                switch (message.mode) {
+            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
+                switch (message.controlMode) {
                 default:
-                    return "mode: enum value expected";
+                    return "controlMode: enum value expected";
                 case 0:
                 case 1:
                 case 2:
                 case 3:
                     break;
                 }
-            if (message.state != null && message.hasOwnProperty("state"))
-                switch (message.state) {
+            if (message.controlState != null && message.hasOwnProperty("controlState"))
+                switch (message.controlState) {
                 default:
-                    return "state: enum value expected";
+                    return "controlState: enum value expected";
                 case 0:
                 case 1:
                 case 2:
                     break;
                 }
+            if (message.isPaused != null && message.hasOwnProperty("isPaused"))
+                if (typeof message.isPaused !== "boolean")
+                    return "isPaused: boolean expected";
             if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
                 if (!$util.isInteger(message.elapsedTime))
                     return "elapsedTime: integer expected";
             if (message.finishTime != null && message.hasOwnProperty("finishTime"))
                 if (!$util.isInteger(message.finishTime))
                     return "finishTime: integer expected";
-            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
-                if (typeof message.constTempValue !== "number")
-                    return "constTempValue: number expected";
             return null;
         };
     
@@ -2063,44 +2051,44 @@
             if (object instanceof $root.PB_ControlData)
                 return object;
             var message = new $root.PB_ControlData();
-            switch (object.mode) {
+            switch (object.controlMode) {
             case "DEFAULT_OFF":
             case 0:
-                message.mode = 0;
+                message.controlMode = 0;
                 break;
-            case "TEMP_PROFILE":
+            case "FOLLOW_TEMP_PROFILE":
             case 1:
-                message.mode = 1;
+                message.controlMode = 1;
                 break;
             case "HOLD_CONST_TEMP":
             case 2:
-                message.mode = 2;
+                message.controlMode = 2;
                 break;
             case "MANUAL":
             case 3:
-                message.mode = 3;
+                message.controlMode = 3;
                 break;
             }
-            switch (object.state) {
+            switch (object.controlState) {
             case "DISABLED":
             case 0:
-                message.state = 0;
+                message.controlState = 0;
                 break;
             case "BACKGROUND":
             case 1:
-                message.state = 1;
+                message.controlState = 1;
                 break;
             case "ENABLED":
             case 2:
-                message.state = 2;
+                message.controlState = 2;
                 break;
             }
+            if (object.isPaused != null)
+                message.isPaused = Boolean(object.isPaused);
             if (object.elapsedTime != null)
                 message.elapsedTime = object.elapsedTime >>> 0;
             if (object.finishTime != null)
                 message.finishTime = object.finishTime >>> 0;
-            if (object.constTempValue != null)
-                message.constTempValue = Number(object.constTempValue);
             return message;
         };
     
@@ -2118,22 +2106,22 @@
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.mode = options.enums === String ? "DEFAULT_OFF" : 0;
-                object.state = options.enums === String ? "DISABLED" : 0;
+                object.controlMode = options.enums === String ? "DEFAULT_OFF" : 0;
+                object.controlState = options.enums === String ? "DISABLED" : 0;
+                object.isPaused = false;
                 object.elapsedTime = 0;
                 object.finishTime = 0;
-                object.constTempValue = 0;
             }
-            if (message.mode != null && message.hasOwnProperty("mode"))
-                object.mode = options.enums === String ? $root.PB_ControlMode[message.mode] : message.mode;
-            if (message.state != null && message.hasOwnProperty("state"))
-                object.state = options.enums === String ? $root.PB_ControlState[message.state] : message.state;
+            if (message.controlMode != null && message.hasOwnProperty("controlMode"))
+                object.controlMode = options.enums === String ? $root.PB_ControlMode[message.controlMode] : message.controlMode;
+            if (message.controlState != null && message.hasOwnProperty("controlState"))
+                object.controlState = options.enums === String ? $root.PB_ControlState[message.controlState] : message.controlState;
+            if (message.isPaused != null && message.hasOwnProperty("isPaused"))
+                object.isPaused = message.isPaused;
             if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
                 object.elapsedTime = message.elapsedTime;
             if (message.finishTime != null && message.hasOwnProperty("finishTime"))
                 object.finishTime = message.finishTime;
-            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
-                object.constTempValue = options.json && !isFinite(message.constTempValue) ? String(message.constTempValue) : message.constTempValue;
             return object;
         };
     
@@ -2149,6 +2137,318 @@
         };
     
         return PB_ControlData;
+    })();
+    
+    $root.PB_FullControlData = (function() {
+    
+        /**
+         * Properties of a PB_FullControlData.
+         * @exports IPB_FullControlData
+         * @interface IPB_FullControlData
+         * @property {PB_ControlMode|null} [leadControlMode] PB_FullControlData leadControlMode
+         * @property {PB_OvenState|null} [ovenState] PB_FullControlData ovenState
+         * @property {number|null} [constTempValue] PB_FullControlData constTempValue
+         * @property {Array.<IPB_ControlData>|null} [data] PB_FullControlData data
+         */
+    
+        /**
+         * Constructs a new PB_FullControlData.
+         * @exports PB_FullControlData
+         * @classdesc Represents a PB_FullControlData.
+         * @implements IPB_FullControlData
+         * @constructor
+         * @param {IPB_FullControlData=} [properties] Properties to set
+         */
+        function PB_FullControlData(properties) {
+            this.data = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+    
+        /**
+         * PB_FullControlData leadControlMode.
+         * @member {PB_ControlMode} leadControlMode
+         * @memberof PB_FullControlData
+         * @instance
+         */
+        PB_FullControlData.prototype.leadControlMode = 0;
+    
+        /**
+         * PB_FullControlData ovenState.
+         * @member {PB_OvenState} ovenState
+         * @memberof PB_FullControlData
+         * @instance
+         */
+        PB_FullControlData.prototype.ovenState = 0;
+    
+        /**
+         * PB_FullControlData constTempValue.
+         * @member {number} constTempValue
+         * @memberof PB_FullControlData
+         * @instance
+         */
+        PB_FullControlData.prototype.constTempValue = 0;
+    
+        /**
+         * PB_FullControlData data.
+         * @member {Array.<IPB_ControlData>} data
+         * @memberof PB_FullControlData
+         * @instance
+         */
+        PB_FullControlData.prototype.data = $util.emptyArray;
+    
+        /**
+         * Creates a new PB_FullControlData instance using the specified properties.
+         * @function create
+         * @memberof PB_FullControlData
+         * @static
+         * @param {IPB_FullControlData=} [properties] Properties to set
+         * @returns {PB_FullControlData} PB_FullControlData instance
+         */
+        PB_FullControlData.create = function create(properties) {
+            return new PB_FullControlData(properties);
+        };
+    
+        /**
+         * Encodes the specified PB_FullControlData message. Does not implicitly {@link PB_FullControlData.verify|verify} messages.
+         * @function encode
+         * @memberof PB_FullControlData
+         * @static
+         * @param {IPB_FullControlData} message PB_FullControlData message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_FullControlData.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.leadControlMode != null && message.hasOwnProperty("leadControlMode"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.leadControlMode);
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.ovenState);
+            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
+                writer.uint32(/* id 3, wireType 5 =*/29).float(message.constTempValue);
+            if (message.data != null && message.data.length)
+                for (var i = 0; i < message.data.length; ++i)
+                    $root.PB_ControlData.encode(message.data[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+            return writer;
+        };
+    
+        /**
+         * Encodes the specified PB_FullControlData message, length delimited. Does not implicitly {@link PB_FullControlData.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PB_FullControlData
+         * @static
+         * @param {IPB_FullControlData} message PB_FullControlData message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_FullControlData.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+    
+        /**
+         * Decodes a PB_FullControlData message from the specified reader or buffer.
+         * @function decode
+         * @memberof PB_FullControlData
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {PB_FullControlData} PB_FullControlData
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_FullControlData.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PB_FullControlData();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.leadControlMode = reader.int32();
+                    break;
+                case 2:
+                    message.ovenState = reader.int32();
+                    break;
+                case 3:
+                    message.constTempValue = reader.float();
+                    break;
+                case 4:
+                    if (!(message.data && message.data.length))
+                        message.data = [];
+                    message.data.push($root.PB_ControlData.decode(reader, reader.uint32()));
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+    
+        /**
+         * Decodes a PB_FullControlData message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PB_FullControlData
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PB_FullControlData} PB_FullControlData
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_FullControlData.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+    
+        /**
+         * Verifies a PB_FullControlData message.
+         * @function verify
+         * @memberof PB_FullControlData
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PB_FullControlData.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.leadControlMode != null && message.hasOwnProperty("leadControlMode"))
+                switch (message.leadControlMode) {
+                default:
+                    return "leadControlMode: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                switch (message.ovenState) {
+                default:
+                    return "ovenState: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
+                if (typeof message.constTempValue !== "number")
+                    return "constTempValue: number expected";
+            if (message.data != null && message.hasOwnProperty("data")) {
+                if (!Array.isArray(message.data))
+                    return "data: array expected";
+                for (var i = 0; i < message.data.length; ++i) {
+                    var error = $root.PB_ControlData.verify(message.data[i]);
+                    if (error)
+                        return "data." + error;
+                }
+            }
+            return null;
+        };
+    
+        /**
+         * Creates a PB_FullControlData message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof PB_FullControlData
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {PB_FullControlData} PB_FullControlData
+         */
+        PB_FullControlData.fromObject = function fromObject(object) {
+            if (object instanceof $root.PB_FullControlData)
+                return object;
+            var message = new $root.PB_FullControlData();
+            switch (object.leadControlMode) {
+            case "DEFAULT_OFF":
+            case 0:
+                message.leadControlMode = 0;
+                break;
+            case "FOLLOW_TEMP_PROFILE":
+            case 1:
+                message.leadControlMode = 1;
+                break;
+            case "HOLD_CONST_TEMP":
+            case 2:
+                message.leadControlMode = 2;
+                break;
+            case "MANUAL":
+            case 3:
+                message.leadControlMode = 3;
+                break;
+            }
+            switch (object.ovenState) {
+            case "OFF":
+            case 0:
+                message.ovenState = 0;
+                break;
+            case "ON":
+            case 1:
+                message.ovenState = 1;
+                break;
+            }
+            if (object.constTempValue != null)
+                message.constTempValue = Number(object.constTempValue);
+            if (object.data) {
+                if (!Array.isArray(object.data))
+                    throw TypeError(".PB_FullControlData.data: array expected");
+                message.data = [];
+                for (var i = 0; i < object.data.length; ++i) {
+                    if (typeof object.data[i] !== "object")
+                        throw TypeError(".PB_FullControlData.data: object expected");
+                    message.data[i] = $root.PB_ControlData.fromObject(object.data[i]);
+                }
+            }
+            return message;
+        };
+    
+        /**
+         * Creates a plain object from a PB_FullControlData message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof PB_FullControlData
+         * @static
+         * @param {PB_FullControlData} message PB_FullControlData
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PB_FullControlData.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.arrays || options.defaults)
+                object.data = [];
+            if (options.defaults) {
+                object.leadControlMode = options.enums === String ? "DEFAULT_OFF" : 0;
+                object.ovenState = options.enums === String ? "OFF" : 0;
+                object.constTempValue = 0;
+            }
+            if (message.leadControlMode != null && message.hasOwnProperty("leadControlMode"))
+                object.leadControlMode = options.enums === String ? $root.PB_ControlMode[message.leadControlMode] : message.leadControlMode;
+            if (message.ovenState != null && message.hasOwnProperty("ovenState"))
+                object.ovenState = options.enums === String ? $root.PB_OvenState[message.ovenState] : message.ovenState;
+            if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
+                object.constTempValue = options.json && !isFinite(message.constTempValue) ? String(message.constTempValue) : message.constTempValue;
+            if (message.data && message.data.length) {
+                object.data = [];
+                for (var j = 0; j < message.data.length; ++j)
+                    object.data[j] = $root.PB_ControlData.toObject(message.data[j], options);
+            }
+            return object;
+        };
+    
+        /**
+         * Converts this PB_FullControlData to JSON.
+         * @function toJSON
+         * @memberof PB_FullControlData
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PB_FullControlData.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+    
+        return PB_FullControlData;
     })();
 
     return $root;

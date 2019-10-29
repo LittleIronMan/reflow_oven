@@ -36,13 +36,33 @@ TaskHandle_t pidControllerTaskHandle = NULL,
 			msgReceiverTaskHandle = NULL,
 			msgSenderTaskHandle = NULL;
 
+#define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
+
 NRC_ControlData cd = {
 	.tempProfile = PB_TempProfile_init_default,
 	.startTime = 0,
 	.lastIterationTime = 0,
-	.controlMode = PB_ControlMode_DEFAULT_OFF,
-	.programState = PB_ProgramState_STOPPED,
-	.ovenState = PB_OvenState_OFF
+	.fullState = {
+		.leadControlMode = PB_ControlMode_DEFAULT_OFF,
+		.ovenState = PB_OvenState_OFF,
+		.constTempValue = roomTemp,
+		.data = {
+			{
+				.controlMode = PB_ControlMode_FOLLOW_TEMP_PROFILE,
+				.controlState = PB_ControlState_DISABLED,
+				.isPaused = false,
+				.elapsedTime = 0,
+				.finishTime = 0
+			},
+			{
+				.controlMode = PB_ControlMode_HOLD_CONST_TEMP,
+				.controlState = PB_ControlState_DISABLED,
+				.isPaused = false,
+				.elapsedTime = 0,
+				.finishTime = 0
+			}
+		}
+	}
 };
 
 PID_Data pidData = {
@@ -130,10 +150,10 @@ void money_cmdManagerTask(void const *argument)
 		NRC_getTime(&currentTime, NULL);
 
 		switch (cmd.cmdType) {
-		case PB_CmdType_STOP:
-		case PB_CmdType_START: {
+		case PB_CmdType_FTP_STOP:
+		case PB_CmdType_FTP_START: {
 			// сброс начальных данных ПИД регулятора
-			if (cmd.cmdType == PB_CmdType_START) {
+			if (cmd.cmdType == PB_CmdType_FTP_START) {
 				NRC_getTime(&cd.startTime, NULL);
 				cd.lastIterationTime = cd.startTime;
 				pidData.lastProcessValue = 0.0f;
@@ -532,7 +552,6 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 #define minVcooling -2.0f // минимальная скорость изменения температуры при охлаждении(градусов в секунду)
 #define dVheating 0.5f // "ускорение" температуры при НАГРЕВАНИИ, т.е. время равное изменению скорости нагревания от 0 до 1 грaдуса в секунду
 #define dVcooling -0.5f // "ускорение" температуры при ОХЛАЖДЕНИИ
-#define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
 	if (deltaTime != 0.0f) {
 		bool ovenIsHeating = (cd.ovenState == PB_OvenState_ON);
 		float V = simulator_prevV; // скорость изменения температуры

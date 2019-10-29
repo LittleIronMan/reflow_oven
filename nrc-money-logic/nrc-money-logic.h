@@ -105,6 +105,7 @@ typedef struct {
 	PB_ControlMode controlMode; // режим управления печкой
 	PB_ProgramState programState; // состояние программы управления
 	PB_OvenState ovenState; // состояние самой печки(включена/выключена)
+	PB_FullControlData fullState;
 } NRC_ControlData;
 
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART

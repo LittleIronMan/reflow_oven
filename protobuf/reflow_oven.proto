@@ -19,18 +19,27 @@ enum PB_MsgType {
 enum PB_CmdType {
 	GET_TEMP_PROFILE = 0;
 	GET_STATE = 1;
-	START = 2;
-	STOP = 3;
-	HARD_RESET = 4; // сигнал(не команда) от микроконтроллера серверу и клиенту сбросить все свои данные, отдается или при перезапуске контроллера
-	CLIENT_REQUIRES_RESET = 5; // запрос от веб-клиента микроконтроллеру на сброс всех данных(например по нажатию специальной кнопки в веб-интерфейсе), после этого контроллер должен дать серверу команду на сброс
-	MANUAL_ON = 6; // ручное переключение нагревателя, если до этого была включена какая-то автоматическая программа стабилизации температуры, то она продолжит выполняться фоном(т.е. время для неё продолжить тикать, но печка переключаться не будет)
-	MANUAL_OFF = 7;
+	HARD_RESET = 2; // сигнал(не команда) от микроконтроллера серверу и клиенту сбросить все свои данные, отдается или при перезапуске контроллера
+	CLIENT_REQUIRES_RESET = 3; // запрос от веб-клиента микроконтроллеру на сброс всех данных(например по нажатию специальной кнопки в веб-интерфейсе), после этого контроллер должен дать серверу команду на сброс
+	// команды для ручного режима управления
+	// при ручном переключении нагревателя, если до этого была включена какая-то автоматическая программа стабилизации температуры, то она продолжит выполняться фоном(BACKGROUND_MODE т.е. время для неё продолжить тикать, но печка не будет переключаться)
+	MANUAL_ON = 4; 
+	MANUAL_OFF = 5;
+	MANUAL_KEEP_CURRENT = 6;
+	// команды для режима управления "FOLLOW_TEMP_PROFILE - следование термопрофилю"
+	FTP_STOP = 7;
+	FTP_START = 8;
+	FTP_START_BG = 9;
+	FTP_SET_TIME = 10;
+	FTP_PAUSE = 11;
+	FTP_RESUME = 12;
 }
 
 message PB_Command {
 	PB_CmdType cmdType = 1;
 	uint32 id = 2;
 	uint32 priority = 3 [(nanopb).int_size = IS_8]; // [default = 1]; // чем больше эта величина, тем выше приоритет
+	uint32 value = 4; // некоторая величина, которая будет отправляться вместе с 
 }
 
 message PB_TempMeasure {
@@ -49,11 +58,6 @@ message PB_ResponseGetTempProfile {
 	PB_TempProfile profile = 2;
 }
 
-enum PB_ProgramState {
-	STOPPED = 0;
-	LAUNCHED = 1;
-}
-
 enum PB_OvenState {
 	OFF = 0;
 	ON = 1;
@@ -61,7 +65,7 @@ enum PB_OvenState {
 
 enum PB_ControlMode {
 	DEFAULT_OFF = 0;
-	TEMP_PROFILE = 1;
+	FOLLOW_TEMP_PROFILE = 1;
 	HOLD_CONST_TEMP = 2;
 	MANUAL = 3;
 }
@@ -84,12 +88,10 @@ message PB_Response {
 	PB_CmdType cmdType = 1;
 	uint32 cmdId = 2;
 	bool success = 3;
-	PB_ControlMode controlMode = 4;
-	PB_ProgramState programState = 5;
-	PB_OvenState ovenState = 6;
-	PB_ErrorType error = 7; // [default = NONE];
-	uint32 time = 8; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
-	float mills = 9; // [(nanopb).int_size = IS_16]; // миллисекунды времени
+	PB_OvenState ovenState = 4;
+	PB_ErrorType error = 5; // [default = NONE];
+	uint32 time = 6; // некоторые ответы на команды будут возвращать величину времени, это специально отведеное для этого поле
+	float mills = 7; // [(nanopb).int_size = IS_16]; // миллисекунды времени
 }
 
 message PB_SwitchOvenState {
@@ -99,9 +101,16 @@ message PB_SwitchOvenState {
 }
 
 message PB_ControlData {
-	PB_ControlMode mode = 1;
-	PB_ControlState state = 2;
-	uint32 elapsedTime = 3;
-	uint32 finishTime = 4; // (только для режима HOLD_CONST_TEMP??? потому-что для режима FOLLOW эта величину можно посчитать из профиля)
-	float constTempValue = 5; // (только для режима HOLD_CONST_TEMP, в других случаях == 0)
+	PB_ControlMode controlMode = 1;
+	PB_ControlState controlState = 2;
+	bool isPaused = 3;
+	uint32 elapsedTime = 4;
+	uint32 finishTime = 5;
+}
+
+message PB_FullControlData {
+	PB_ControlMode leadControlMode = 1; // ведущий режим управления(по умолчанию DEFAULT_OFF, а дальше смотря куда кликнет пользователь)
+	PB_OvenState ovenState = 2; // состояние печки, дублирует одноименную переменную в структуре PB_Response
+	float constTempValue = 3; // (только для режима HOLD_CONST_TEMP - величина температуры для удержания)
+	repeated PB_ControlData data = 4 [(nanopb).max_count = 2, (nanopb).fixed_count = true];
 }

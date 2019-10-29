@@ -11,8 +11,7 @@ class TempMonitor extends Component {
     }
 
     render() {
-        console.log('Render TempMonitor');
-        return <div className={'col-6 ' + style.tempMonitor}>
+        return <div className={'col-md-6 col-12 ' + style.tempMonitor}>
             <table><tbody>
                 <tr>
                     <td className={style.label}>current temperature</td>
@@ -22,7 +21,9 @@ class TempMonitor extends Component {
                 </tr>
                 <tr>
                     <td className={style.label}>oven state</td>
-                    <td className={style.value}>{this.props.ovenState}</td>
+                    <td className={style.value} style={{backgroundColor: this.props.ovenState === 'ON' ? '#ff522a' : '#1bffe9'}}>
+                        {this.props.ovenState}
+                    </td>
                 </tr>
                 <tr>
                     <td className={style.label}>control mode</td>
@@ -50,17 +51,17 @@ class ControlButtons extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            processPercent: 50
+            processPercent: props.processPercent
         };
     }
-    sendCommand = (cmd) => {
+    sendCommand = (cmd, value=null) => {
         socket.emit('client cmd', {
             cmdTypeStr: cmd,
-            processPercent: 0
+            cmdValue: value
         });
     };
     render() {
-        return <div className={'col-6 ' + style.controlButtons}>
+        return <div className={'col-md-6 col-12 ' + style.controlButtons}>
             <div className={style.selectable}>
                 <table className={style.manualControl}><tbody>
                     <tr>
@@ -72,13 +73,22 @@ class ControlButtons extends Component {
                     {/*кнопки для ручного управления*/}
                     <tr>
                         <td>
-                            <button style={{backgroundColor: "#6bd8ff"}} onClick={() => this.sendCommand('MANUAL_OFF')}>turn off</button>
+                            <button style={{backgroundColor: "#6bd8ff"}}
+                                    onClick={() => this.sendCommand('MANUAL_OFF')}>
+                                turn off
+                            </button>
                         </td>
                         <td>
-                            <button style={{backgroundColor: "rgba(255,16,10,0.38)"}} onClick={() => this.sendCommand('MANUAL_ON')}>keep current</button>
+                            <button style={{backgroundColor: "rgba(255,16,10,0.38)"}}
+                                    onClick={() => this.sendCommand('MANUAL_KEEP_CURRENT')}>
+                                keep current
+                            </button>
                         </td>
                         <td>
-                            <button style={{backgroundColor: "#ff573f"}} className={style.on} onClick={() => this.sendCommand('MANUAL_ON')}>turn on</button>
+                            <button style={{backgroundColor: "#ff573f"}}
+                                    onClick={() => this.sendCommand('MANUAL_ON')}>
+                                turn on
+                            </button>
                         </td>
                     </tr>
                 </tbody></table>
@@ -94,13 +104,25 @@ class ControlButtons extends Component {
                     {/*кнопки управления процесса нагревания с термопрофилем*/}
                     <tr>
                         <td>
-                            <button className={style.x2} style={{backgroundColor: "#ff7474"}} onClick={() => this.sendCommand('STOP')}>stop</button>
+                            <button className={style.x2}
+                                    style={{backgroundColor: "#ff7474"}}
+                                    onClick={() => this.sendCommand('FTP_STOP')}>
+                                stop
+                            </button>
                         </td>
                         <td>
-                            <button className={style.x2} style={{backgroundColor: "rgba(116,255,116,0.53)"}} onClick={() => this.sendCommand('START')}>run in background</button>
+                            <button className={style.x2}
+                                    style={{backgroundColor: "rgba(116,255,116,0.53)"}}
+                                    onClick={() => this.sendCommand('FTP_START_BG')}>
+                                run in background
+                            </button>
                         </td>
                         <td>
-                            <button className={style.x2} style={{backgroundColor: "#74ff74"}} onClick={() => this.sendCommand('START')}>run</button>
+                            <button className={style.x2}
+                                    style={{backgroundColor: "#74ff74"}}
+                                    onClick={() => this.sendCommand('FTP_START')}>
+                                run
+                            </button>
                         </td>
                     </tr>
 
@@ -113,7 +135,9 @@ class ControlButtons extends Component {
                             00:56/2:10
                         </td>
                         <td>
-                            <button>pause</button>
+                            <button onClick={() => this.sendCommand(this.props.isPaused ? 'FTP_RESUME' : 'FTP_PAUSE')}>
+                                {this.props.isPaused ? 'resume' : 'pause'}
+                            </button>
                         </td>
                     </tr>
                     <tr>
@@ -123,17 +147,11 @@ class ControlButtons extends Component {
                                    min="1"
                                    max="100"
                                    value={this.state.processPercent}
-                                   onMouseDown={()=>{
+                                   onChange={()=>{
                                        this.setState({processPercent: event.target.value});
-                                       console.log('onMouseDown ', this.state.processPercent);
                                    }}
                                    onMouseUp={()=>{
-                                       this.setState({processPercent: event.target.value});
-                                       console.log('onMouseUp ', this.state.processPercent);
-                                   }}
-                                   onChange={()=>{
-                                       console.log('onChange');
-                                       this.setState({processPercent: event.target.value});
+                                       this.sendCommand('FTP_SET_TIME', todo);
                                    }}
                             />
                         </td>
@@ -258,9 +276,9 @@ class GraphView extends Component {
     render() {
         return <div className={'col-12'}>
             <div className={style.graphView}>
-                <GraphLayer id='backLayer' superClass={style.backLayer}/>
                 <GraphLayer id='layerIdeal' ref={(domNode) => {this._idealGraph = domNode;}}/>
                 <GraphLayer id='layerReal' strokeStyle={'#ff5a88'} ref={(domNode) => {this._realMeasureGraph = domNode;}}/>
+                <GraphLayer id='backLayer' superClass={style.backLayer}/>
             </div>
         </div>;
     }
@@ -271,7 +289,7 @@ class PageMain extends Component {
     render() {
         return <div className={"container-fluid " + page.default + ' ' + style.ui}>
             <div className={"row"}>
-                <div className={"col-12"}>
+                <div className={"col-12 " + style.title}>
                     Oven Control Panel
                 </div>
                 <TempMonitorRedux/>
