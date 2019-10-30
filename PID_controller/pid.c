@@ -7,7 +7,7 @@ float pidController(PID_Data *pd, float setPoint, float processValue, float delt
 	float error, dErr, control;
 	error = setPoint - processValue;
 	pd->integralErr += error * deltaTime; // интеграл ошибки
-	dErr = (processValue - pd->lastProcessValue) / deltaTime; // производная ошибки
+	dErr = (deltaTime > 0.0f) ? ((processValue - pd->lastProcessValue) / deltaTime) : 0.0f; // производная ошибки
 	pd->lastProcessValue = processValue;
 
 	// U = K * (Err + (1 / Ti) * Int + Td * dErr)  см. здесь: https://habr.com/ru/post/145991/ - замечательная статья

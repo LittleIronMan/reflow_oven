@@ -129,10 +129,10 @@ class ControlButtons extends Component {
                     {/*кнопки управления ВРЕМЕНЕМ процесса нагревания с термопрофилем*/}
                     <tr>
                         <td>
-                            {this.state.processPercent}%
+                            {(this.props.finishTime !== 0 ? (this.state.elapsedTime / this.props.finishTime) : 0) * 100}%
                         </td>
                         <td>
-                            00:56/2:10
+                            {this.state.elapsedTime / 60}:{this.state.elapsedTime % 60}/{this.props.finishTime / 60}:{this.props.finishTime % 60}
                         </td>
                         <td>
                             <button onClick={() => this.sendCommand(this.props.isPaused ? 'FTP_RESUME' : 'FTP_PAUSE')}>
@@ -144,14 +144,14 @@ class ControlButtons extends Component {
                         <td colSpan="3">
                             <input className={style.processSlider}
                                    type="range"
-                                   min="1"
-                                   max="100"
-                                   value={this.state.processPercent}
+                                   min="0"
+                                   max={this.props.finishTime}
+                                   value={this.state.elapsedTime}
                                    onChange={()=>{
-                                       this.setState({processPercent: event.target.value});
+                                       this.setState({elapsedTime: event.target.value});
                                    }}
                                    onMouseUp={()=>{
-                                       this.sendCommand('FTP_SET_TIME', todo);
+                                       this.sendCommand('FTP_SET_TIME', this.state.elapsedTime);
                                    }}
                             />
                         </td>

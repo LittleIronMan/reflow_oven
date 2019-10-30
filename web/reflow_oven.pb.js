@@ -29,6 +29,7 @@
      * @property {number} FINISH_PROGRAM=6 FINISH_PROGRAM value
      * @property {number} PLAIN_TEXT=7 PLAIN_TEXT value
      * @property {number} SWITCH_OVEN_STATE=8 SWITCH_OVEN_STATE value
+     * @property {number} FULL_CONTROL_DATA=9 FULL_CONTROL_DATA value
      */
     $root.PB_MsgType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -41,6 +42,7 @@
         values[valuesById[6] = "FINISH_PROGRAM"] = 6;
         values[valuesById[7] = "PLAIN_TEXT"] = 7;
         values[valuesById[8] = "SWITCH_OVEN_STATE"] = 8;
+        values[valuesById[9] = "FULL_CONTROL_DATA"] = 9;
         return values;
     })();
     
@@ -402,14 +404,223 @@
         return PB_Command;
     })();
     
+    $root.PB_Time = (function() {
+    
+        /**
+         * Properties of a PB_Time.
+         * @exports IPB_Time
+         * @interface IPB_Time
+         * @property {number|null} [unixSeconds] PB_Time unixSeconds
+         * @property {number|null} [mills] PB_Time mills
+         */
+    
+        /**
+         * Constructs a new PB_Time.
+         * @exports PB_Time
+         * @classdesc Represents a PB_Time.
+         * @implements IPB_Time
+         * @constructor
+         * @param {IPB_Time=} [properties] Properties to set
+         */
+        function PB_Time(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+    
+        /**
+         * PB_Time unixSeconds.
+         * @member {number} unixSeconds
+         * @memberof PB_Time
+         * @instance
+         */
+        PB_Time.prototype.unixSeconds = 0;
+    
+        /**
+         * PB_Time mills.
+         * @member {number} mills
+         * @memberof PB_Time
+         * @instance
+         */
+        PB_Time.prototype.mills = 0;
+    
+        /**
+         * Creates a new PB_Time instance using the specified properties.
+         * @function create
+         * @memberof PB_Time
+         * @static
+         * @param {IPB_Time=} [properties] Properties to set
+         * @returns {PB_Time} PB_Time instance
+         */
+        PB_Time.create = function create(properties) {
+            return new PB_Time(properties);
+        };
+    
+        /**
+         * Encodes the specified PB_Time message. Does not implicitly {@link PB_Time.verify|verify} messages.
+         * @function encode
+         * @memberof PB_Time
+         * @static
+         * @param {IPB_Time} message PB_Time message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_Time.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.unixSeconds != null && message.hasOwnProperty("unixSeconds"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.unixSeconds);
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                writer.uint32(/* id 2, wireType 5 =*/21).float(message.mills);
+            return writer;
+        };
+    
+        /**
+         * Encodes the specified PB_Time message, length delimited. Does not implicitly {@link PB_Time.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PB_Time
+         * @static
+         * @param {IPB_Time} message PB_Time message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_Time.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+    
+        /**
+         * Decodes a PB_Time message from the specified reader or buffer.
+         * @function decode
+         * @memberof PB_Time
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {PB_Time} PB_Time
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_Time.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PB_Time();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.unixSeconds = reader.uint32();
+                    break;
+                case 2:
+                    message.mills = reader.float();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+    
+        /**
+         * Decodes a PB_Time message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PB_Time
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PB_Time} PB_Time
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_Time.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+    
+        /**
+         * Verifies a PB_Time message.
+         * @function verify
+         * @memberof PB_Time
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PB_Time.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.unixSeconds != null && message.hasOwnProperty("unixSeconds"))
+                if (!$util.isInteger(message.unixSeconds))
+                    return "unixSeconds: integer expected";
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                if (typeof message.mills !== "number")
+                    return "mills: number expected";
+            return null;
+        };
+    
+        /**
+         * Creates a PB_Time message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof PB_Time
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {PB_Time} PB_Time
+         */
+        PB_Time.fromObject = function fromObject(object) {
+            if (object instanceof $root.PB_Time)
+                return object;
+            var message = new $root.PB_Time();
+            if (object.unixSeconds != null)
+                message.unixSeconds = object.unixSeconds >>> 0;
+            if (object.mills != null)
+                message.mills = Number(object.mills);
+            return message;
+        };
+    
+        /**
+         * Creates a plain object from a PB_Time message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof PB_Time
+         * @static
+         * @param {PB_Time} message PB_Time
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PB_Time.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.unixSeconds = 0;
+                object.mills = 0;
+            }
+            if (message.unixSeconds != null && message.hasOwnProperty("unixSeconds"))
+                object.unixSeconds = message.unixSeconds;
+            if (message.mills != null && message.hasOwnProperty("mills"))
+                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
+            return object;
+        };
+    
+        /**
+         * Converts this PB_Time to JSON.
+         * @function toJSON
+         * @memberof PB_Time
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PB_Time.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+    
+        return PB_Time;
+    })();
+    
     $root.PB_TempMeasure = (function() {
     
         /**
          * Properties of a PB_TempMeasure.
          * @exports IPB_TempMeasure
          * @interface IPB_TempMeasure
-         * @property {number|null} [time] PB_TempMeasure time
-         * @property {number|null} [mills] PB_TempMeasure mills
+         * @property {IPB_Time|null} [time] PB_TempMeasure time
          * @property {number|null} [temp] PB_TempMeasure temp
          */
     
@@ -430,19 +641,11 @@
     
         /**
          * PB_TempMeasure time.
-         * @member {number} time
+         * @member {IPB_Time|null|undefined} time
          * @memberof PB_TempMeasure
          * @instance
          */
-        PB_TempMeasure.prototype.time = 0;
-    
-        /**
-         * PB_TempMeasure mills.
-         * @member {number} mills
-         * @memberof PB_TempMeasure
-         * @instance
-         */
-        PB_TempMeasure.prototype.mills = 0;
+        PB_TempMeasure.prototype.time = null;
     
         /**
          * PB_TempMeasure temp.
@@ -477,11 +680,9 @@
             if (!writer)
                 writer = $Writer.create();
             if (message.time != null && message.hasOwnProperty("time"))
-                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.time);
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                writer.uint32(/* id 2, wireType 5 =*/21).float(message.mills);
+                $root.PB_Time.encode(message.time, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             if (message.temp != null && message.hasOwnProperty("temp"))
-                writer.uint32(/* id 3, wireType 5 =*/29).float(message.temp);
+                writer.uint32(/* id 2, wireType 5 =*/21).float(message.temp);
             return writer;
         };
     
@@ -517,12 +718,9 @@
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.time = reader.uint32();
+                    message.time = $root.PB_Time.decode(reader, reader.uint32());
                     break;
                 case 2:
-                    message.mills = reader.float();
-                    break;
-                case 3:
                     message.temp = reader.float();
                     break;
                 default:
@@ -560,12 +758,11 @@
         PB_TempMeasure.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.time != null && message.hasOwnProperty("time"))
-                if (!$util.isInteger(message.time))
-                    return "time: integer expected";
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                if (typeof message.mills !== "number")
-                    return "mills: number expected";
+            if (message.time != null && message.hasOwnProperty("time")) {
+                var error = $root.PB_Time.verify(message.time);
+                if (error)
+                    return "time." + error;
+            }
             if (message.temp != null && message.hasOwnProperty("temp"))
                 if (typeof message.temp !== "number")
                     return "temp: number expected";
@@ -584,10 +781,11 @@
             if (object instanceof $root.PB_TempMeasure)
                 return object;
             var message = new $root.PB_TempMeasure();
-            if (object.time != null)
-                message.time = object.time >>> 0;
-            if (object.mills != null)
-                message.mills = Number(object.mills);
+            if (object.time != null) {
+                if (typeof object.time !== "object")
+                    throw TypeError(".PB_TempMeasure.time: object expected");
+                message.time = $root.PB_Time.fromObject(object.time);
+            }
             if (object.temp != null)
                 message.temp = Number(object.temp);
             return message;
@@ -607,14 +805,11 @@
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.time = 0;
-                object.mills = 0;
+                object.time = null;
                 object.temp = 0;
             }
             if (message.time != null && message.hasOwnProperty("time"))
-                object.time = message.time;
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
+                object.time = $root.PB_Time.toObject(message.time, options);
             if (message.temp != null && message.hasOwnProperty("temp"))
                 object.temp = options.json && !isFinite(message.temp) ? String(message.temp) : message.temp;
             return object;
@@ -1159,8 +1354,7 @@
          * @property {boolean|null} [success] PB_Response success
          * @property {PB_OvenState|null} [ovenState] PB_Response ovenState
          * @property {PB_ErrorType|null} [error] PB_Response error
-         * @property {number|null} [time] PB_Response time
-         * @property {number|null} [mills] PB_Response mills
+         * @property {IPB_Time|null} [time] PB_Response time
          */
     
         /**
@@ -1220,19 +1414,11 @@
     
         /**
          * PB_Response time.
-         * @member {number} time
+         * @member {IPB_Time|null|undefined} time
          * @memberof PB_Response
          * @instance
          */
-        PB_Response.prototype.time = 0;
-    
-        /**
-         * PB_Response mills.
-         * @member {number} mills
-         * @memberof PB_Response
-         * @instance
-         */
-        PB_Response.prototype.mills = 0;
+        PB_Response.prototype.time = null;
     
         /**
          * Creates a new PB_Response instance using the specified properties.
@@ -1269,9 +1455,7 @@
             if (message.error != null && message.hasOwnProperty("error"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.error);
             if (message.time != null && message.hasOwnProperty("time"))
-                writer.uint32(/* id 6, wireType 0 =*/48).uint32(message.time);
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                writer.uint32(/* id 7, wireType 5 =*/61).float(message.mills);
+                $root.PB_Time.encode(message.time, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             return writer;
         };
     
@@ -1322,10 +1506,7 @@
                     message.error = reader.int32();
                     break;
                 case 6:
-                    message.time = reader.uint32();
-                    break;
-                case 7:
-                    message.mills = reader.float();
+                    message.time = $root.PB_Time.decode(reader, reader.uint32());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -1406,12 +1587,11 @@
                 case 4:
                     break;
                 }
-            if (message.time != null && message.hasOwnProperty("time"))
-                if (!$util.isInteger(message.time))
-                    return "time: integer expected";
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                if (typeof message.mills !== "number")
-                    return "mills: number expected";
+            if (message.time != null && message.hasOwnProperty("time")) {
+                var error = $root.PB_Time.verify(message.time);
+                if (error)
+                    return "time." + error;
+            }
             return null;
         };
     
@@ -1517,10 +1697,11 @@
                 message.error = 4;
                 break;
             }
-            if (object.time != null)
-                message.time = object.time >>> 0;
-            if (object.mills != null)
-                message.mills = Number(object.mills);
+            if (object.time != null) {
+                if (typeof object.time !== "object")
+                    throw TypeError(".PB_Response.time: object expected");
+                message.time = $root.PB_Time.fromObject(object.time);
+            }
             return message;
         };
     
@@ -1543,8 +1724,7 @@
                 object.success = false;
                 object.ovenState = options.enums === String ? "OFF" : 0;
                 object.error = options.enums === String ? "NONE" : 0;
-                object.time = 0;
-                object.mills = 0;
+                object.time = null;
             }
             if (message.cmdType != null && message.hasOwnProperty("cmdType"))
                 object.cmdType = options.enums === String ? $root.PB_CmdType[message.cmdType] : message.cmdType;
@@ -1557,9 +1737,7 @@
             if (message.error != null && message.hasOwnProperty("error"))
                 object.error = options.enums === String ? $root.PB_ErrorType[message.error] : message.error;
             if (message.time != null && message.hasOwnProperty("time"))
-                object.time = message.time;
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
+                object.time = $root.PB_Time.toObject(message.time, options);
             return object;
         };
     
@@ -1583,8 +1761,7 @@
          * Properties of a PB_SwitchOvenState.
          * @exports IPB_SwitchOvenState
          * @interface IPB_SwitchOvenState
-         * @property {number|null} [time] PB_SwitchOvenState time
-         * @property {number|null} [mills] PB_SwitchOvenState mills
+         * @property {IPB_Time|null} [time] PB_SwitchOvenState time
          * @property {PB_OvenState|null} [ovenState] PB_SwitchOvenState ovenState
          */
     
@@ -1605,19 +1782,11 @@
     
         /**
          * PB_SwitchOvenState time.
-         * @member {number} time
+         * @member {IPB_Time|null|undefined} time
          * @memberof PB_SwitchOvenState
          * @instance
          */
-        PB_SwitchOvenState.prototype.time = 0;
-    
-        /**
-         * PB_SwitchOvenState mills.
-         * @member {number} mills
-         * @memberof PB_SwitchOvenState
-         * @instance
-         */
-        PB_SwitchOvenState.prototype.mills = 0;
+        PB_SwitchOvenState.prototype.time = null;
     
         /**
          * PB_SwitchOvenState ovenState.
@@ -1652,11 +1821,9 @@
             if (!writer)
                 writer = $Writer.create();
             if (message.time != null && message.hasOwnProperty("time"))
-                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.time);
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                writer.uint32(/* id 2, wireType 5 =*/21).float(message.mills);
+                $root.PB_Time.encode(message.time, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             if (message.ovenState != null && message.hasOwnProperty("ovenState"))
-                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.ovenState);
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.ovenState);
             return writer;
         };
     
@@ -1692,12 +1859,9 @@
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.time = reader.uint32();
+                    message.time = $root.PB_Time.decode(reader, reader.uint32());
                     break;
                 case 2:
-                    message.mills = reader.float();
-                    break;
-                case 3:
                     message.ovenState = reader.int32();
                     break;
                 default:
@@ -1735,12 +1899,11 @@
         PB_SwitchOvenState.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.time != null && message.hasOwnProperty("time"))
-                if (!$util.isInteger(message.time))
-                    return "time: integer expected";
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                if (typeof message.mills !== "number")
-                    return "mills: number expected";
+            if (message.time != null && message.hasOwnProperty("time")) {
+                var error = $root.PB_Time.verify(message.time);
+                if (error)
+                    return "time." + error;
+            }
             if (message.ovenState != null && message.hasOwnProperty("ovenState"))
                 switch (message.ovenState) {
                 default:
@@ -1764,10 +1927,11 @@
             if (object instanceof $root.PB_SwitchOvenState)
                 return object;
             var message = new $root.PB_SwitchOvenState();
-            if (object.time != null)
-                message.time = object.time >>> 0;
-            if (object.mills != null)
-                message.mills = Number(object.mills);
+            if (object.time != null) {
+                if (typeof object.time !== "object")
+                    throw TypeError(".PB_SwitchOvenState.time: object expected");
+                message.time = $root.PB_Time.fromObject(object.time);
+            }
             switch (object.ovenState) {
             case "OFF":
             case 0:
@@ -1795,14 +1959,11 @@
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.time = 0;
-                object.mills = 0;
+                object.time = null;
                 object.ovenState = options.enums === String ? "OFF" : 0;
             }
             if (message.time != null && message.hasOwnProperty("time"))
-                object.time = message.time;
-            if (message.mills != null && message.hasOwnProperty("mills"))
-                object.mills = options.json && !isFinite(message.mills) ? String(message.mills) : message.mills;
+                object.time = $root.PB_Time.toObject(message.time, options);
             if (message.ovenState != null && message.hasOwnProperty("ovenState"))
                 object.ovenState = options.enums === String ? $root.PB_OvenState[message.ovenState] : message.ovenState;
             return object;
@@ -1831,8 +1992,9 @@
          * @property {PB_ControlMode|null} [controlMode] PB_ControlData controlMode
          * @property {PB_ControlState|null} [controlState] PB_ControlData controlState
          * @property {boolean|null} [isPaused] PB_ControlData isPaused
-         * @property {number|null} [elapsedTime] PB_ControlData elapsedTime
-         * @property {number|null} [finishTime] PB_ControlData finishTime
+         * @property {IPB_Time|null} [startTime] PB_ControlData startTime
+         * @property {IPB_Time|null} [elapsedTime] PB_ControlData elapsedTime
+         * @property {IPB_Time|null} [duration] PB_ControlData duration
          */
     
         /**
@@ -1875,20 +2037,28 @@
         PB_ControlData.prototype.isPaused = false;
     
         /**
-         * PB_ControlData elapsedTime.
-         * @member {number} elapsedTime
+         * PB_ControlData startTime.
+         * @member {IPB_Time|null|undefined} startTime
          * @memberof PB_ControlData
          * @instance
          */
-        PB_ControlData.prototype.elapsedTime = 0;
+        PB_ControlData.prototype.startTime = null;
     
         /**
-         * PB_ControlData finishTime.
-         * @member {number} finishTime
+         * PB_ControlData elapsedTime.
+         * @member {IPB_Time|null|undefined} elapsedTime
          * @memberof PB_ControlData
          * @instance
          */
-        PB_ControlData.prototype.finishTime = 0;
+        PB_ControlData.prototype.elapsedTime = null;
+    
+        /**
+         * PB_ControlData duration.
+         * @member {IPB_Time|null|undefined} duration
+         * @memberof PB_ControlData
+         * @instance
+         */
+        PB_ControlData.prototype.duration = null;
     
         /**
          * Creates a new PB_ControlData instance using the specified properties.
@@ -1920,10 +2090,12 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.controlState);
             if (message.isPaused != null && message.hasOwnProperty("isPaused"))
                 writer.uint32(/* id 3, wireType 0 =*/24).bool(message.isPaused);
+            if (message.startTime != null && message.hasOwnProperty("startTime"))
+                $root.PB_Time.encode(message.startTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.elapsedTime);
-            if (message.finishTime != null && message.hasOwnProperty("finishTime"))
-                writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.finishTime);
+                $root.PB_Time.encode(message.elapsedTime, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+            if (message.duration != null && message.hasOwnProperty("duration"))
+                $root.PB_Time.encode(message.duration, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             return writer;
         };
     
@@ -1968,10 +2140,13 @@
                     message.isPaused = reader.bool();
                     break;
                 case 4:
-                    message.elapsedTime = reader.uint32();
+                    message.startTime = $root.PB_Time.decode(reader, reader.uint32());
                     break;
                 case 5:
-                    message.finishTime = reader.uint32();
+                    message.elapsedTime = $root.PB_Time.decode(reader, reader.uint32());
+                    break;
+                case 6:
+                    message.duration = $root.PB_Time.decode(reader, reader.uint32());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -2030,12 +2205,21 @@
             if (message.isPaused != null && message.hasOwnProperty("isPaused"))
                 if (typeof message.isPaused !== "boolean")
                     return "isPaused: boolean expected";
-            if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
-                if (!$util.isInteger(message.elapsedTime))
-                    return "elapsedTime: integer expected";
-            if (message.finishTime != null && message.hasOwnProperty("finishTime"))
-                if (!$util.isInteger(message.finishTime))
-                    return "finishTime: integer expected";
+            if (message.startTime != null && message.hasOwnProperty("startTime")) {
+                var error = $root.PB_Time.verify(message.startTime);
+                if (error)
+                    return "startTime." + error;
+            }
+            if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime")) {
+                var error = $root.PB_Time.verify(message.elapsedTime);
+                if (error)
+                    return "elapsedTime." + error;
+            }
+            if (message.duration != null && message.hasOwnProperty("duration")) {
+                var error = $root.PB_Time.verify(message.duration);
+                if (error)
+                    return "duration." + error;
+            }
             return null;
         };
     
@@ -2085,10 +2269,21 @@
             }
             if (object.isPaused != null)
                 message.isPaused = Boolean(object.isPaused);
-            if (object.elapsedTime != null)
-                message.elapsedTime = object.elapsedTime >>> 0;
-            if (object.finishTime != null)
-                message.finishTime = object.finishTime >>> 0;
+            if (object.startTime != null) {
+                if (typeof object.startTime !== "object")
+                    throw TypeError(".PB_ControlData.startTime: object expected");
+                message.startTime = $root.PB_Time.fromObject(object.startTime);
+            }
+            if (object.elapsedTime != null) {
+                if (typeof object.elapsedTime !== "object")
+                    throw TypeError(".PB_ControlData.elapsedTime: object expected");
+                message.elapsedTime = $root.PB_Time.fromObject(object.elapsedTime);
+            }
+            if (object.duration != null) {
+                if (typeof object.duration !== "object")
+                    throw TypeError(".PB_ControlData.duration: object expected");
+                message.duration = $root.PB_Time.fromObject(object.duration);
+            }
             return message;
         };
     
@@ -2109,8 +2304,9 @@
                 object.controlMode = options.enums === String ? "DEFAULT_OFF" : 0;
                 object.controlState = options.enums === String ? "DISABLED" : 0;
                 object.isPaused = false;
-                object.elapsedTime = 0;
-                object.finishTime = 0;
+                object.startTime = null;
+                object.elapsedTime = null;
+                object.duration = null;
             }
             if (message.controlMode != null && message.hasOwnProperty("controlMode"))
                 object.controlMode = options.enums === String ? $root.PB_ControlMode[message.controlMode] : message.controlMode;
@@ -2118,10 +2314,12 @@
                 object.controlState = options.enums === String ? $root.PB_ControlState[message.controlState] : message.controlState;
             if (message.isPaused != null && message.hasOwnProperty("isPaused"))
                 object.isPaused = message.isPaused;
+            if (message.startTime != null && message.hasOwnProperty("startTime"))
+                object.startTime = $root.PB_Time.toObject(message.startTime, options);
             if (message.elapsedTime != null && message.hasOwnProperty("elapsedTime"))
-                object.elapsedTime = message.elapsedTime;
-            if (message.finishTime != null && message.hasOwnProperty("finishTime"))
-                object.finishTime = message.finishTime;
+                object.elapsedTime = $root.PB_Time.toObject(message.elapsedTime, options);
+            if (message.duration != null && message.hasOwnProperty("duration"))
+                object.duration = $root.PB_Time.toObject(message.duration, options);
             return object;
         };
     

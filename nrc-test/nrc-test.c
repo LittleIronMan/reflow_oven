@@ -10,16 +10,16 @@
 void nrc_testAll()
 {
 	// -------------->>>> NRC_getTime Begin <<<<----------------
-	NRC_Time testTime = { 0, 0 }, tmp1 = prevTime;
+	PB_Time testTime = { 0, 0 }, tmp1 = prevTime;
 	uint32_t fakeCurrentTickCount, tmp2 = prevTickCount;
 
-	prevTime = (NRC_Time){ 1570000000, 0 };
+	prevTime = (PB_Time){ 1570000000, 0 };
 	prevTickCount = 3000000;
 	fakeCurrentTickCount = 3141592;
 	NRC_getTime(&testTime, &fakeCurrentTickCount);
 	NRC_AssertTest((testTime.unixSeconds == 1570000141) && (testTime.mills == 592));
 
-	prevTime = (NRC_Time){ 1570000000, 0 };
+	prevTime = (PB_Time){ 1570000000, 0 };
 	prevTickCount = 0xFFFFFFFF; // проверка переполнения счетчика lastTickCount
 	fakeCurrentTickCount = 100200;
 	NRC_getTime(&testTime, &fakeCurrentTickCount);
@@ -38,7 +38,7 @@ void nrc_testAll()
 	NRC_AssertTest( \
 	abs( \
 		Oven_getInterpolatedTempProfileValue(&profile, \
-			0.5f * ((profile.data[idx1].time + profile.data[idx2].time) * 1000) /* середина временного отрезка */ \
+			0.5f * ((profile.data[idx1].time.unixSeconds + profile.data[idx2].time.unixSeconds) * 1000) /* середина временного отрезка */ \
 		) - 0.5f * (profile.data[idx1].temp + profile.data[idx2].temp) /* среднее арифметическое температуры */ \
 	) < 1.0f)
 	TEST_INTERVAL(0, 1);

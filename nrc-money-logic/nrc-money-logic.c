@@ -28,7 +28,7 @@
 
 volatile bool allowSyncTime = true;
 #define kTimeOfBirthOfAuthorThisCode 1571309224
-NRC_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
+PB_Time prevTime = { kTimeOfBirthOfAuthorThisCode, 0 }; // временем по умолчанию будет приблизительное время рождения автора этого кода, а то нуль это как-то скучно
 uint32_t prevTickCount = 0;
 
 TaskHandle_t pidControllerTaskHandle = NULL,
@@ -36,34 +36,17 @@ TaskHandle_t pidControllerTaskHandle = NULL,
 			msgReceiverTaskHandle = NULL,
 			msgSenderTaskHandle = NULL;
 
+#define NRC_NULL_TIME ((PB_Time){0, 0})
+
 #define roomTemp 26.0f // комнатная тепература, ниже неё печка не сможет охладиться
 
-NRC_ControlData cd = {
-	.tempProfile = PB_TempProfile_init_default,
-	.startTime = 0,
+NRC_GlobalData g = {
 	.lastIterationTime = 0,
-	.fullState = {
-		.leadControlMode = PB_ControlMode_DEFAULT_OFF,
-		.ovenState = PB_OvenState_OFF,
-		.constTempValue = roomTemp,
-		.data = {
-			{
-				.controlMode = PB_ControlMode_FOLLOW_TEMP_PROFILE,
-				.controlState = PB_ControlState_DISABLED,
-				.isPaused = false,
-				.elapsedTime = 0,
-				.finishTime = 0
-			},
-			{
-				.controlMode = PB_ControlMode_HOLD_CONST_TEMP,
-				.controlState = PB_ControlState_DISABLED,
-				.isPaused = false,
-				.elapsedTime = 0,
-				.finishTime = 0
-			}
-		}
-	}
+	.fControlDataMutex = NULL
 };
+
+PB_ControlData* automaticModes[] = { &g.fControlData.data[0], &g.fControlData.data[1] };
+#define countAutomaticModes (sizeof(automaticModes)/sizeof(PB_ControlData*))
 
 PID_Data pidData = {
 	.lastProcessValue = 0.0f,
@@ -103,13 +86,14 @@ NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response
 NRC_CREATE_QUEUE(tempMeasureQueue, PB_TempMeasure, 3, PB_MsgType_TEMP_MEASURE, PB_TempMeasure_fields); // очередь измерений температуры для отправки
 NRC_CREATE_QUEUE(switchOvenStateQueue, PB_SwitchOvenState, 2, PB_MsgType_SWITCH_OVEN_STATE, PB_SwitchOvenState_fields); // очередь сообщений об изменении(переключении) состояния печки(вкл/выкл)
 NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPONSE_GET_TEMP_PROFILE, PB_ResponseGetTempProfile_fields);
+NRC_CREATE_QUEUE(fControlDataQueue, PB_FullControlData, 1, PB_MsgType_FULL_CONTROL_DATA, PB_FullControlData_fields);
 
 // массив всех очередей
 NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue };
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
 
 // массив очередей с исходящими данными(при отправке бОльший приоритет имеют те очереди, которые в начале этого массива)
-NRC_Queue *const outgoingQueues[] = { &switchOvenStateQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
+NRC_Queue *const outgoingQueues[] = { &switchOvenStateQueue, &fControlDataQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 //nrc_defineSemaphore(termometerMutex);
@@ -119,7 +103,7 @@ uint32_t timerPeriod = 500 / NRC_TIME_ACCELERATION;
 
 #ifdef NRC_WINDOWS_SIMULATOR
 // некоторые вспомогательные данные для симулятора
-NRC_Time simulator_prevTempMeasureTime = { 0, 0 }; // время предыдущего замера температуры
+PB_Time simulator_prevTempMeasureTime = { 0, 0 }; // время предыдущего замера температуры
 float simulator_prevTemp = -1.0f; // величина предыдущего замера температуры
 float simulator_prevV = 0.0f; // предыдущая скорость изменения температуры(V это velocity, заранее прошу прощения за неясность)
 #endif
@@ -137,7 +121,8 @@ void money_cmdManagerTask(void const *argument)
 	nrcLogD("Start cmdManagerTask");
 	PB_Command cmd;
 	PB_Response response;
-	NRC_Time currentTime;
+	PB_Time currentTime;
+	PB_ControlData *controlData;
 	for (;;) {
 		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
@@ -149,45 +134,52 @@ void money_cmdManagerTask(void const *argument)
 
 		NRC_getTime(&currentTime, NULL);
 
+		xSemaphoreTake(g.fControlDataMutex, portMAX_DELAY);
+
 		switch (cmd.cmdType) {
 		case PB_CmdType_FTP_STOP:
-		case PB_CmdType_FTP_START: {
-			// сброс начальных данных ПИД регулятора
-			if (cmd.cmdType == PB_CmdType_FTP_START) {
-				NRC_getTime(&cd.startTime, NULL);
-				cd.lastIterationTime = cd.startTime;
-				pidData.lastProcessValue = 0.0f;
-				pidData.integralErr = 0.0f;
-				cd.programState = PB_ProgramState_LAUNCHED;
+		case PB_CmdType_FTP_START:
+		case PB_CmdType_FTP_PAUSE:
+		case PB_CmdType_FTP_RESUME: {
+			controlData = &g.fControlData.data[0];
+			switch (cmd.cmdType) {
+				case PB_CmdType_FTP_STOP:
+					Oven_finishControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
+					break;
+				case PB_CmdType_FTP_START:
+					Oven_startControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
+					break;
+				case PB_CmdType_FTP_PAUSE:
+					if (controlData->controlState != PB_ControlState_DISABLED) {
+						controlData->isPaused = true;
+					}
+					break;
+				case PB_CmdType_FTP_RESUME:
+					if (controlData->controlState != PB_ControlState_DISABLED) {
+						controlData->isPaused = false;
+						// при выходе из состояния paused пересчитываем startTime
+						controlData->startTime = NRC_getTimeDiff(&currentTime, &controlData->elapsedTime);
+					}
+					break;
 			}
-			else {
-				Oven_finishHeatingProgram();
-			}
-			response = (PB_Response){
-				.cmdType = cmd.cmdType,
-				.cmdId = cmd.id,
-				.success = true,
-				.controlMode = cd.controlMode,
-				.programState = cd.programState,
-				.ovenState = cd.ovenState,
-				.error = PB_ErrorType_NONE,
-				.time = (cmd.cmdType == PB_CmdType_START ? cd.startTime.unixSeconds : 0),
-				.mills = (cmd.cmdType == PB_CmdType_START ? cd.startTime.mills : 0)
-			};
-			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			PB_FullControlData* response2 = (PB_FullControlData*)fControlDataQueue.dataBuf;
+			*response2 = g.fControlData;
+			bool success = addItemToQueue(&fControlDataQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
 			break;
 		}
 		case PB_CmdType_GET_TEMP_PROFILE: {
 			PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
 			response2->success = true;
-			response2->profile = cd.tempProfile;
+			response2->profile = g.tempProfile;
 			bool success = addItemToQueue(&getProfileQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
 			break;
 		}
 		case PB_CmdType_CLIENT_REQUIRES_RESET: {
-			Oven_finishHeatingProgram();
+			Oven_setState(PB_OvenState_OFF);
+			Oven_finishControlMode(g.fControlData.leadControlMode);
+			Oven_setDefaultFullControlData(&g.fControlData);
 #ifdef NRC_WINDOWS_SIMULATOR
-			simulator_prevTempMeasureTime = (NRC_Time){ 0, 0 };
+			simulator_prevTempMeasureTime = NRC_NULL_TIME;
 			simulator_prevTemp = -1.0f;
 			simulator_prevV = 0.0f;
 #endif
@@ -198,32 +190,21 @@ void money_cmdManagerTask(void const *argument)
 				.cmdType = cmd.cmdType,
 				.cmdId = cmd.id,
 				.success = true,
-				.controlMode = cd.controlMode,
-				.programState = cd.programState,
-				.ovenState = cd.ovenState,
+				.ovenState = g.fControlData.ovenState,
 				.error = PB_ErrorType_NONE,
-				.time = currentTime.unixSeconds,
-				.mills = currentTime.mills
+				.time = currentTime
 			};
 			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			break;
 		}
 		case PB_CmdType_MANUAL_ON:
 		case PB_CmdType_MANUAL_OFF: {
-			cd.controlMode = PB_ControlMode_MANUAL;
 			Oven_setState(cmd.cmdType == PB_CmdType_MANUAL_ON ? PB_OvenState_ON : PB_OvenState_OFF);
-			response = (PB_Response){
-				.cmdType = cmd.cmdType,
-				.cmdId = cmd.id,
-				.success = true,
-				.controlMode = cd.controlMode,
-				.programState = cd.programState,
-				.ovenState = cd.ovenState,
-				.error = PB_ErrorType_NONE,
-				.time = 0,
-				.mills = 0
-			};
-			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			Oven_startControlMode(PB_ControlMode_MANUAL);
+
+			PB_FullControlData* response2 = (PB_FullControlData*)fControlDataQueue.dataBuf;
+			*response2 = g.fControlData;
+			bool success = addItemToQueue(&fControlDataQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
 			break;
 		}
 		default: {
@@ -232,23 +213,24 @@ void money_cmdManagerTask(void const *argument)
 				.cmdType = cmd.cmdType,
 				.cmdId = cmd.id,
 				.success = false,
-				.controlMode = cd.controlMode,
-				.programState = cd.programState,
-				.ovenState = cd.ovenState,
+				.ovenState = g.fControlData.ovenState,
 				.error = PB_ErrorType_UNKNOWN_COMMAND,
-				.time = 0,
-				.mills = 0
+				.time = NRC_NULL_TIME
 			};
 			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
 			break;
 		}
 		}
+
+		xSemaphoreGive(g.fControlDataMutex);
 	}
 }
 
 // в штатном режиме ОС будет просто периодически измерять температуру
 void money_pidControllerTask(void const *argument)
 {
+	static PB_ControlData* data;
+
 	for (;;)
 	{
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -267,26 +249,46 @@ void money_pidControllerTask(void const *argument)
 				nrcLog("Disconnected termocouple");
 			}
 			else {
-				NRC_Time currentTime; NRC_getTime(&currentTime, NULL);
+				PB_Time currentTime; NRC_getTime(&currentTime, NULL);
 
-				if (cd.programState == PB_ProgramState_LAUNCHED) {
-					uint32_t millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &cd.startTime);
-					if (millsSinceStart > cd.tempProfile.data[cd.tempProfile.countPoints - 1].time * 1000) {
-						Oven_finishHeatingProgram();
-						nrcLogD("Heating program finished");
+				xSemaphoreTake(g.fControlDataMutex, portMAX_DELAY);
+
+				switch(g.fControlData.leadControlMode) {
+				case PB_ControlMode_FOLLOW_TEMP_PROFILE: {
+					data = &g.fControlData.data[0];
+					uint32_t millsSinceStart;
+					if (data->isPaused) {
+						millsSinceStart = data->elapsedTime.unixSeconds * 1000 + data->elapsedTime.mills;
 					}
 					else {
-						uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &cd.lastIterationTime);
-						float setpoint = Oven_getInterpolatedTempProfileValue(&cd.tempProfile, millsSinceStart);
+						millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &data->startTime);
+						data->elapsedTime.unixSeconds = millsSinceStart / 1000;
+						data->elapsedTime.mills = millsSinceStart - data->elapsedTime.unixSeconds * 1000;
+					}
+
+					if (millsSinceStart > g.tempProfile.data[g.tempProfile.countPoints - 1].time.unixSeconds * 1000) {
+						Oven_finishControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
+						nrcLogD("Heating program finished");
+					}
+					else if (data->controlState == PB_ControlState_ENABLED) {
+						uint16_t millsSinceLastIteration = NRC_getTimeDiffInMills(&currentTime, &g.lastIterationTime);
+						if (millsSinceLastIteration > 1000) { millsSinceLastIteration = 0; }
+
+						float setpoint = Oven_getInterpolatedTempProfileValue(&g.tempProfile, millsSinceStart);
 						float control = pidController(&pidData, setpoint, temp, millsSinceLastIteration / 1000.0f);
 						Oven_applyControl(control);
 
 						nrcLogD("Time %.2f, Temp %.2f, control %.2f", millsSinceStart / 1000.0f, temp, control);
 					}
+					break;
 				}
-				else {
+				case PB_ControlMode_MANUAL:
+				default:
 					nrcLogD("Temp %.2f", temp);
+					break;
 				}
+
+				xSemaphoreGive(g.fControlDataMutex);
 
 				PB_TempMeasure tempMeasure = { currentTime.unixSeconds, currentTime.mills, temp };
 				addItemToQueue(&tempMeasureQueue, (uint8_t*)&tempMeasure, 1, msgSenderTaskHandle);
@@ -544,7 +546,7 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 	*err = 0;
 	*receivedData = 0;
 
-	NRC_Time currentTime; NRC_getTime(&currentTime, NULL);
+	PB_Time currentTime; NRC_getTime(&currentTime, NULL);
 	float deltaTime = (simulator_prevTempMeasureTime.unixSeconds == 0 ? 0.0f : (NRC_getTimeDiffInMills(&currentTime, &simulator_prevTempMeasureTime) / 1000.0f));
 	simulator_prevTempMeasureTime = currentTime;
 
@@ -553,7 +555,7 @@ float Oven_getTemp(uint16_t* receivedData, uint8_t *err)
 #define dVheating 0.5f // "ускорение" температуры при НАГРЕВАНИИ, т.е. время равное изменению скорости нагревания от 0 до 1 грaдуса в секунду
 #define dVcooling -0.5f // "ускорение" температуры при ОХЛАЖДЕНИИ
 	if (deltaTime != 0.0f) {
-		bool ovenIsHeating = (cd.ovenState == PB_OvenState_ON);
+		bool ovenIsHeating = (g.fControlData.ovenState == PB_OvenState_ON);
 		float V = simulator_prevV; // скорость изменения температуры
 		if (ovenIsHeating) {
 			V = (simulator_prevV + (dVheating * deltaTime));
@@ -604,28 +606,73 @@ void Oven_setState(PB_OvenState newState)
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
 	}
 #endif
-	if (newState != cd.ovenState) {
-		cd.ovenState = newState;
+	if (newState != g.fControlData.ovenState) {
+		g.fControlData.ovenState = newState;
 
 		// в случае изменения состояния печки - отправляем соответствующее сообщение серверу
 		if (msgSenderTaskHandle == NULL) { return; }
 
-		static NRC_Time currentTime;
+		static PB_Time currentTime;
 		NRC_getTime(&currentTime, NULL);
 		static PB_SwitchOvenState newStateMsg;
 		newStateMsg = (PB_SwitchOvenState) {
-			.time = currentTime.unixSeconds,
-			.mills = currentTime.mills,
+			.time = (PB_Time){currentTime.unixSeconds, currentTime.mills},
 			.ovenState = newState
 		};
 		addItemToQueue(&switchOvenStateQueue, (uint8_t*)&newStateMsg, 0, msgSenderTaskHandle);
 	}
 }
 
-void Oven_finishHeatingProgram()
+void Oven_startControlMode(PB_ControlMode controlMode)
+{
+	static PB_ControlData *data;
+	static PB_ControlMode prevEnabledMode;
+	static uint8_t i;
+	prevEnabledMode = g.fControlData.leadControlMode;
+	if (prevEnabledMode != PB_ControlMode_DEFAULT_OFF && prevEnabledMode != PB_ControlMode_MANUAL) {
+		for (i = 0; i < countAutomaticModes; i++) {
+			data = automaticModes[i];
+			if (prevEnabledMode == data->controlMode) {
+				// если до этого была включена какая-то автоматическая программа стабилизации температуры,
+				// то она продолжит выполняться фоном(BACKGROUND_MODE т.е. время для неё продолжить тикать, но печка не будет переключаться)
+				data->controlState = PB_ControlState_BACKGROUND;
+				break;
+			}
+		}
+	}
+	for (i = 0; i < countAutomaticModes; i++) {
+		if (controlMode == automaticModes[i]->controlMode) {
+			data = automaticModes[i];
+			data->controlState = PB_ControlState_ENABLED;
+			data->isPaused = false;
+			NRC_getTime(&data->startTime, NULL);
+			data->elapsedTime = NRC_NULL_TIME;
+			// сброс начальных данных ПИД регулятора
+			g.lastIterationTime = data->startTime;
+			pidData.lastProcessValue = 0.0f;
+			pidData.integralErr = 0.0f;
+			break;
+		}
+	}
+	g.fControlData.leadControlMode = controlMode;
+}
+
+void Oven_finishControlMode(PB_ControlMode controlMode)
 {
 	// TODO: проверить, безопасно ли такое выключение. Могут ли другие задачи/таймеры/перывания это как-то прервать?
-	cd.programState = PB_ProgramState_STOPPED;
+	static PB_ControlData *data;
+	static uint8_t i;
+
+	if (controlMode == g.fControlData.leadControlMode) {
+		g.fControlData.leadControlMode = PB_ControlMode_DEFAULT_OFF;
+	}
+	for (i = 0; i < countAutomaticModes; i++) {
+		data = automaticModes[i];
+		if (controlMode == data->controlMode) {
+			data->controlState = PB_ControlState_DISABLED;
+			break;
+		}
+	}
 	Oven_setState(PB_OvenState_OFF);
 }
 
@@ -649,8 +696,11 @@ void money_init()
 	nrc_semaphoreCreateBinary(TxBufSem);
 	xSemaphoreGive(TxBufSem); // семафор для буфера передачи по умолчанию не занят
 
+	nrc_semaphoreCreateMutex(g.fControlDataMutex);
+
 	// задаем температурный профиль
-	Oven_setDefaultTempProfile(&cd.tempProfile);
+	Oven_setDefaultTempProfile(&g.tempProfile);
+	Oven_setDefaultFullControlData(&g.fControlData);
 
 	nrc_timerCreate(tempMeasureTimer, timerPeriod, pdTRUE, 0, timerFunc);
 	xTimerReset(tempMeasureTimerHandle, 0);
@@ -669,12 +719,9 @@ void money_initTasks()
 		.cmdType = PB_CmdType_HARD_RESET,
 		.cmdId = 0,
 		.success = true,
-		.controlMode = cd.controlMode,
-		.programState = cd.programState,
-		.ovenState = cd.ovenState,
+		.ovenState = g.fControlData.ovenState,
 		.error = PB_ErrorType_NONE,
-		.time = 0,
-		.mills = 0
+		.time = NRC_NULL_TIME
 	};
 	addItemToQueue(&responseQueue, (uint8_t*)&response, 10, msgSenderTaskHandle);
 }
@@ -740,7 +787,7 @@ void popItemFromQueue(NRC_Queue *const queue, uint8_t *resultBuf)
 	xSemaphoreGive(queue->mutex);
 }
 
-void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
+void NRC_getTime(PB_Time *time, uint32_t *argTickCount)
 {
 	static uint32_t tickCount, mills, seconds;
 
@@ -763,9 +810,19 @@ void NRC_getTime(NRC_Time *time, uint32_t *argTickCount)
 }
 
 // возвращает разницу между 2-мя временными метками в миллисекундах
-uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2)
+uint32_t NRC_getTimeDiffInMills(PB_Time* time1, PB_Time* time2)
 {
 	return (time1->unixSeconds - time2->unixSeconds) * 1000 + ((long)time1->mills - time2->mills);
+}
+
+PB_Time NRC_getTimeDiff(PB_Time* time1, PB_Time* time2)
+{
+	PB_Time result = {time1->unixSeconds - time2->unixSeconds, time1->mills - time2->mills};
+	while (result.mills < 0) {
+		result.unixSeconds--;
+		result.mills += 1000;
+	}
+	return result;
 }
 
 void Oven_setDefaultTempProfile(PB_TempProfile *profile)
@@ -782,18 +839,45 @@ void Oven_setDefaultTempProfile(PB_TempProfile *profile)
 	// Итого 3 минуты + остывание(~50 секунд на открытом воздухе)s
 }
 
+void Oven_setDefaultFullControlData(PB_FullControlData *fControlData)
+{
+	*fControlData = (PB_FullControlData) {
+		.leadControlMode = PB_ControlMode_DEFAULT_OFF,
+		.ovenState = PB_OvenState_OFF,
+		.constTempValue = roomTemp,
+		.data = {
+			{
+				.controlMode = PB_ControlMode_FOLLOW_TEMP_PROFILE,
+				.controlState = PB_ControlState_DISABLED,
+				.isPaused = false,
+				.startTime = 0,
+				.elapsedTime = 0,
+				.duration = (PB_Time){ g.tempProfile.data[g.tempProfile.countPoints - 1].time.unixSeconds, 0 }
+			},
+			{
+				.controlMode = PB_ControlMode_HOLD_CONST_TEMP,
+				.controlState = PB_ControlState_DISABLED,
+				.isPaused = false,
+				.startTime = 0,
+				.elapsedTime = 0,
+				.duration = 0
+			}
+		}
+	};
+}
+
 float Oven_getInterpolatedTempProfileValue(PB_TempProfile *tp, uint32_t millsSinceStart /* время в миллисекундах с начала запуска программы */ )
 {
-	if (millsSinceStart > tp->data[tp->countPoints - 1].time * 1000) {
+	if (millsSinceStart > tp->data[tp->countPoints - 1].time.unixSeconds * 1000) {
 		return tp->data[tp->countPoints - 1].temp;
 	}
 	uint8_t i = 1;
 	for (; i < tp->countPoints; i++) {
-		if (tp->data[i].time * 1000 > millsSinceStart) { break; }
+		if (tp->data[i].time.unixSeconds * 1000 > millsSinceStart) { break; }
 	}
 	PB_TempMeasure *A = &(tp->data[i - 1]),
 		*B = &(tp->data[i]);
-	uint32_t A_time = A->time * 1000 + A->mills,
-		B_time = B->time * 1000 + B->mills;
+	uint32_t A_time = A->time.unixSeconds * 1000 + A->time.mills,
+		B_time = B->time.unixSeconds * 1000 + B->time.mills;
 	return (A->temp + ((millsSinceStart - A_time) / ((float)B_time - A_time)) * ((float)B->temp - A->temp));
 }

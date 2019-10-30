@@ -94,19 +94,11 @@ typedef struct {
 } NRC_Queue;
 
 typedef struct {
-	uint32_t unixSeconds; // секунд с начала эпохи(UNIX - время)
-	uint16_t mills; // миллисекунды последней секунды
-} NRC_Time;
-
-typedef struct {
 	PB_TempProfile tempProfile; // идеальный температурный профиль, к которому должна стремиться программа управления печью
-	NRC_Time startTime; // веремя начала программы
-	NRC_Time lastIterationTime; // веремя последней итерации пид регулятора
-	PB_ControlMode controlMode; // режим управления печкой
-	PB_ProgramState programState; // состояние программы управления
-	PB_OvenState ovenState; // состояние самой печки(включена/выключена)
-	PB_FullControlData fullState;
-} NRC_ControlData;
+	PB_Time lastIterationTime; // веремя последней итерации пид регулятора
+	PB_FullControlData fControlData;
+	nrc_defineSemaphore(fControlDataMutex);
+} NRC_GlobalData;
 
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
 						TxBuf; // буфер данных, передаваемых по UART
@@ -125,18 +117,21 @@ void money_initReceiverIRQ(void);
 float Oven_getTemp(uint16_t *receivedData, uint8_t *err);
 void Oven_applyControl(float controlValue);
 void Oven_setState(PB_OvenState newState);
-void Oven_finishHeatingProgram(void);
+void Oven_startControlMode(PB_ControlMode controlMode);
+void Oven_finishControlMode(PB_ControlMode controlMode);
 void Oven_setDefaultTempProfile(PB_TempProfile* profile);
-float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */ );
+void Oven_setDefaultFullControlData(PB_FullControlData* fControlData);
+float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* в миллисекундах */);
 
 void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 
 bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority, xSemaphoreHandle semCounter);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
 
-extern NRC_Time prevTime;
+extern PB_Time prevTime;
 extern uint32_t prevTickCount;
-void NRC_getTime(NRC_Time* time, uint32_t* argTickCount);
-uint32_t NRC_getTimeDiffInMills(NRC_Time* time1, NRC_Time* time2);
+void NRC_getTime(PB_Time* time, uint32_t* argTickCount);
+PB_Time NRC_getTimeDiff(PB_Time* time1, PB_Time* time2);
+uint32_t NRC_getTimeDiffInMills(PB_Time* time1, PB_Time* time2);
 
 #endif // main_logic_h
