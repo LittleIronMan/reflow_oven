@@ -108,12 +108,12 @@ function receiveMsgFromStm32 (data) {
 
 // функция отправки сообщений микроконтроллеру
 var globalCmdId = 0;
-function sendMsgToMCU (msgType, data, priority) {
+function sendMsgToMCU (msgType, cmdData, priority) {
     let payload = null;
     switch(msgType) {
         case pb.PB_MsgType.CMD:
             let cmd = pb.PB_Command.create({
-                cmdType: data.cmdType,
+                ...cmdData,
                 priority: priority,
                 id: globalCmdId
             });
@@ -137,8 +137,8 @@ function sendMsgToMCU (msgType, data, priority) {
     // отправка base64-строки низкоуровневой программе,
     // которая непосредственно шлет данные по UART
     const uartTx = child_process.exec(ProgramTransmitter + ' -s ' + b64payload + ' -t ' + msgType + ' -b');
-    // uartTx.stderr.on('data', function (data) {
-    //     console.log('Transmitter stderr: ' + data);
+    // uartTx.stderr.on('cmdData', function (cmdData) {
+    //     console.log('Transmitter stderr: ' + cmdData);
     // });
     uartTx.on('exit', function (code) {
         if (code !== 0) {
@@ -163,7 +163,7 @@ function startReceiveMsgFromMCU(argSocket_io) {
         // если было получено хоть какое-то сообщение от мк(например холостой замер температуры)
         // и при этом сервер не знает термопрофиля мк, то отправляем запрос на получение термопрофиля
         if (reduxStore.getState().get('tempProfile').length === 0) {
-            sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_TEMP_PROFILE}, 2);
+            sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType: pb.PB_CmdType.GET_ALL_INFO}, 2);
         }
     });
 
@@ -178,15 +178,16 @@ function startReceiveMsgFromMCU(argSocket_io) {
     });
 }
 
-function sendCmdFromClientToMCU(data) {
-    const cmdType = pb.PB_CmdType[data.cmdTypeStr];
+function sendCmdFromClientToMCU(cmdData) {
+    cmdData.cmdType = pb.PB_CmdType[cmdData.cmdTypeStr];
+    delete cmdData.cmdTypeStr;
     let priority = 1;
-    switch(cmdType) {
+    switch(cmdData.cmdType) {
         case pb.PB_CmdType.START: priority = 5; break;
         case pb.PB_CmdType.STOP: priority = 10; break;
         default: break; // priority = 1;
     }
-    sendMsgToMCU(pb.PB_MsgType.CMD, {cmdType}, priority);
+    sendMsgToMCU(pb.PB_MsgType.CMD, cmdData, priority);
 }
 
 module.exports = {sendCmdFromClientToMCU, startReceiveMsgFromMCU};

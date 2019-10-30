@@ -32,23 +32,24 @@ typedef enum _PB_MsgType {
 #define _PB_MsgType_ARRAYSIZE ((PB_MsgType)(PB_MsgType_FULL_CONTROL_DATA+1))
 
 typedef enum _PB_CmdType {
-    PB_CmdType_GET_TEMP_PROFILE = 0,
+    PB_CmdType_GET_ALL_INFO = 0,
     PB_CmdType_GET_STATE = 1,
     PB_CmdType_HARD_RESET = 2,
     PB_CmdType_CLIENT_REQUIRES_RESET = 3,
     PB_CmdType_MANUAL_ON = 4,
     PB_CmdType_MANUAL_OFF = 5,
     PB_CmdType_MANUAL_KEEP_CURRENT = 6,
-    PB_CmdType_FTP_STOP = 7,
-    PB_CmdType_FTP_START = 8,
-    PB_CmdType_FTP_START_BG = 9,
-    PB_CmdType_FTP_SET_TIME = 10,
-    PB_CmdType_FTP_PAUSE = 11,
-    PB_CmdType_FTP_RESUME = 12
+    PB_CmdType_STOP = 7,
+    PB_CmdType_START = 8,
+    PB_CmdType_START_BG = 9,
+    PB_CmdType_SET_TIME = 10,
+    PB_CmdType_PAUSE = 11,
+    PB_CmdType_RESUME = 12,
+    PB_CmdType_SET_CONST_TEMP = 13
 } PB_CmdType;
-#define _PB_CmdType_MIN PB_CmdType_GET_TEMP_PROFILE
-#define _PB_CmdType_MAX PB_CmdType_FTP_RESUME
-#define _PB_CmdType_ARRAYSIZE ((PB_CmdType)(PB_CmdType_FTP_RESUME+1))
+#define _PB_CmdType_MIN PB_CmdType_GET_ALL_INFO
+#define _PB_CmdType_MAX PB_CmdType_SET_CONST_TEMP
+#define _PB_CmdType_ARRAYSIZE ((PB_CmdType)(PB_CmdType_SET_CONST_TEMP+1))
 
 typedef enum _PB_OvenState {
     PB_OvenState_OFF = 0,
@@ -93,6 +94,7 @@ typedef struct _PB_Command {
     PB_CmdType cmdType;
     uint32_t id;
     uint8_t priority;
+    uint8_t ACM_idx;
     uint32_t value;
 /* @@protoc_insertion_point(struct:PB_Command) */
 } PB_Command;
@@ -158,7 +160,7 @@ typedef struct _PB_ResponseGetTempProfile {
 /* Default values for struct fields */
 
 /* Initializer values for message structs */
-#define PB_Command_init_default                  {_PB_CmdType_MIN, 0, 0, 0}
+#define PB_Command_init_default                  {_PB_CmdType_MIN, 0, 0, 0, 0}
 #define PB_Time_init_default                     {0, 0}
 #define PB_TempMeasure_init_default              {PB_Time_init_default, 0}
 #define PB_TempProfile_init_default              {0, {PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default, PB_TempMeasure_init_default}}
@@ -167,7 +169,7 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_SwitchOvenState_init_default          {PB_Time_init_default, _PB_OvenState_MIN}
 #define PB_ControlData_init_default              {_PB_ControlMode_MIN, _PB_ControlState_MIN, 0, PB_Time_init_default, PB_Time_init_default, PB_Time_init_default}
 #define PB_FullControlData_init_default          {_PB_ControlMode_MIN, _PB_OvenState_MIN, 0, {PB_ControlData_init_default, PB_ControlData_init_default}}
-#define PB_Command_init_zero                     {_PB_CmdType_MIN, 0, 0, 0}
+#define PB_Command_init_zero                     {_PB_CmdType_MIN, 0, 0, 0, 0}
 #define PB_Time_init_zero                        {0, 0}
 #define PB_TempMeasure_init_zero                 {PB_Time_init_zero, 0}
 #define PB_TempProfile_init_zero                 {0, {PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero, PB_TempMeasure_init_zero}}
@@ -181,7 +183,8 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_Command_cmdType_tag                   1
 #define PB_Command_id_tag                        2
 #define PB_Command_priority_tag                  3
-#define PB_Command_value_tag                     4
+#define PB_Command_ACM_idx_tag                   4
+#define PB_Command_value_tag                     5
 #define PB_Time_unixSeconds_tag                  1
 #define PB_Time_mills_tag                        2
 #define PB_ControlData_controlMode_tag           1
@@ -210,7 +213,7 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_ResponseGetTempProfile_profile_tag    2
 
 /* Struct field encoding specification for nanopb */
-extern const pb_field_t PB_Command_fields[5];
+extern const pb_field_t PB_Command_fields[6];
 extern const pb_field_t PB_Time_fields[3];
 extern const pb_field_t PB_TempMeasure_fields[3];
 extern const pb_field_t PB_TempProfile_fields[3];
@@ -221,7 +224,7 @@ extern const pb_field_t PB_ControlData_fields[7];
 extern const pb_field_t PB_FullControlData_fields[5];
 
 /* Maximum encoded size of messages (where known) */
-#define PB_Command_size                          20
+#define PB_Command_size                          26
 #define PB_Time_size                             11
 #define PB_TempMeasure_size                      18
 #define PB_TempProfile_size                      206

@@ -115,6 +115,13 @@ void timerFunc(xTimerHandle xTimer) {
 	// xTimerChangePeriod(xTimer, uiAutoReloadTimerPeriod, 0);
 }
 
+void money_sendFullControlData()
+{
+	PB_FullControlData* response = (PB_FullControlData*)fControlDataQueue.dataBuf;
+	*response = g.fControlData;
+	bool success = addItemToQueue(&fControlDataQueue, (uint8_t*)response, 2, msgSenderTaskHandle);
+}
+
 // обработчик команд
 void money_cmdManagerTask(void const *argument)
 {
@@ -137,37 +144,53 @@ void money_cmdManagerTask(void const *argument)
 		xSemaphoreTake(g.fControlDataMutex, portMAX_DELAY);
 
 		switch (cmd.cmdType) {
-		case PB_CmdType_FTP_STOP:
-		case PB_CmdType_FTP_START:
-		case PB_CmdType_FTP_PAUSE:
-		case PB_CmdType_FTP_RESUME: {
-			controlData = &g.fControlData.data[0];
+		case PB_CmdType_STOP:
+		case PB_CmdType_START_BG:
+		case PB_CmdType_START:
+		case PB_CmdType_PAUSE:
+		case PB_CmdType_RESUME:
+		case PB_CmdType_SET_TIME: {
+			controlData = &g.fControlData.data[cmd.ACM_idx];
 			switch (cmd.cmdType) {
-				case PB_CmdType_FTP_STOP:
+				case PB_CmdType_STOP:
 					Oven_finishControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
 					break;
-				case PB_CmdType_FTP_START:
-					Oven_startControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
+				case PB_CmdType_START_BG:
+					Oven_startControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE, true);
 					break;
-				case PB_CmdType_FTP_PAUSE:
+				case PB_CmdType_START:
+					Oven_startControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE, false);
+					break;
+				case PB_CmdType_PAUSE:
 					if (controlData->controlState != PB_ControlState_DISABLED) {
 						controlData->isPaused = true;
 					}
 					break;
-				case PB_CmdType_FTP_RESUME:
+				case PB_CmdType_RESUME:
 					if (controlData->controlState != PB_ControlState_DISABLED) {
 						controlData->isPaused = false;
 						// при выходе из состояния paused пересчитываем startTime
 						controlData->startTime = NRC_getTimeDiff(&currentTime, &controlData->elapsedTime);
 					}
 					break;
+				case PB_CmdType_SET_TIME:
+					if (controlData->controlState != PB_ControlState_DISABLED) {
+						controlData->elapsedTime = (PB_Time){cmd.value, controlData->startTime.mills};
+					}
+					break;
 			}
-			PB_FullControlData* response2 = (PB_FullControlData*)fControlDataQueue.dataBuf;
-			*response2 = g.fControlData;
-			bool success = addItemToQueue(&fControlDataQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
+			money_sendFullControlData();
 			break;
 		}
-		case PB_CmdType_GET_TEMP_PROFILE: {
+		case PB_CmdType_SET_CONST_TEMP:
+			g.fControlData.constTempValue = cmd.value;
+			money_sendFullControlData();
+
+		case PB_CmdType_GET_ALL_INFO: {
+			// отправляем данные о всех видах управления
+			money_sendFullControlData();
+
+			// отправляем термопрофиль
 			PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
 			response2->success = true;
 			response2->profile = g.tempProfile;
@@ -200,11 +223,9 @@ void money_cmdManagerTask(void const *argument)
 		case PB_CmdType_MANUAL_ON:
 		case PB_CmdType_MANUAL_OFF: {
 			Oven_setState(cmd.cmdType == PB_CmdType_MANUAL_ON ? PB_OvenState_ON : PB_OvenState_OFF);
-			Oven_startControlMode(PB_ControlMode_MANUAL);
+			Oven_startControlMode(PB_ControlMode_MANUAL, false);
 
-			PB_FullControlData* response2 = (PB_FullControlData*)fControlDataQueue.dataBuf;
-			*response2 = g.fControlData;
-			bool success = addItemToQueue(&fControlDataQueue, (uint8_t*)response2, 2, msgSenderTaskHandle);
+			money_sendFullControlData();
 			break;
 		}
 		default: {
@@ -268,6 +289,7 @@ void money_pidControllerTask(void const *argument)
 
 					if (millsSinceStart > g.tempProfile.data[g.tempProfile.countPoints - 1].time.unixSeconds * 1000) {
 						Oven_finishControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
+						money_sendFullControlData();
 						nrcLogD("Heating program finished");
 					}
 					else if (data->controlState == PB_ControlState_ENABLED) {
@@ -623,13 +645,13 @@ void Oven_setState(PB_OvenState newState)
 	}
 }
 
-void Oven_startControlMode(PB_ControlMode controlMode)
+void Oven_startControlMode(PB_ControlMode controlMode, bool inBackground)
 {
 	static PB_ControlData *data;
 	static PB_ControlMode prevEnabledMode;
 	static uint8_t i;
 	prevEnabledMode = g.fControlData.leadControlMode;
-	if (prevEnabledMode != PB_ControlMode_DEFAULT_OFF && prevEnabledMode != PB_ControlMode_MANUAL) {
+	if (!inBackground && prevEnabledMode != PB_ControlMode_DEFAULT_OFF && prevEnabledMode != PB_ControlMode_MANUAL) {
 		for (i = 0; i < countAutomaticModes; i++) {
 			data = automaticModes[i];
 			if (prevEnabledMode == data->controlMode) {
@@ -643,18 +665,26 @@ void Oven_startControlMode(PB_ControlMode controlMode)
 	for (i = 0; i < countAutomaticModes; i++) {
 		if (controlMode == automaticModes[i]->controlMode) {
 			data = automaticModes[i];
-			data->controlState = PB_ControlState_ENABLED;
-			data->isPaused = false;
-			NRC_getTime(&data->startTime, NULL);
-			data->elapsedTime = NRC_NULL_TIME;
-			// сброс начальных данных ПИД регулятора
-			g.lastIterationTime = data->startTime;
-			pidData.lastProcessValue = 0.0f;
-			pidData.integralErr = 0.0f;
+			if (data->controlState == PB_ControlState_DISABLED) {
+				data->isPaused = false;
+				NRC_getTime(&data->startTime, NULL);
+				data->elapsedTime = NRC_NULL_TIME;
+				// сброс начальных данных ПИД регулятора
+				g.lastIterationTime = data->startTime;
+				pidData.lastProcessValue = 0.0f;
+				pidData.integralErr = 0.0f;
+			}
+			data->controlState = inBackground ? PB_ControlState_BACKGROUND : PB_ControlState_ENABLED;
 			break;
 		}
 	}
-	g.fControlData.leadControlMode = controlMode;
+	if (inBackground && prevEnabledMode == controlMode) {
+		// если текущее активное управление переводим в фоновый режим, то печку нужно выключить
+		Oven_setState(PB_OvenState_OFF);
+	}
+	else {
+		g.fControlData.leadControlMode = controlMode;
+	}
 }
 
 void Oven_finishControlMode(PB_ControlMode controlMode)

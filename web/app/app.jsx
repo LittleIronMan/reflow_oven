@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom';
-import MainPage from 'pages/main/PageMain.jsx';
+import {PageMain, newTempMeasureEventListener} from 'pages/main/PageMain.jsx';
 import 'styles/main.scss';
 
 import {Provider} from 'react-redux';
@@ -22,11 +22,14 @@ socket.on('server sync all', function(newStore) {
 // сервер требует обновить БД
 socket.on('server sync update', function(action) {
     reduxStore.dispatch(action);
+    if (action.type === 'PB_TempMeasure') {
+        newTempMeasureEventListener.emit(action.data.time);
+    }
 });
 
 ReactDOM.render(
     <Provider store={reduxStore}>
-        <MainPage/>
+        <PageMain/>
     </Provider>,
     document.getElementById('app')
 );

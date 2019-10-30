@@ -50,35 +50,37 @@
      * PB_CmdType enum.
      * @exports PB_CmdType
      * @enum {string}
-     * @property {number} GET_TEMP_PROFILE=0 GET_TEMP_PROFILE value
+     * @property {number} GET_ALL_INFO=0 GET_ALL_INFO value
      * @property {number} GET_STATE=1 GET_STATE value
      * @property {number} HARD_RESET=2 HARD_RESET value
      * @property {number} CLIENT_REQUIRES_RESET=3 CLIENT_REQUIRES_RESET value
      * @property {number} MANUAL_ON=4 MANUAL_ON value
      * @property {number} MANUAL_OFF=5 MANUAL_OFF value
      * @property {number} MANUAL_KEEP_CURRENT=6 MANUAL_KEEP_CURRENT value
-     * @property {number} FTP_STOP=7 FTP_STOP value
-     * @property {number} FTP_START=8 FTP_START value
-     * @property {number} FTP_START_BG=9 FTP_START_BG value
-     * @property {number} FTP_SET_TIME=10 FTP_SET_TIME value
-     * @property {number} FTP_PAUSE=11 FTP_PAUSE value
-     * @property {number} FTP_RESUME=12 FTP_RESUME value
+     * @property {number} STOP=7 STOP value
+     * @property {number} START=8 START value
+     * @property {number} START_BG=9 START_BG value
+     * @property {number} SET_TIME=10 SET_TIME value
+     * @property {number} PAUSE=11 PAUSE value
+     * @property {number} RESUME=12 RESUME value
+     * @property {number} SET_CONST_TEMP=13 SET_CONST_TEMP value
      */
     $root.PB_CmdType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "GET_TEMP_PROFILE"] = 0;
+        values[valuesById[0] = "GET_ALL_INFO"] = 0;
         values[valuesById[1] = "GET_STATE"] = 1;
         values[valuesById[2] = "HARD_RESET"] = 2;
         values[valuesById[3] = "CLIENT_REQUIRES_RESET"] = 3;
         values[valuesById[4] = "MANUAL_ON"] = 4;
         values[valuesById[5] = "MANUAL_OFF"] = 5;
         values[valuesById[6] = "MANUAL_KEEP_CURRENT"] = 6;
-        values[valuesById[7] = "FTP_STOP"] = 7;
-        values[valuesById[8] = "FTP_START"] = 8;
-        values[valuesById[9] = "FTP_START_BG"] = 9;
-        values[valuesById[10] = "FTP_SET_TIME"] = 10;
-        values[valuesById[11] = "FTP_PAUSE"] = 11;
-        values[valuesById[12] = "FTP_RESUME"] = 12;
+        values[valuesById[7] = "STOP"] = 7;
+        values[valuesById[8] = "START"] = 8;
+        values[valuesById[9] = "START_BG"] = 9;
+        values[valuesById[10] = "SET_TIME"] = 10;
+        values[valuesById[11] = "PAUSE"] = 11;
+        values[valuesById[12] = "RESUME"] = 12;
+        values[valuesById[13] = "SET_CONST_TEMP"] = 13;
         return values;
     })();
     
@@ -91,6 +93,7 @@
          * @property {PB_CmdType|null} [cmdType] PB_Command cmdType
          * @property {number|null} [id] PB_Command id
          * @property {number|null} [priority] PB_Command priority
+         * @property {number|null} [ACMIdx] PB_Command ACMIdx
          * @property {number|null} [value] PB_Command value
          */
     
@@ -134,6 +137,14 @@
         PB_Command.prototype.priority = 0;
     
         /**
+         * PB_Command ACMIdx.
+         * @member {number} ACMIdx
+         * @memberof PB_Command
+         * @instance
+         */
+        PB_Command.prototype.ACMIdx = 0;
+    
+        /**
          * PB_Command value.
          * @member {number} value
          * @memberof PB_Command
@@ -171,8 +182,10 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.id);
             if (message.priority != null && message.hasOwnProperty("priority"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.priority);
+            if (message.ACMIdx != null && message.hasOwnProperty("ACMIdx"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.ACMIdx);
             if (message.value != null && message.hasOwnProperty("value"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.value);
+                writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.value);
             return writer;
         };
     
@@ -217,6 +230,9 @@
                     message.priority = reader.uint32();
                     break;
                 case 4:
+                    message.ACMIdx = reader.uint32();
+                    break;
+                case 5:
                     message.value = reader.uint32();
                     break;
                 default:
@@ -271,6 +287,7 @@
                 case 10:
                 case 11:
                 case 12:
+                case 13:
                     break;
                 }
             if (message.id != null && message.hasOwnProperty("id"))
@@ -279,6 +296,9 @@
             if (message.priority != null && message.hasOwnProperty("priority"))
                 if (!$util.isInteger(message.priority))
                     return "priority: integer expected";
+            if (message.ACMIdx != null && message.hasOwnProperty("ACMIdx"))
+                if (!$util.isInteger(message.ACMIdx))
+                    return "ACMIdx: integer expected";
             if (message.value != null && message.hasOwnProperty("value"))
                 if (!$util.isInteger(message.value))
                     return "value: integer expected";
@@ -298,7 +318,7 @@
                 return object;
             var message = new $root.PB_Command();
             switch (object.cmdType) {
-            case "GET_TEMP_PROFILE":
+            case "GET_ALL_INFO":
             case 0:
                 message.cmdType = 0;
                 break;
@@ -326,35 +346,41 @@
             case 6:
                 message.cmdType = 6;
                 break;
-            case "FTP_STOP":
+            case "STOP":
             case 7:
                 message.cmdType = 7;
                 break;
-            case "FTP_START":
+            case "START":
             case 8:
                 message.cmdType = 8;
                 break;
-            case "FTP_START_BG":
+            case "START_BG":
             case 9:
                 message.cmdType = 9;
                 break;
-            case "FTP_SET_TIME":
+            case "SET_TIME":
             case 10:
                 message.cmdType = 10;
                 break;
-            case "FTP_PAUSE":
+            case "PAUSE":
             case 11:
                 message.cmdType = 11;
                 break;
-            case "FTP_RESUME":
+            case "RESUME":
             case 12:
                 message.cmdType = 12;
+                break;
+            case "SET_CONST_TEMP":
+            case 13:
+                message.cmdType = 13;
                 break;
             }
             if (object.id != null)
                 message.id = object.id >>> 0;
             if (object.priority != null)
                 message.priority = object.priority >>> 0;
+            if (object.ACMIdx != null)
+                message.ACMIdx = object.ACMIdx >>> 0;
             if (object.value != null)
                 message.value = object.value >>> 0;
             return message;
@@ -374,9 +400,10 @@
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.cmdType = options.enums === String ? "GET_TEMP_PROFILE" : 0;
+                object.cmdType = options.enums === String ? "GET_ALL_INFO" : 0;
                 object.id = 0;
                 object.priority = 0;
+                object.ACMIdx = 0;
                 object.value = 0;
             }
             if (message.cmdType != null && message.hasOwnProperty("cmdType"))
@@ -385,6 +412,8 @@
                 object.id = message.id;
             if (message.priority != null && message.hasOwnProperty("priority"))
                 object.priority = message.priority;
+            if (message.ACMIdx != null && message.hasOwnProperty("ACMIdx"))
+                object.ACMIdx = message.ACMIdx;
             if (message.value != null && message.hasOwnProperty("value"))
                 object.value = message.value;
             return object;
@@ -1560,6 +1589,7 @@
                 case 10:
                 case 11:
                 case 12:
+                case 13:
                     break;
                 }
             if (message.cmdId != null && message.hasOwnProperty("cmdId"))
@@ -1608,7 +1638,7 @@
                 return object;
             var message = new $root.PB_Response();
             switch (object.cmdType) {
-            case "GET_TEMP_PROFILE":
+            case "GET_ALL_INFO":
             case 0:
                 message.cmdType = 0;
                 break;
@@ -1636,29 +1666,33 @@
             case 6:
                 message.cmdType = 6;
                 break;
-            case "FTP_STOP":
+            case "STOP":
             case 7:
                 message.cmdType = 7;
                 break;
-            case "FTP_START":
+            case "START":
             case 8:
                 message.cmdType = 8;
                 break;
-            case "FTP_START_BG":
+            case "START_BG":
             case 9:
                 message.cmdType = 9;
                 break;
-            case "FTP_SET_TIME":
+            case "SET_TIME":
             case 10:
                 message.cmdType = 10;
                 break;
-            case "FTP_PAUSE":
+            case "PAUSE":
             case 11:
                 message.cmdType = 11;
                 break;
-            case "FTP_RESUME":
+            case "RESUME":
             case 12:
                 message.cmdType = 12;
+                break;
+            case "SET_CONST_TEMP":
+            case 13:
+                message.cmdType = 13;
                 break;
             }
             if (object.cmdId != null)
@@ -1719,7 +1753,7 @@
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.cmdType = options.enums === String ? "GET_TEMP_PROFILE" : 0;
+                object.cmdType = options.enums === String ? "GET_ALL_INFO" : 0;
                 object.cmdId = 0;
                 object.success = false;
                 object.ovenState = options.enums === String ? "OFF" : 0;

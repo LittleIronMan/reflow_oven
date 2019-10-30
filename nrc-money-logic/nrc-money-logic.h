@@ -3,6 +3,7 @@
 
 #include "FreeRTOS.h"
 #include "semphr.h"
+#include "task.h"
 #include "reflow_oven.pb.h"
 
 #define NRC_MAX(x,y) ((x) > (y) ? (x) : (y))
@@ -106,9 +107,9 @@ extern NrcUartBufAlpha dmaRxBuf; // циклический буфер прини
 
 void money_init(void);
 void money_initTasks(void);
+void money_sendFullControlData(void);
 void money_cmdManagerTask(void const* argument);
 void money_pidControllerTask(void const *argument);
-void money_defaultTask(void const *argument);
 void money_msgReceiverTask(void const *argument);
 void money_msgSenderTask(void const *argument);
 // платформозависимые функции, которые должны быть определены по-разному для stm32 и для windows
@@ -117,7 +118,7 @@ void money_initReceiverIRQ(void);
 float Oven_getTemp(uint16_t *receivedData, uint8_t *err);
 void Oven_applyControl(float controlValue);
 void Oven_setState(PB_OvenState newState);
-void Oven_startControlMode(PB_ControlMode controlMode);
+void Oven_startControlMode(PB_ControlMode controlMode, bool inBackground);
 void Oven_finishControlMode(PB_ControlMode controlMode);
 void Oven_setDefaultTempProfile(PB_TempProfile* profile);
 void Oven_setDefaultFullControlData(PB_FullControlData* fControlData);
@@ -125,7 +126,7 @@ float Oven_getInterpolatedTempProfileValue(PB_TempProfile* tp, uint32_t time /* 
 
 void NRC_UART_RxEvent(NRC_UART_EventType event, uint16_t curCNDTR);
 
-bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority, xSemaphoreHandle semCounter);
+bool addItemToQueue(NRC_Queue* queue, uint8_t* newData, uint8_t newPriority, TaskHandle_t taskToNotify);
 void popItemFromQueue(NRC_Queue* queue, uint8_t* resultBuf);
 
 extern PB_Time prevTime;

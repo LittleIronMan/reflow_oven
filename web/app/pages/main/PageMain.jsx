@@ -5,6 +5,21 @@ import {connect} from 'react-redux';
 //import {actions} from '../../../actions.js';
 import reduxStore from'../../../store.js';
 
+var newTempMeasureEventListener = {
+    lastId: 0,
+    subscribers: {},
+    subscribe: function(callback) {
+        const id = this.lastId; this.lastId++;
+        this.subscribers[id] = callback;
+        return () => {delete this.subscribers[id];}
+    },
+    emit: function(lastTime) {
+        Object.keys(this.subscribers).forEach((key) => {
+            this.subscribers[key](lastTime);
+        });
+    }
+};
+
 class TempMonitor extends Component {
     constructor(props) {
         super(props);
@@ -27,11 +42,7 @@ class TempMonitor extends Component {
                 </tr>
                 <tr>
                     <td className={style.label}>control mode</td>
-                    <td className={style.value}>{this.props.controlMode}</td>
-                </tr>
-                <tr>
-                    <td className={style.label}>program state</td>
-                    <td className={style.value}>{this.props.programState}</td>
+                    <td className={style.value}>{this.props.leadControlMode}</td>
                 </tr>
             </tbody></table>
         </div>;
@@ -41,149 +52,177 @@ const TempMonitorRedux = connect((state, ownProps) => {
     let arr = state.get('realPoints');
     return {
         currentTemp: (arr.length > 0 ? arr[arr.length - 1].temp : 0),
-        programState: state.get('programState'),
-        ovenState: state.get('ovenState'),
-        controlMode: state.get('controlMode')
+        ovenState: state.get('fControlData').ovenState,
+        leadControlMode: state.get('fControlData').leadControlMode
     }
 })(TempMonitor);
+
+function sendCommand(cmd, ACM_idx=null, value=null) {
+    console.log('Send command ', cmd);
+    socket.emit('client cmd', {
+        cmdTypeStr: cmd,
+        ACM_idx: ACM_idx,
+        value: value
+    });
+}
+
+class ManualControlWidget extends Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        return <div className={style.selectable}>
+            <table><tbody>
+                <tr>
+                    <td colSpan="3">
+                        manual control
+                    </td>
+                </tr>
+
+                {/*кнопки для ручного управления*/}
+                <tr>
+                    <td>
+                        <button style={{backgroundColor: "#6bd8ff"}}
+                                onClick={() => sendCommand('MANUAL_OFF')}>
+                            turn off
+                        </button>
+                    </td>
+                    <td>
+                        <button style={{backgroundColor: "rgba(255,16,10,0.38)"}}
+                                onClick={() => sendCommand('MANUAL_KEEP_CURRENT')}>
+                            keep current
+                        </button>
+                    </td>
+                    <td>
+                        <button style={{backgroundColor: "#ff573f"}}
+                                onClick={() => sendCommand('MANUAL_ON')}>
+                            turn on
+                        </button>
+                    </td>
+                </tr>
+            </tbody></table>
+        </div>
+    }
+}
+const ManualControlWidgetRedux = connect()(ManualControlWidget);
+
+function timeValueToClockView(time) {
+    return `${Math.floor(time / 60)}:${Math.floor(time % 60)}`;
+}
+
+class AutomaticControlWidget extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            elapsedTime: props.elapsedTime
+        };
+        this.timeSliderPressed = false;
+    }
+    componentDidMount() {
+        this.unsubscribe = newTempMeasureEventListener.subscribe((lastTempMeasureTime) => {
+            if (this.props.controlState !== 'DISABLED' && !this.props.isPaused && !this.timeSliderPressed) {
+                this.setState({elapsedTime: lastTempMeasureTime - this.props.startTime});
+            }
+        });
+    }
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
+    render() {
+        return <div className={style.selectable}>
+            <table><tbody>
+                <tr>
+                    <td colSpan="3">
+                        {this.props.title}
+                    </td>
+                </tr>
+
+                {/*кнопки управления процесса нагревания с термопрофилем*/}
+                <tr>
+                    <td>
+                        <button className={style.x2}
+                                style={{backgroundColor: "#ff7474"}}
+                                onClick={() => sendCommand('STOP', this.props.ACM_idx)}>
+                            stop
+                        </button>
+                    </td>
+                    <td>
+                        <button className={style.x2}
+                                style={{backgroundColor: "rgba(116,255,116,0.53)"}}
+                                onClick={() => sendCommand('START_BG', this.props.ACM_idx)}>
+                            run in background
+                        </button>
+                    </td>
+                    <td>
+                        <button className={style.x2}
+                                style={{backgroundColor: "#74ff74"}}
+                                onClick={() => sendCommand('START', this.props.ACM_idx)}>
+                            run
+                        </button>
+                    </td>
+                </tr>
+
+                {/*кнопки управления ВРЕМЕНЕМ процесса нагревания с термопрофилем*/}
+                <tr>
+                    <td>
+                        {Math.round((this.props.duration !== 0 ? (this.state.elapsedTime / this.props.duration) : 0) * 100)}%
+                    </td>
+                    <td>
+                        {timeValueToClockView(this.state.elapsedTime)}/{timeValueToClockView(this.props.duration)}
+                    </td>
+                    <td>
+                        <button onClick={() => sendCommand(this.props.isPaused ? 'RESUME' : 'PAUSE', this.props.ACM_idx)}>
+                            {this.props.isPaused ? 'resume' : 'pause'}
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colSpan="3">
+                        <input className={style.processSlider}
+                               type="range"
+                               min="0"
+                               max={this.props.duration}
+                               value={this.state.elapsedTime}
+                               onChange={()=>{
+                                   if (this.props.controlState !== 'DISABLED') {
+                                       this.setState({elapsedTime: event.target.value});
+                                   }
+                               }}
+                               onMouseDown={()=>{
+                                   this.timeSliderPressed = true;
+                               }}
+                               onMouseUp={()=>{
+                                   this.timeSliderPressed = false;
+                                   sendCommand('SET_TIME', this.props.ACM_idx, this.state.elapsedTime);
+                               }}
+                        />
+                    </td>
+                </tr>
+            </tbody></table>
+        </div>
+    }
+}
+const AutomaticControlWidgetRedux = connect((state, ownProps) => {
+    return {
+        ...state.get('fControlData').data[ownProps.ACM_idx],
+    }
+})(AutomaticControlWidget);
 
 class ControlButtons extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            processPercent: props.processPercent
-        };
     }
-    sendCommand = (cmd, value=null) => {
-        socket.emit('client cmd', {
-            cmdTypeStr: cmd,
-            cmdValue: value
-        });
-    };
     render() {
         return <div className={'col-md-6 col-12 ' + style.controlButtons}>
-            <div className={style.selectable}>
-                <table className={style.manualControl}><tbody>
-                    <tr>
-                        <td colSpan="3">
-                            manual control
-                        </td>
-                    </tr>
+            <ManualControlWidgetRedux title='Manual control'/>
+            <AutomaticControlWidgetRedux title='Follow temp profile' ACM_idx={0}/>
+            <AutomaticControlWidgetRedux title='Hold const temp' ACM_idx={1}/>
 
-                    {/*кнопки для ручного управления*/}
-                    <tr>
-                        <td>
-                            <button style={{backgroundColor: "#6bd8ff"}}
-                                    onClick={() => this.sendCommand('MANUAL_OFF')}>
-                                turn off
-                            </button>
-                        </td>
-                        <td>
-                            <button style={{backgroundColor: "rgba(255,16,10,0.38)"}}
-                                    onClick={() => this.sendCommand('MANUAL_KEEP_CURRENT')}>
-                                keep current
-                            </button>
-                        </td>
-                        <td>
-                            <button style={{backgroundColor: "#ff573f"}}
-                                    onClick={() => this.sendCommand('MANUAL_ON')}>
-                                turn on
-                            </button>
-                        </td>
-                    </tr>
-                </tbody></table>
-            </div>
-            <div className={style.selectable}>
-                <table className={style.automaticControl}><tbody>
-                    <tr>
-                        <td colSpan="3">
-                            follow temp profile
-                        </td>
-                    </tr>
-
-                    {/*кнопки управления процесса нагревания с термопрофилем*/}
-                    <tr>
-                        <td>
-                            <button className={style.x2}
-                                    style={{backgroundColor: "#ff7474"}}
-                                    onClick={() => this.sendCommand('FTP_STOP')}>
-                                stop
-                            </button>
-                        </td>
-                        <td>
-                            <button className={style.x2}
-                                    style={{backgroundColor: "rgba(116,255,116,0.53)"}}
-                                    onClick={() => this.sendCommand('FTP_START_BG')}>
-                                run in background
-                            </button>
-                        </td>
-                        <td>
-                            <button className={style.x2}
-                                    style={{backgroundColor: "#74ff74"}}
-                                    onClick={() => this.sendCommand('FTP_START')}>
-                                run
-                            </button>
-                        </td>
-                    </tr>
-
-                    {/*кнопки управления ВРЕМЕНЕМ процесса нагревания с термопрофилем*/}
-                    <tr>
-                        <td>
-                            {(this.props.finishTime !== 0 ? (this.state.elapsedTime / this.props.finishTime) : 0) * 100}%
-                        </td>
-                        <td>
-                            {this.state.elapsedTime / 60}:{this.state.elapsedTime % 60}/{this.props.finishTime / 60}:{this.props.finishTime % 60}
-                        </td>
-                        <td>
-                            <button onClick={() => this.sendCommand(this.props.isPaused ? 'FTP_RESUME' : 'FTP_PAUSE')}>
-                                {this.props.isPaused ? 'resume' : 'pause'}
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colSpan="3">
-                            <input className={style.processSlider}
-                                   type="range"
-                                   min="0"
-                                   max={this.props.finishTime}
-                                   value={this.state.elapsedTime}
-                                   onChange={()=>{
-                                       this.setState({elapsedTime: event.target.value});
-                                   }}
-                                   onMouseUp={()=>{
-                                       this.sendCommand('FTP_SET_TIME', this.state.elapsedTime);
-                                   }}
-                            />
-                        </td>
-                    </tr>
-                </tbody></table>
-            </div>
-            {/*<div className={style.selectable}>*/}
-            {/*    <table><tbody>*/}
-            {/*        <tr>*/}
-            {/*            <td>*/}
-            {/*                hold const temp*/}
-            {/*            </td>*/}
-            {/*        </tr>*/}
-            {/*        <tr>*/}
-            {/*            <td>*/}
-            {/*                <input type="range"*/}
-            {/*                       min="1"*/}
-            {/*                       max="100"*/}
-            {/*                       value='50'*/}
-            {/*                       onChange={()=>{*/}
-            {/*                       }}*/}
-            {/*                />*/}
-            {/*            </td>*/}
-            {/*        </tr>*/}
-            {/*    </tbody></table>*/}
-            {/*</div>*/}
-            <button style={{backgroundColor: "#6193ff"}} onClick={() => this.sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
-            <button style={{backgroundColor: "#0c0d29", color: "#c7d4ff"}} onClick={() => this.sendCommand('SUDO_HALT')}>sudo halt</button>
+            <button style={{backgroundColor: "#6193ff"}} onClick={() => sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
+            <button style={{backgroundColor: "#0c0d29", color: "#c7d4ff"}} onClick={() => sendCommand('SUDO_HALT')}>sudo halt</button>
         </div>;
     }
 }
-const ControlButtonsRedux = connect()(ControlButtons);
 
 class GraphLayer extends Component {
     constructor(props) {
@@ -256,7 +295,7 @@ class GraphView extends Component {
             this._realMeasureGraph.drawGraph(state.get('realPoints'), this.state.viewParams, 0);
         }
         if (this._idealGraph) {
-            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, state.get('startTime'));
+            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, state.get('fControlData').data[0].startTime);
         }
     };
 
@@ -293,11 +332,11 @@ class PageMain extends Component {
                     Oven Control Panel
                 </div>
                 <TempMonitorRedux/>
-                <ControlButtonsRedux/>
+                <ControlButtons/>
                 <GraphViewRedux/>
             </div>
         </div>;
     }
 }
 
-export default PageMain;
+export { PageMain, newTempMeasureEventListener };

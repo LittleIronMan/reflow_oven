@@ -6,11 +6,30 @@ const initState = {
     //syncId: 0, // идентификатор БД, для её синхронизации между сервером и клиентом
     tempProfile: [], // термопрофиль программы нагревания
     realPoints: [], // некоторое количество последних измерений температуры
-    lastRealTimeMeasure: 0,
-    ovenState: 'OFF', // состояние печки(включена/выключена)
-    programState: 'STOPPED', // состояние программы нагревания STOPPED / LAUNCHED
-    startTime: 0, // время начала программы нагревания
-    controlMode: 'DEFAULT_OFF' // режим управления печкой: выключен / следовать термопрофилю / ручной контроль / удерживать заданную температуру
+    lastRealTimeMeasure: 0, // время последнего измерения температуры
+    fControlData: {
+        leadControlMode: 'DEFAULT_OFF',
+        ovenState: 'OFF',
+        constTempValue: 26,
+        data: [
+            {
+                controlMode: 'FOLLOW_TEMP_PROFILE',
+                controlState: 'DISABLED',
+                isPaused: false,
+                startTime: 0,
+                elapsedTime: 0,
+                duration: 0
+            },
+            {
+                controlMode: 'HOLD_CONST_TEMP',
+                controlState: 'DISABLED',
+                isPaused: false,
+                startTime: 0,
+                elapsedTime: 0,
+                duration: 0
+            }
+        ]
+    }
 };
 
 function reducer (state = Map(initState), action) {
@@ -35,20 +54,14 @@ function reducer (state = Map(initState), action) {
             return result;
         }
         case a.PB_SwitchOvenState: {
-            let result = state.set('ovenState', action.data.ovenState);
+            let fControlData = state.get('fControlData');
+            let result = state.set('fControlData', {...fControlData, ovenState: action.data.ovenState});
             return result;
         }
         case a.PB_Response: {
             let response = action.data;
-            let result = state.set('programState', response.programState);
-            result = state.set('ovenState', response.ovenState);
-            result = state.set('controlMode', response.controlMode);
+            let result = state;
             switch (response.cmdType) {
-                case 'START':
-                    result = result.set('startTime', response.time + ((response.mills == null) ? 0 : response.mills / 1000));
-                    break;
-                case 'STOP':
-                    break;
                 case 'HARD_RESET':
                 case 'CLIENT_REQUIRES_RESET':
                     result = result.set('lastRealTimeMeasure', 0);
@@ -62,6 +75,10 @@ function reducer (state = Map(initState), action) {
         }
         case a.PB_ResponseGetTempProfile: {
             let result = state.set('tempProfile', action.data.profile.data);
+            return result;
+        }
+        case a.PB_FullControlData: {
+            let result = state.set('fControlData', action.data);
             return result;
         }
     }
