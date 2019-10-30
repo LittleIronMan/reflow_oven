@@ -32,7 +32,8 @@ const msgPrototypeBinder = {
     PB_Response : pb.PB_MsgType.RESPONSE,
     PB_TempMeasure : pb.PB_MsgType.TEMP_MEASURE,
     PB_ResponseGetTempProfile : pb.PB_MsgType.RESPONSE_GET_TEMP_PROFILE,
-    PB_SwitchOvenState : pb.PB_MsgType.SWITCH_OVEN_STATE
+    PB_SwitchOvenState : pb.PB_MsgType.SWITCH_OVEN_STATE,
+    PB_FullControlData : pb.PB_MsgType.FULL_CONTROL_DATA
 };
 
 function getMsgPrototype(num) {
@@ -41,6 +42,22 @@ function getMsgPrototype(num) {
         if (msgPrototypeBinder[key] === num) { type = key; break; }
     }
     return type;
+}
+
+function convertPB_Time2Number(obj, debugVar) {
+    if (debugVar) { debugVar.countCalls++; } // для отладки
+    Object.keys(obj).forEach((key) => {
+        let item = obj[key];
+        if (item instanceof Object) {
+            if (item.hasOwnProperty('unixSeconds')) {
+                obj[key] = item.unixSeconds + item.mills / 1000;
+                if (debugVar) { debugVar.countConverts++; } // для отладки
+            }
+            else {
+                convertPB_Time2Number(item, debugVar);
+            }
+        }
+    });
 }
 
 // функция приема сообщений от микроконтроллера
@@ -76,6 +93,10 @@ function receiveMsgFromStm32 (data) {
             console.log('Error: Cannot decode message with prototype ', msgProto);
             return;
         }
+
+        // все объекты типа PB_Time преобразуем в элементарный числовой тип
+        let debugVar = {countConverts: 0, countCalls: 0}; // переменная для отладки
+        convertPB_Time2Number(dataObj, null);
 
         // применяем обновление для глобальной структуры данных
         let action = {type: msgProto, data: dataObj};

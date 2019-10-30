@@ -89,7 +89,7 @@ NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPO
 NRC_CREATE_QUEUE(fControlDataQueue, PB_FullControlData, 1, PB_MsgType_FULL_CONTROL_DATA, PB_FullControlData_fields);
 
 // массив всех очередей
-NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue };
+NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &tempMeasureQueue, &getProfileQueue, &switchOvenStateQueue, &fControlDataQueue };
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
 
 // массив очередей с исходящими данными(при отправке бОльший приоритет имеют те очереди, которые в начале этого массива)
@@ -796,7 +796,7 @@ void NRC_getTime(PB_Time *time, uint32_t *argTickCount)
 
 	allowSyncTime = false;
 
-	if (prevTickCount < tickCount) { mills = prevTime.mills + (tickCount - prevTickCount); }
+	if (prevTickCount <= tickCount) { mills = prevTime.mills + (tickCount - prevTickCount); }
 	else { mills =  prevTime.mills + ((uint32_t)0xFFFFFFFF - prevTickCount) + tickCount + 1; }
 	seconds = mills / 1000;
 	time->mills = (mills - seconds * 1000);

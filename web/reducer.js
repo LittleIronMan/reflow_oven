@@ -21,10 +21,6 @@ function reducer (state = Map(initState), action) {
 
         case a.PB_TempMeasure: {
             let newMeasure = action.data;
-            if (newMeasure.mills != null) {
-                newMeasure.time = newMeasure.time + newMeasure.mills / 1000;
-                delete newMeasure['mills'];
-            }
             let result = state;
             if (newMeasure.time > state.get('lastRealTimeMeasure')) {
                 result = state.set('lastRealTimeMeasure', newMeasure.time);
@@ -66,15 +62,6 @@ function reducer (state = Map(initState), action) {
         }
         case a.PB_ResponseGetTempProfile: {
             let result = state.set('tempProfile', action.data.profile.data);
-            result = result.update('tempProfile', (arr) => {
-                for (let measure in arr) {
-                    if (measure.mills != null) {
-                        measure.time += measure.mills;
-                        delete measure['mills'];
-                    }
-                }
-                return arr;
-            });
             return result;
         }
     }
