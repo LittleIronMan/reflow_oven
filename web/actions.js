@@ -1,5 +1,5 @@
 const SET_STATE = 'SET_STATE';
-const PB_TempMeasure = 'PB_TempMeasure';
+const PB_PeriodicMessage = 'PB_PeriodicMessage';
 const PB_SwitchOvenState = 'PB_SwitchOvenState';
 const PB_Response = 'PB_Response';
 const PB_ResponseGetTempProfile = 'PB_ResponseGetTempProfile';
@@ -18,4 +18,4 @@ const PB_FullControlData = 'PB_FullControlData';
 //     }
 // };
 
-module.exports = {SET_STATE, PB_TempMeasure, PB_Response, PB_ResponseGetTempProfile, PB_SwitchOvenState, PB_FullControlData};
+module.exports = {SET_STATE, PB_PeriodicMessage, PB_Response, PB_ResponseGetTempProfile, PB_SwitchOvenState, PB_FullControlData};

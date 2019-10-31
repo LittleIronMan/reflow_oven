@@ -133,6 +133,6 @@ extern PB_Time prevTime;
 extern uint32_t prevTickCount;
 void NRC_getTime(PB_Time* time, uint32_t* argTickCount);
 PB_Time NRC_getTimeDiff(PB_Time* time1, PB_Time* time2);
-uint32_t NRC_getTimeDiffInMills(PB_Time* time1, PB_Time* time2);
+long NRC_getTimeDiffInMills(PB_Time* time1, PB_Time* time2);
 
 #endif // main_logic_h

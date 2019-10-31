@@ -22,8 +22,8 @@ socket.on('server sync all', function(newStore) {
 // сервер требует обновить БД
 socket.on('server sync update', function(action) {
     reduxStore.dispatch(action);
-    if (action.type === 'PB_TempMeasure') {
-        newTempMeasureEventListener.emit(action.data.time);
+    if (action.type === 'PB_PeriodicMessage') {
+        newTempMeasureEventListener.emit(action.data.tempMeasure.time);
     }
 });
 

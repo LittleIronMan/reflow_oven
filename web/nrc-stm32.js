@@ -30,7 +30,7 @@ function PB_decode(pbMsgStruct, binaryData, binLength) {
 // массив, связывает прототип сообщения с соответствующим числовым типом
 const msgPrototypeBinder = {
     PB_Response : pb.PB_MsgType.RESPONSE,
-    PB_TempMeasure : pb.PB_MsgType.TEMP_MEASURE,
+    PB_PeriodicMessage : pb.PB_MsgType.PERIODIC_MESSAGE,
     PB_ResponseGetTempProfile : pb.PB_MsgType.RESPONSE_GET_TEMP_PROFILE,
     PB_SwitchOvenState : pb.PB_MsgType.SWITCH_OVEN_STATE,
     PB_FullControlData : pb.PB_MsgType.FULL_CONTROL_DATA

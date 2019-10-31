@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x11reflow_oven.proto\x1a\x0cnanopb.proto\"u\n\nPB_Command\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\n\n\x02id\x18\x02 \x01(\r\x12\x17\n\x08priority\x18\x03 \x01(\rB\x05\x92?\x02\x38\x08\x12\x15\n\x06\x61\x63mIdx\x18\x04 \x01(\rB\x05\x92?\x02\x38\x08\x12\r\n\x05value\x18\x05 \x01(\r\"-\n\x07PB_Time\x12\x13\n\x0bunixSeconds\x18\x01 \x01(\r\x12\r\n\x05mills\x18\x02 \x01(\x02\"6\n\x0ePB_TempMeasure\x12\x16\n\x04time\x18\x01 \x01(\x0b\x32\x08.PB_Time\x12\x0c\n\x04temp\x18\x02 \x01(\x02\"X\n\x0ePB_TempProfile\x12\x1a\n\x0b\x63ountPoints\x18\x01 \x01(\rB\x05\x92?\x02\x38\x08\x12*\n\x04\x64\x61ta\x18\x02 \x03(\x0b\x32\x0f.PB_TempMeasureB\x0b\x92?\x02\x10\n\x92?\x03\x80\x01\x01\"N\n\x19PB_ResponseGetTempProfile\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12 \n\x07profile\x18\x02 \x01(\x0b\x32\x0f.PB_TempProfile\"\xa3\x01\n\x0bPB_Response\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\r\n\x05\x63mdId\x18\x02 \x01(\r\x12\x0f\n\x07success\x18\x03 \x01(\x08\x12 \n\tovenState\x18\x04 \x01(\x0e\x32\r.PB_OvenState\x12\x1c\n\x05\x65rror\x18\x05 \x01(\x0e\x32\r.PB_ErrorType\x12\x16\n\x04time\x18\x06 \x01(\x0b\x32\x08.PB_Time\"N\n\x12PB_SwitchOvenState\x12\x16\n\x04time\x18\x01 \x01(\x0b\x32\x08.PB_Time\x12 \n\tovenState\x18\x02 \x01(\x0e\x32\r.PB_OvenState\"\xc8\x01\n\x0ePB_ControlData\x12$\n\x0b\x63ontrolMode\x18\x01 \x01(\x0e\x32\x0f.PB_ControlMode\x12&\n\x0c\x63ontrolState\x18\x02 \x01(\x0e\x32\x10.PB_ControlState\x12\x10\n\x08isPaused\x18\x03 \x01(\x08\x12\x1b\n\tstartTime\x18\x04 \x01(\x0b\x32\x08.PB_Time\x12\x1d\n\x0b\x65lapsedTime\x18\x05 \x01(\x0b\x32\x08.PB_Time\x12\x1a\n\x08\x64uration\x18\x06 \x01(\x0b\x32\x08.PB_Time\"\xa4\x01\n\x12PB_FullControlData\x12(\n\x0fleadControlMode\x18\x01 \x01(\x0e\x32\x0f.PB_ControlMode\x12 \n\tovenState\x18\x02 \x01(\x0e\x32\r.PB_OvenState\x12\x16\n\x0e\x63onstTempValue\x18\x03 \x01(\x02\x12*\n\x04\x64\x61ta\x18\x04 \x03(\x0b\x32\x0f.PB_ControlDataB\x0b\x92?\x02\x10\x02\x92?\x03\x80\x01\x01*\xd0\x01\n\nPB_MsgType\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x43MD\x10\x01\x12\x0c\n\x08RESPONSE\x10\x02\x12\x1d\n\x19RESPONSE_GET_TEMP_PROFILE\x10\x03\x12\x10\n\x0cTEMP_MEASURE\x10\x04\x12\x19\n\x15RESPONSE_TEMP_MEASURE\x10\x05\x12\x12\n\x0e\x46INISH_PROGRAM\x10\x06\x12\x0e\n\nPLAIN_TEXT\x10\x07\x12\x15\n\x11SWITCH_OVEN_STATE\x10\x08\x12\x15\n\x11\x46ULL_CONTROL_DATA\x10\t*\xec\x01\n\nPB_CmdType\x12\x10\n\x0cGET_ALL_INFO\x10\x00\x12\r\n\tGET_STATE\x10\x01\x12\x0e\n\nHARD_RESET\x10\x02\x12\x19\n\x15\x43LIENT_REQUIRES_RESET\x10\x03\x12\r\n\tMANUAL_ON\x10\x04\x12\x0e\n\nMANUAL_OFF\x10\x05\x12\x17\n\x13MANUAL_KEEP_CURRENT\x10\x06\x12\x08\n\x04STOP\x10\x07\x12\t\n\x05START\x10\x08\x12\x0c\n\x08START_BG\x10\t\x12\x0c\n\x08SET_TIME\x10\n\x12\t\n\x05PAUSE\x10\x0b\x12\n\n\x06RESUME\x10\x0c\x12\x12\n\x0eSET_CONST_TEMP\x10\r*\x1f\n\x0cPB_OvenState\x12\x07\n\x03OFF\x10\x00\x12\x06\n\x02ON\x10\x01*[\n\x0ePB_ControlMode\x12\x0f\n\x0b\x44\x45\x46\x41ULT_OFF\x10\x00\x12\x17\n\x13\x46OLLOW_TEMP_PROFILE\x10\x01\x12\x13\n\x0fHOLD_CONST_TEMP\x10\x02\x12\n\n\x06MANUAL\x10\x03*<\n\x0fPB_ControlState\x12\x0c\n\x08\x44ISABLED\x10\x00\x12\x0e\n\nBACKGROUND\x10\x01\x12\x0b\n\x07\x45NABLED\x10\x02*q\n\x0cPB_ErrorType\x12\x08\n\x04NONE\x10\x00\x12\x1d\n\x19\x46\x41ULTY_TEMPERATURE_SENSOR\x10\x01\x12\x10\n\x0c\x46\x41ULTY_RELAY\x10\x02\x12\x13\n\x0fUNKNOWN_COMMAND\x10\x03\x12\x11\n\rUNKNOWN_ERROR\x10\x04\x62\x06proto3')
+  serialized_pb=_b('\n\x11reflow_oven.proto\x1a\x0cnanopb.proto\"u\n\nPB_Command\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\n\n\x02id\x18\x02 \x01(\r\x12\x17\n\x08priority\x18\x03 \x01(\rB\x05\x92?\x02\x38\x08\x12\x15\n\x06\x61\x63mIdx\x18\x04 \x01(\rB\x05\x92?\x02\x38\x08\x12\r\n\x05value\x18\x05 \x01(\r\"-\n\x07PB_Time\x12\x13\n\x0bunixSeconds\x18\x01 \x01(\r\x12\r\n\x05mills\x18\x02 \x01(\x02\"6\n\x0ePB_TempMeasure\x12\x16\n\x04time\x18\x01 \x01(\x0b\x32\x08.PB_Time\x12\x0c\n\x04temp\x18\x02 \x01(\x02\"U\n\x12PB_PeriodicMessage\x12$\n\x0btempMeasure\x18\x01 \x01(\x0b\x32\x0f.PB_TempMeasure\x12\x19\n\x11strictWaitEnabled\x18\x02 \x01(\x08\"X\n\x0ePB_TempProfile\x12\x1a\n\x0b\x63ountPoints\x18\x01 \x01(\rB\x05\x92?\x02\x38\x08\x12*\n\x04\x64\x61ta\x18\x02 \x03(\x0b\x32\x0f.PB_TempMeasureB\x0b\x92?\x02\x10\n\x92?\x03\x80\x01\x01\"N\n\x19PB_ResponseGetTempProfile\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12 \n\x07profile\x18\x02 \x01(\x0b\x32\x0f.PB_TempProfile\"\xa3\x01\n\x0bPB_Response\x12\x1c\n\x07\x63mdType\x18\x01 \x01(\x0e\x32\x0b.PB_CmdType\x12\r\n\x05\x63mdId\x18\x02 \x01(\r\x12\x0f\n\x07success\x18\x03 \x01(\x08\x12 \n\tovenState\x18\x04 \x01(\x0e\x32\r.PB_OvenState\x12\x1c\n\x05\x65rror\x18\x05 \x01(\x0e\x32\r.PB_ErrorType\x12\x16\n\x04time\x18\x06 \x01(\x0b\x32\x08.PB_Time\"N\n\x12PB_SwitchOvenState\x12\x16\n\x04time\x18\x01 \x01(\x0b\x32\x08.PB_Time\x12 \n\tovenState\x18\x02 \x01(\x0e\x32\r.PB_OvenState\"\xc8\x01\n\x0ePB_ControlData\x12$\n\x0b\x63ontrolMode\x18\x01 \x01(\x0e\x32\x0f.PB_ControlMode\x12&\n\x0c\x63ontrolState\x18\x02 \x01(\x0e\x32\x10.PB_ControlState\x12\x10\n\x08isPaused\x18\x03 \x01(\x08\x12\x1b\n\tstartTime\x18\x04 \x01(\x0b\x32\x08.PB_Time\x12\x1d\n\x0b\x65lapsedTime\x18\x05 \x01(\x0b\x32\x08.PB_Time\x12\x1a\n\x08\x64uration\x18\x06 \x01(\x0b\x32\x08.PB_Time\"\xd3\x01\n\x12PB_FullControlData\x12(\n\x0fleadControlMode\x18\x01 \x01(\x0e\x32\x0f.PB_ControlMode\x12 \n\tovenState\x18\x02 \x01(\x0e\x32\r.PB_OvenState\x12\x16\n\x0e\x63onstTempValue\x18\x03 \x01(\x02\x12\x12\n\nstrictMode\x18\x04 \x01(\x08\x12\x19\n\x11strictWaitEnabled\x18\x05 \x01(\x08\x12*\n\x04\x64\x61ta\x18\x06 \x03(\x0b\x32\x0f.PB_ControlDataB\x0b\x92?\x02\x10\x02\x92?\x03\x80\x01\x01*\xd4\x01\n\nPB_MsgType\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x43MD\x10\x01\x12\x0c\n\x08RESPONSE\x10\x02\x12\x1d\n\x19RESPONSE_GET_TEMP_PROFILE\x10\x03\x12\x14\n\x10PERIODIC_MESSAGE\x10\x04\x12\x19\n\x15RESPONSE_TEMP_MEASURE\x10\x05\x12\x12\n\x0e\x46INISH_PROGRAM\x10\x06\x12\x0e\n\nPLAIN_TEXT\x10\x07\x12\x15\n\x11SWITCH_OVEN_STATE\x10\x08\x12\x15\n\x11\x46ULL_CONTROL_DATA\x10\t*\x9d\x02\n\nPB_CmdType\x12\x10\n\x0cGET_ALL_INFO\x10\x00\x12\r\n\tGET_STATE\x10\x01\x12\x0e\n\nHARD_RESET\x10\x02\x12\x19\n\x15\x43LIENT_REQUIRES_RESET\x10\x03\x12\r\n\tMANUAL_ON\x10\x04\x12\x0e\n\nMANUAL_OFF\x10\x05\x12\x17\n\x13MANUAL_KEEP_CURRENT\x10\x06\x12\x08\n\x04STOP\x10\x07\x12\t\n\x05START\x10\x08\x12\x0c\n\x08START_BG\x10\t\x12\x0c\n\x08SET_TIME\x10\n\x12\t\n\x05PAUSE\x10\x0b\x12\n\n\x06RESUME\x10\x0c\x12\x12\n\x0eSET_CONST_TEMP\x10\r\x12\x16\n\x12\x45NABLE_STRICT_MODE\x10\x0e\x12\x17\n\x13\x44ISABLE_STRICT_MODE\x10\x0f*\x1f\n\x0cPB_OvenState\x12\x07\n\x03OFF\x10\x00\x12\x06\n\x02ON\x10\x01*[\n\x0ePB_ControlMode\x12\x0f\n\x0b\x44\x45\x46\x41ULT_OFF\x10\x00\x12\x17\n\x13\x46OLLOW_TEMP_PROFILE\x10\x01\x12\x13\n\x0fHOLD_CONST_TEMP\x10\x02\x12\n\n\x06MANUAL\x10\x03*<\n\x0fPB_ControlState\x12\x0c\n\x08\x44ISABLED\x10\x00\x12\x0e\n\nBACKGROUND\x10\x01\x12\x0b\n\x07\x45NABLED\x10\x02*q\n\x0cPB_ErrorType\x12\x08\n\x04NONE\x10\x00\x12\x1d\n\x19\x46\x41ULTY_TEMPERATURE_SENSOR\x10\x01\x12\x10\n\x0c\x46\x41ULTY_RELAY\x10\x02\x12\x13\n\x0fUNKNOWN_COMMAND\x10\x03\x12\x11\n\rUNKNOWN_ERROR\x10\x04\x62\x06proto3')
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,])
 
@@ -51,7 +51,7 @@ _PB_MSGTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='TEMP_MEASURE', index=4, number=4,
+      name='PERIODIC_MESSAGE', index=4, number=4,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -77,8 +77,8 @@ _PB_MSGTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1044,
-  serialized_end=1252,
+  serialized_start=1178,
+  serialized_end=1390,
 )
 _sym_db.RegisterEnumDescriptor(_PB_MSGTYPE)
 
@@ -145,11 +145,19 @@ _PB_CMDTYPE = _descriptor.EnumDescriptor(
       name='SET_CONST_TEMP', index=13, number=13,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ENABLE_STRICT_MODE', index=14, number=14,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DISABLE_STRICT_MODE', index=15, number=15,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1255,
-  serialized_end=1491,
+  serialized_start=1393,
+  serialized_end=1678,
 )
 _sym_db.RegisterEnumDescriptor(_PB_CMDTYPE)
 
@@ -171,8 +179,8 @@ _PB_OVENSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1493,
-  serialized_end=1524,
+  serialized_start=1680,
+  serialized_end=1711,
 )
 _sym_db.RegisterEnumDescriptor(_PB_OVENSTATE)
 
@@ -202,8 +210,8 @@ _PB_CONTROLMODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1526,
-  serialized_end=1617,
+  serialized_start=1713,
+  serialized_end=1804,
 )
 _sym_db.RegisterEnumDescriptor(_PB_CONTROLMODE)
 
@@ -229,8 +237,8 @@ _PB_CONTROLSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1619,
-  serialized_end=1679,
+  serialized_start=1806,
+  serialized_end=1866,
 )
 _sym_db.RegisterEnumDescriptor(_PB_CONTROLSTATE)
 
@@ -264,8 +272,8 @@ _PB_ERRORTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1681,
-  serialized_end=1794,
+  serialized_start=1868,
+  serialized_end=1981,
 )
 _sym_db.RegisterEnumDescriptor(_PB_ERRORTYPE)
 
@@ -274,7 +282,7 @@ UNDEFINED = 0
 CMD = 1
 RESPONSE = 2
 RESPONSE_GET_TEMP_PROFILE = 3
-TEMP_MEASURE = 4
+PERIODIC_MESSAGE = 4
 RESPONSE_TEMP_MEASURE = 5
 FINISH_PROGRAM = 6
 PLAIN_TEXT = 7
@@ -294,6 +302,8 @@ SET_TIME = 10
 PAUSE = 11
 RESUME = 12
 SET_CONST_TEMP = 13
+ENABLE_STRICT_MODE = 14
+DISABLE_STRICT_MODE = 15
 OFF = 0
 ON = 1
 DEFAULT_OFF = 0
@@ -446,6 +456,44 @@ _PB_TEMPMEASURE = _descriptor.Descriptor(
 )
 
 
+_PB_PERIODICMESSAGE = _descriptor.Descriptor(
+  name='PB_PeriodicMessage',
+  full_name='PB_PeriodicMessage',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='tempMeasure', full_name='PB_PeriodicMessage.tempMeasure', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='strictWaitEnabled', full_name='PB_PeriodicMessage.strictWaitEnabled', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=257,
+  serialized_end=342,
+)
+
+
 _PB_TEMPPROFILE = _descriptor.Descriptor(
   name='PB_TempProfile',
   full_name='PB_TempProfile',
@@ -479,8 +527,8 @@ _PB_TEMPPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=257,
-  serialized_end=345,
+  serialized_start=344,
+  serialized_end=432,
 )
 
 
@@ -517,8 +565,8 @@ _PB_RESPONSEGETTEMPPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=347,
-  serialized_end=425,
+  serialized_start=434,
+  serialized_end=512,
 )
 
 
@@ -583,8 +631,8 @@ _PB_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=428,
-  serialized_end=591,
+  serialized_start=515,
+  serialized_end=678,
 )
 
 
@@ -621,8 +669,8 @@ _PB_SWITCHOVENSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=593,
-  serialized_end=671,
+  serialized_start=680,
+  serialized_end=758,
 )
 
 
@@ -687,8 +735,8 @@ _PB_CONTROLDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=674,
-  serialized_end=874,
+  serialized_start=761,
+  serialized_end=961,
 )
 
 
@@ -721,8 +769,22 @@ _PB_FULLCONTROLDATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='data', full_name='PB_FullControlData.data', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      name='strictMode', full_name='PB_FullControlData.strictMode', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='strictWaitEnabled', full_name='PB_FullControlData.strictWaitEnabled', index=4,
+      number=5, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='data', full_name='PB_FullControlData.data', index=5,
+      number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -739,12 +801,13 @@ _PB_FULLCONTROLDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=877,
-  serialized_end=1041,
+  serialized_start=964,
+  serialized_end=1175,
 )
 
 _PB_COMMAND.fields_by_name['cmdType'].enum_type = _PB_CMDTYPE
 _PB_TEMPMEASURE.fields_by_name['time'].message_type = _PB_TIME
+_PB_PERIODICMESSAGE.fields_by_name['tempMeasure'].message_type = _PB_TEMPMEASURE
 _PB_TEMPPROFILE.fields_by_name['data'].message_type = _PB_TEMPMEASURE
 _PB_RESPONSEGETTEMPPROFILE.fields_by_name['profile'].message_type = _PB_TEMPPROFILE
 _PB_RESPONSE.fields_by_name['cmdType'].enum_type = _PB_CMDTYPE
@@ -764,6 +827,7 @@ _PB_FULLCONTROLDATA.fields_by_name['data'].message_type = _PB_CONTROLDATA
 DESCRIPTOR.message_types_by_name['PB_Command'] = _PB_COMMAND
 DESCRIPTOR.message_types_by_name['PB_Time'] = _PB_TIME
 DESCRIPTOR.message_types_by_name['PB_TempMeasure'] = _PB_TEMPMEASURE
+DESCRIPTOR.message_types_by_name['PB_PeriodicMessage'] = _PB_PERIODICMESSAGE
 DESCRIPTOR.message_types_by_name['PB_TempProfile'] = _PB_TEMPPROFILE
 DESCRIPTOR.message_types_by_name['PB_ResponseGetTempProfile'] = _PB_RESPONSEGETTEMPPROFILE
 DESCRIPTOR.message_types_by_name['PB_Response'] = _PB_RESPONSE
@@ -798,6 +862,13 @@ PB_TempMeasure = _reflection.GeneratedProtocolMessageType('PB_TempMeasure', (_me
   # @@protoc_insertion_point(class_scope:PB_TempMeasure)
   ))
 _sym_db.RegisterMessage(PB_TempMeasure)
+
+PB_PeriodicMessage = _reflection.GeneratedProtocolMessageType('PB_PeriodicMessage', (_message.Message,), dict(
+  DESCRIPTOR = _PB_PERIODICMESSAGE,
+  __module__ = 'reflow_oven_pb2'
+  # @@protoc_insertion_point(class_scope:PB_PeriodicMessage)
+  ))
+_sym_db.RegisterMessage(PB_PeriodicMessage)
 
 PB_TempProfile = _reflection.GeneratedProtocolMessageType('PB_TempProfile', (_message.Message,), dict(
   DESCRIPTOR = _PB_TEMPPROFILE,

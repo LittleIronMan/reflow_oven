@@ -24,7 +24,7 @@
      * @property {number} CMD=1 CMD value
      * @property {number} RESPONSE=2 RESPONSE value
      * @property {number} RESPONSE_GET_TEMP_PROFILE=3 RESPONSE_GET_TEMP_PROFILE value
-     * @property {number} TEMP_MEASURE=4 TEMP_MEASURE value
+     * @property {number} PERIODIC_MESSAGE=4 PERIODIC_MESSAGE value
      * @property {number} RESPONSE_TEMP_MEASURE=5 RESPONSE_TEMP_MEASURE value
      * @property {number} FINISH_PROGRAM=6 FINISH_PROGRAM value
      * @property {number} PLAIN_TEXT=7 PLAIN_TEXT value
@@ -37,7 +37,7 @@
         values[valuesById[1] = "CMD"] = 1;
         values[valuesById[2] = "RESPONSE"] = 2;
         values[valuesById[3] = "RESPONSE_GET_TEMP_PROFILE"] = 3;
-        values[valuesById[4] = "TEMP_MEASURE"] = 4;
+        values[valuesById[4] = "PERIODIC_MESSAGE"] = 4;
         values[valuesById[5] = "RESPONSE_TEMP_MEASURE"] = 5;
         values[valuesById[6] = "FINISH_PROGRAM"] = 6;
         values[valuesById[7] = "PLAIN_TEXT"] = 7;
@@ -64,6 +64,8 @@
      * @property {number} PAUSE=11 PAUSE value
      * @property {number} RESUME=12 RESUME value
      * @property {number} SET_CONST_TEMP=13 SET_CONST_TEMP value
+     * @property {number} ENABLE_STRICT_MODE=14 ENABLE_STRICT_MODE value
+     * @property {number} DISABLE_STRICT_MODE=15 DISABLE_STRICT_MODE value
      */
     $root.PB_CmdType = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -81,6 +83,8 @@
         values[valuesById[11] = "PAUSE"] = 11;
         values[valuesById[12] = "RESUME"] = 12;
         values[valuesById[13] = "SET_CONST_TEMP"] = 13;
+        values[valuesById[14] = "ENABLE_STRICT_MODE"] = 14;
+        values[valuesById[15] = "DISABLE_STRICT_MODE"] = 15;
         return values;
     })();
     
@@ -288,6 +292,8 @@
                 case 11:
                 case 12:
                 case 13:
+                case 14:
+                case 15:
                     break;
                 }
             if (message.id != null && message.hasOwnProperty("id"))
@@ -373,6 +379,14 @@
             case "SET_CONST_TEMP":
             case 13:
                 message.cmdType = 13;
+                break;
+            case "ENABLE_STRICT_MODE":
+            case 14:
+                message.cmdType = 14;
+                break;
+            case "DISABLE_STRICT_MODE":
+            case 15:
+                message.cmdType = 15;
                 break;
             }
             if (object.id != null)
@@ -856,6 +870,221 @@
         };
     
         return PB_TempMeasure;
+    })();
+    
+    $root.PB_PeriodicMessage = (function() {
+    
+        /**
+         * Properties of a PB_PeriodicMessage.
+         * @exports IPB_PeriodicMessage
+         * @interface IPB_PeriodicMessage
+         * @property {IPB_TempMeasure|null} [tempMeasure] PB_PeriodicMessage tempMeasure
+         * @property {boolean|null} [strictWaitEnabled] PB_PeriodicMessage strictWaitEnabled
+         */
+    
+        /**
+         * Constructs a new PB_PeriodicMessage.
+         * @exports PB_PeriodicMessage
+         * @classdesc Represents a PB_PeriodicMessage.
+         * @implements IPB_PeriodicMessage
+         * @constructor
+         * @param {IPB_PeriodicMessage=} [properties] Properties to set
+         */
+        function PB_PeriodicMessage(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+    
+        /**
+         * PB_PeriodicMessage tempMeasure.
+         * @member {IPB_TempMeasure|null|undefined} tempMeasure
+         * @memberof PB_PeriodicMessage
+         * @instance
+         */
+        PB_PeriodicMessage.prototype.tempMeasure = null;
+    
+        /**
+         * PB_PeriodicMessage strictWaitEnabled.
+         * @member {boolean} strictWaitEnabled
+         * @memberof PB_PeriodicMessage
+         * @instance
+         */
+        PB_PeriodicMessage.prototype.strictWaitEnabled = false;
+    
+        /**
+         * Creates a new PB_PeriodicMessage instance using the specified properties.
+         * @function create
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {IPB_PeriodicMessage=} [properties] Properties to set
+         * @returns {PB_PeriodicMessage} PB_PeriodicMessage instance
+         */
+        PB_PeriodicMessage.create = function create(properties) {
+            return new PB_PeriodicMessage(properties);
+        };
+    
+        /**
+         * Encodes the specified PB_PeriodicMessage message. Does not implicitly {@link PB_PeriodicMessage.verify|verify} messages.
+         * @function encode
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {IPB_PeriodicMessage} message PB_PeriodicMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_PeriodicMessage.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.tempMeasure != null && message.hasOwnProperty("tempMeasure"))
+                $root.PB_TempMeasure.encode(message.tempMeasure, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+            if (message.strictWaitEnabled != null && message.hasOwnProperty("strictWaitEnabled"))
+                writer.uint32(/* id 2, wireType 0 =*/16).bool(message.strictWaitEnabled);
+            return writer;
+        };
+    
+        /**
+         * Encodes the specified PB_PeriodicMessage message, length delimited. Does not implicitly {@link PB_PeriodicMessage.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {IPB_PeriodicMessage} message PB_PeriodicMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PB_PeriodicMessage.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+    
+        /**
+         * Decodes a PB_PeriodicMessage message from the specified reader or buffer.
+         * @function decode
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {PB_PeriodicMessage} PB_PeriodicMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_PeriodicMessage.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PB_PeriodicMessage();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.tempMeasure = $root.PB_TempMeasure.decode(reader, reader.uint32());
+                    break;
+                case 2:
+                    message.strictWaitEnabled = reader.bool();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+    
+        /**
+         * Decodes a PB_PeriodicMessage message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PB_PeriodicMessage} PB_PeriodicMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PB_PeriodicMessage.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+    
+        /**
+         * Verifies a PB_PeriodicMessage message.
+         * @function verify
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PB_PeriodicMessage.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.tempMeasure != null && message.hasOwnProperty("tempMeasure")) {
+                var error = $root.PB_TempMeasure.verify(message.tempMeasure);
+                if (error)
+                    return "tempMeasure." + error;
+            }
+            if (message.strictWaitEnabled != null && message.hasOwnProperty("strictWaitEnabled"))
+                if (typeof message.strictWaitEnabled !== "boolean")
+                    return "strictWaitEnabled: boolean expected";
+            return null;
+        };
+    
+        /**
+         * Creates a PB_PeriodicMessage message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {PB_PeriodicMessage} PB_PeriodicMessage
+         */
+        PB_PeriodicMessage.fromObject = function fromObject(object) {
+            if (object instanceof $root.PB_PeriodicMessage)
+                return object;
+            var message = new $root.PB_PeriodicMessage();
+            if (object.tempMeasure != null) {
+                if (typeof object.tempMeasure !== "object")
+                    throw TypeError(".PB_PeriodicMessage.tempMeasure: object expected");
+                message.tempMeasure = $root.PB_TempMeasure.fromObject(object.tempMeasure);
+            }
+            if (object.strictWaitEnabled != null)
+                message.strictWaitEnabled = Boolean(object.strictWaitEnabled);
+            return message;
+        };
+    
+        /**
+         * Creates a plain object from a PB_PeriodicMessage message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof PB_PeriodicMessage
+         * @static
+         * @param {PB_PeriodicMessage} message PB_PeriodicMessage
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PB_PeriodicMessage.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.tempMeasure = null;
+                object.strictWaitEnabled = false;
+            }
+            if (message.tempMeasure != null && message.hasOwnProperty("tempMeasure"))
+                object.tempMeasure = $root.PB_TempMeasure.toObject(message.tempMeasure, options);
+            if (message.strictWaitEnabled != null && message.hasOwnProperty("strictWaitEnabled"))
+                object.strictWaitEnabled = message.strictWaitEnabled;
+            return object;
+        };
+    
+        /**
+         * Converts this PB_PeriodicMessage to JSON.
+         * @function toJSON
+         * @memberof PB_PeriodicMessage
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PB_PeriodicMessage.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+    
+        return PB_PeriodicMessage;
     })();
     
     $root.PB_TempProfile = (function() {
@@ -1590,6 +1819,8 @@
                 case 11:
                 case 12:
                 case 13:
+                case 14:
+                case 15:
                     break;
                 }
             if (message.cmdId != null && message.hasOwnProperty("cmdId"))
@@ -1693,6 +1924,14 @@
             case "SET_CONST_TEMP":
             case 13:
                 message.cmdType = 13;
+                break;
+            case "ENABLE_STRICT_MODE":
+            case 14:
+                message.cmdType = 14;
+                break;
+            case "DISABLE_STRICT_MODE":
+            case 15:
+                message.cmdType = 15;
                 break;
             }
             if (object.cmdId != null)
@@ -2380,6 +2619,8 @@
          * @property {PB_ControlMode|null} [leadControlMode] PB_FullControlData leadControlMode
          * @property {PB_OvenState|null} [ovenState] PB_FullControlData ovenState
          * @property {number|null} [constTempValue] PB_FullControlData constTempValue
+         * @property {boolean|null} [strictMode] PB_FullControlData strictMode
+         * @property {boolean|null} [strictWaitEnabled] PB_FullControlData strictWaitEnabled
          * @property {Array.<IPB_ControlData>|null} [data] PB_FullControlData data
          */
     
@@ -2424,6 +2665,22 @@
         PB_FullControlData.prototype.constTempValue = 0;
     
         /**
+         * PB_FullControlData strictMode.
+         * @member {boolean} strictMode
+         * @memberof PB_FullControlData
+         * @instance
+         */
+        PB_FullControlData.prototype.strictMode = false;
+    
+        /**
+         * PB_FullControlData strictWaitEnabled.
+         * @member {boolean} strictWaitEnabled
+         * @memberof PB_FullControlData
+         * @instance
+         */
+        PB_FullControlData.prototype.strictWaitEnabled = false;
+    
+        /**
          * PB_FullControlData data.
          * @member {Array.<IPB_ControlData>} data
          * @memberof PB_FullControlData
@@ -2461,9 +2718,13 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.ovenState);
             if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
                 writer.uint32(/* id 3, wireType 5 =*/29).float(message.constTempValue);
+            if (message.strictMode != null && message.hasOwnProperty("strictMode"))
+                writer.uint32(/* id 4, wireType 0 =*/32).bool(message.strictMode);
+            if (message.strictWaitEnabled != null && message.hasOwnProperty("strictWaitEnabled"))
+                writer.uint32(/* id 5, wireType 0 =*/40).bool(message.strictWaitEnabled);
             if (message.data != null && message.data.length)
                 for (var i = 0; i < message.data.length; ++i)
-                    $root.PB_ControlData.encode(message.data[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                    $root.PB_ControlData.encode(message.data[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             return writer;
         };
     
@@ -2508,6 +2769,12 @@
                     message.constTempValue = reader.float();
                     break;
                 case 4:
+                    message.strictMode = reader.bool();
+                    break;
+                case 5:
+                    message.strictWaitEnabled = reader.bool();
+                    break;
+                case 6:
                     if (!(message.data && message.data.length))
                         message.data = [];
                     message.data.push($root.PB_ControlData.decode(reader, reader.uint32()));
@@ -2568,6 +2835,12 @@
             if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
                 if (typeof message.constTempValue !== "number")
                     return "constTempValue: number expected";
+            if (message.strictMode != null && message.hasOwnProperty("strictMode"))
+                if (typeof message.strictMode !== "boolean")
+                    return "strictMode: boolean expected";
+            if (message.strictWaitEnabled != null && message.hasOwnProperty("strictWaitEnabled"))
+                if (typeof message.strictWaitEnabled !== "boolean")
+                    return "strictWaitEnabled: boolean expected";
             if (message.data != null && message.hasOwnProperty("data")) {
                 if (!Array.isArray(message.data))
                     return "data: array expected";
@@ -2622,6 +2895,10 @@
             }
             if (object.constTempValue != null)
                 message.constTempValue = Number(object.constTempValue);
+            if (object.strictMode != null)
+                message.strictMode = Boolean(object.strictMode);
+            if (object.strictWaitEnabled != null)
+                message.strictWaitEnabled = Boolean(object.strictWaitEnabled);
             if (object.data) {
                 if (!Array.isArray(object.data))
                     throw TypeError(".PB_FullControlData.data: array expected");
@@ -2654,6 +2931,8 @@
                 object.leadControlMode = options.enums === String ? "DEFAULT_OFF" : 0;
                 object.ovenState = options.enums === String ? "OFF" : 0;
                 object.constTempValue = 0;
+                object.strictMode = false;
+                object.strictWaitEnabled = false;
             }
             if (message.leadControlMode != null && message.hasOwnProperty("leadControlMode"))
                 object.leadControlMode = options.enums === String ? $root.PB_ControlMode[message.leadControlMode] : message.leadControlMode;
@@ -2661,6 +2940,10 @@
                 object.ovenState = options.enums === String ? $root.PB_OvenState[message.ovenState] : message.ovenState;
             if (message.constTempValue != null && message.hasOwnProperty("constTempValue"))
                 object.constTempValue = options.json && !isFinite(message.constTempValue) ? String(message.constTempValue) : message.constTempValue;
+            if (message.strictMode != null && message.hasOwnProperty("strictMode"))
+                object.strictMode = message.strictMode;
+            if (message.strictWaitEnabled != null && message.hasOwnProperty("strictWaitEnabled"))
+                object.strictWaitEnabled = message.strictWaitEnabled;
             if (message.data && message.data.length) {
                 object.data = [];
                 for (var j = 0; j < message.data.length; ++j)

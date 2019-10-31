@@ -31,6 +31,12 @@ const pb_field_t PB_TempMeasure_fields[3] = {
     PB_LAST_FIELD
 };
 
+const pb_field_t PB_PeriodicMessage_fields[3] = {
+    PB_FIELD(  1, MESSAGE , SINGULAR, STATIC  , FIRST, PB_PeriodicMessage, tempMeasure, tempMeasure, &PB_TempMeasure_fields),
+    PB_FIELD(  2, BOOL    , SINGULAR, STATIC  , OTHER, PB_PeriodicMessage, strictWaitEnabled, tempMeasure, 0),
+    PB_LAST_FIELD
+};
+
 const pb_field_t PB_TempProfile_fields[3] = {
     PB_FIELD(  1, UINT32  , SINGULAR, STATIC  , FIRST, PB_TempProfile, countPoints, countPoints, 0),
     PB_REPEATED_FIXED_COUNT(  2, MESSAGE , OTHER, PB_TempProfile, data, countPoints, &PB_TempMeasure_fields),
@@ -69,11 +75,13 @@ const pb_field_t PB_ControlData_fields[7] = {
     PB_LAST_FIELD
 };
 
-const pb_field_t PB_FullControlData_fields[5] = {
+const pb_field_t PB_FullControlData_fields[7] = {
     PB_FIELD(  1, UENUM   , SINGULAR, STATIC  , FIRST, PB_FullControlData, leadControlMode, leadControlMode, 0),
     PB_FIELD(  2, UENUM   , SINGULAR, STATIC  , OTHER, PB_FullControlData, ovenState, leadControlMode, 0),
     PB_FIELD(  3, FLOAT   , SINGULAR, STATIC  , OTHER, PB_FullControlData, constTempValue, ovenState, 0),
-    PB_REPEATED_FIXED_COUNT(  4, MESSAGE , OTHER, PB_FullControlData, data, constTempValue, &PB_ControlData_fields),
+    PB_FIELD(  4, BOOL    , SINGULAR, STATIC  , OTHER, PB_FullControlData, strictMode, constTempValue, 0),
+    PB_FIELD(  5, BOOL    , SINGULAR, STATIC  , OTHER, PB_FullControlData, strictWaitEnabled, strictMode, 0),
+    PB_REPEATED_FIXED_COUNT(  6, MESSAGE , OTHER, PB_FullControlData, data, strictWaitEnabled, &PB_ControlData_fields),
     PB_LAST_FIELD
 };
 
@@ -93,7 +101,7 @@ const pb_field_t PB_FullControlData_fields[5] = {
  * numbers or field sizes that are larger than what can fit in 8 or 16 bit
  * field descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(PB_TempMeasure, time) < 65536 && pb_membersize(PB_TempProfile, data[0]) < 65536 && pb_membersize(PB_ResponseGetTempProfile, profile) < 65536 && pb_membersize(PB_Response, time) < 65536 && pb_membersize(PB_SwitchOvenState, time) < 65536 && pb_membersize(PB_ControlData, startTime) < 65536 && pb_membersize(PB_ControlData, elapsedTime) < 65536 && pb_membersize(PB_ControlData, duration) < 65536 && pb_membersize(PB_FullControlData, data[0]) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_PB_Command_PB_Time_PB_TempMeasure_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response_PB_SwitchOvenState_PB_ControlData_PB_FullControlData)
+PB_STATIC_ASSERT((pb_membersize(PB_TempMeasure, time) < 65536 && pb_membersize(PB_PeriodicMessage, tempMeasure) < 65536 && pb_membersize(PB_TempProfile, data[0]) < 65536 && pb_membersize(PB_ResponseGetTempProfile, profile) < 65536 && pb_membersize(PB_Response, time) < 65536 && pb_membersize(PB_SwitchOvenState, time) < 65536 && pb_membersize(PB_ControlData, startTime) < 65536 && pb_membersize(PB_ControlData, elapsedTime) < 65536 && pb_membersize(PB_ControlData, duration) < 65536 && pb_membersize(PB_FullControlData, data[0]) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_PB_Command_PB_Time_PB_TempMeasure_PB_PeriodicMessage_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response_PB_SwitchOvenState_PB_ControlData_PB_FullControlData)
 #endif
 
 #if !defined(PB_FIELD_16BIT) && !defined(PB_FIELD_32BIT)
@@ -104,7 +112,7 @@ PB_STATIC_ASSERT((pb_membersize(PB_TempMeasure, time) < 65536 && pb_membersize(P
  * numbers or field sizes that are larger than what can fit in the default
  * 8 bit descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(PB_TempMeasure, time) < 256 && pb_membersize(PB_TempProfile, data[0]) < 256 && pb_membersize(PB_ResponseGetTempProfile, profile) < 256 && pb_membersize(PB_Response, time) < 256 && pb_membersize(PB_SwitchOvenState, time) < 256 && pb_membersize(PB_ControlData, startTime) < 256 && pb_membersize(PB_ControlData, elapsedTime) < 256 && pb_membersize(PB_ControlData, duration) < 256 && pb_membersize(PB_FullControlData, data[0]) < 256), YOU_MUST_DEFINE_PB_FIELD_16BIT_FOR_MESSAGES_PB_Command_PB_Time_PB_TempMeasure_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response_PB_SwitchOvenState_PB_ControlData_PB_FullControlData)
+PB_STATIC_ASSERT((pb_membersize(PB_TempMeasure, time) < 256 && pb_membersize(PB_PeriodicMessage, tempMeasure) < 256 && pb_membersize(PB_TempProfile, data[0]) < 256 && pb_membersize(PB_ResponseGetTempProfile, profile) < 256 && pb_membersize(PB_Response, time) < 256 && pb_membersize(PB_SwitchOvenState, time) < 256 && pb_membersize(PB_ControlData, startTime) < 256 && pb_membersize(PB_ControlData, elapsedTime) < 256 && pb_membersize(PB_ControlData, duration) < 256 && pb_membersize(PB_FullControlData, data[0]) < 256), YOU_MUST_DEFINE_PB_FIELD_16BIT_FOR_MESSAGES_PB_Command_PB_Time_PB_TempMeasure_PB_PeriodicMessage_PB_TempProfile_PB_ResponseGetTempProfile_PB_Response_PB_SwitchOvenState_PB_ControlData_PB_FullControlData)
 #endif
 
 

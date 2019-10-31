@@ -9,7 +9,7 @@ enum PB_MsgType {
 	CMD = 1; // команда
 	RESPONSE = 2; // ответ на команду
 	RESPONSE_GET_TEMP_PROFILE = 3; // ответ на команду GET_TEMP_PROFILE(большого размера, поэтому рассматривается особняком)
-	TEMP_MEASURE = 4; // контроллер отправляет серверу текущее измерение температуры
+	PERIODIC_MESSAGE = 4; // периодические сообщения от контроллера, в т.ч. последний замер температуры и еще некоторые данные
 	RESPONSE_TEMP_MEASURE = 5; // сервер отвечает что измерение было успешно принято
 	FINISH_PROGRAM = 6; // котроллер оправляет серверу команду что он успешно завершил программу
 	PLAIN_TEXT = 7; // простой текст
@@ -27,7 +27,7 @@ enum PB_CmdType {
 	MANUAL_ON = 4; 
 	MANUAL_OFF = 5;
 	MANUAL_KEEP_CURRENT = 6;
-	// команды для режима управления "FOLLOW_TEMP_PROFILE - следование термопрофилю"
+	// команды для автоматических режимов управления
 	STOP = 7;
 	START = 8;
 	START_BG = 9;
@@ -35,6 +35,8 @@ enum PB_CmdType {
 	PAUSE = 11;
 	RESUME = 12;
 	SET_CONST_TEMP = 13;
+	ENABLE_STRICT_MODE = 14;
+	DISABLE_STRICT_MODE = 15;
 }
 
 message PB_Command {
@@ -53,6 +55,11 @@ message PB_Time {
 message PB_TempMeasure {
 	PB_Time time = 1;
 	float temp = 2;
+}
+
+message PB_PeriodicMessage {
+	PB_TempMeasure tempMeasure = 1;
+	bool strictWaitEnabled = 2;
 }
 
 message PB_TempProfile {
@@ -118,5 +125,7 @@ message PB_FullControlData {
 	PB_ControlMode leadControlMode = 1; // ведущий режим управления(по умолчанию DEFAULT_OFF, а дальше смотря куда кликнет пользователь)
 	PB_OvenState ovenState = 2; // состояние печки, дублирует одноименную переменную в структуре PB_Response
 	float constTempValue = 3; // (только для режима HOLD_CONST_TEMP - величина температуры для удержания)
-	repeated PB_ControlData data = 4 [(nanopb).max_count = 2, (nanopb).fixed_count = true];
+	bool strictMode = 4; // строгий режим для режима FOLLOW_TEMP_PROFILE, это означает что программа нагревания не будет переходить к следующему этапу, не завершив конечную точку нагрева на предыдущем этапе
+	bool strictWaitEnabled = 5; // (дословно - в строгом режиме ожидание включено) флаг для строгого режима, означает что программа управления принудительно поставлена на паузу, до тех пор пока печка не нагреется до нужной температуры
+	repeated PB_ControlData data = 6 [(nanopb).max_count = 2, (nanopb).fixed_count = true];
 }

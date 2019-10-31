@@ -38,8 +38,8 @@ function reducer (state = Map(initState), action) {
             //return Map(action.data);
             return state.merge(action.data);
 
-        case a.PB_TempMeasure: {
-            let newMeasure = action.data;
+        case a.PB_PeriodicMessage: {
+            let newMeasure = action.data.tempMeasure;
             let result = state;
             if (newMeasure.time > state.get('lastRealTimeMeasure')) {
                 result = state.set('lastRealTimeMeasure', newMeasure.time);
