@@ -151,15 +151,16 @@ void money_cmdManagerTask(void const *argument)
 		case PB_CmdType_RESUME:
 		case PB_CmdType_SET_TIME: {
 			controlData = &g.fControlData.data[cmd.acmIdx];
+			PB_ControlMode mode = PB_ControlMode_FOLLOW_TEMP_PROFILE + cmd.acmIdx;
 			switch (cmd.cmdType) {
 				case PB_CmdType_STOP:
-					Oven_finishControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
+					Oven_finishControlMode(mode);
 					break;
 				case PB_CmdType_START_BG:
-					Oven_startControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE, true);
+					Oven_startControlMode(mode, true);
 					break;
 				case PB_CmdType_START:
-					Oven_startControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE, false);
+					Oven_startControlMode(mode, false);
 					break;
 				case PB_CmdType_PAUSE:
 					if (controlData->controlState != PB_ControlState_DISABLED) {
