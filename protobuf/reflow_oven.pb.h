@@ -94,7 +94,7 @@ typedef struct _PB_Command {
     PB_CmdType cmdType;
     uint32_t id;
     uint8_t priority;
-    uint8_t ACM_idx;
+    uint8_t acmIdx;
     uint32_t value;
 /* @@protoc_insertion_point(struct:PB_Command) */
 } PB_Command;
@@ -183,7 +183,7 @@ typedef struct _PB_ResponseGetTempProfile {
 #define PB_Command_cmdType_tag                   1
 #define PB_Command_id_tag                        2
 #define PB_Command_priority_tag                  3
-#define PB_Command_ACM_idx_tag                   4
+#define PB_Command_acmIdx_tag                    4
 #define PB_Command_value_tag                     5
 #define PB_Time_unixSeconds_tag                  1
 #define PB_Time_mills_tag                        2

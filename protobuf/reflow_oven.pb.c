@@ -14,8 +14,8 @@ const pb_field_t PB_Command_fields[6] = {
     PB_FIELD(  1, UENUM   , SINGULAR, STATIC  , FIRST, PB_Command, cmdType, cmdType, 0),
     PB_FIELD(  2, UINT32  , SINGULAR, STATIC  , OTHER, PB_Command, id, cmdType, 0),
     PB_FIELD(  3, UINT32  , SINGULAR, STATIC  , OTHER, PB_Command, priority, id, 0),
-    PB_FIELD(  4, UINT32  , SINGULAR, STATIC  , OTHER, PB_Command, ACM_idx, priority, 0),
-    PB_FIELD(  5, UINT32  , SINGULAR, STATIC  , OTHER, PB_Command, value, ACM_idx, 0),
+    PB_FIELD(  4, UINT32  , SINGULAR, STATIC  , OTHER, PB_Command, acmIdx, priority, 0),
+    PB_FIELD(  5, UINT32  , SINGULAR, STATIC  , OTHER, PB_Command, value, acmIdx, 0),
     PB_LAST_FIELD
 };
 

@@ -57,11 +57,11 @@ const TempMonitorRedux = connect((state, ownProps) => {
     }
 })(TempMonitor);
 
-function sendCommand(cmd, ACM_idx=null, value=null) {
+function sendCommand(cmd, acmIdx=null, value=null) {
     console.log('Send command ', cmd);
     socket.emit('client cmd', {
         cmdTypeStr: cmd,
-        ACM_idx: ACM_idx,
+        acmIdx: acmIdx,
         value: value
     });
 }
@@ -142,21 +142,21 @@ class AutomaticControlWidget extends Component {
                     <td>
                         <button className={style.x2}
                                 style={{backgroundColor: "#ff7474"}}
-                                onClick={() => sendCommand('STOP', this.props.ACM_idx)}>
+                                onClick={() => sendCommand('STOP', this.props.acmIdx)}>
                             stop
                         </button>
                     </td>
                     <td>
                         <button className={style.x2}
                                 style={{backgroundColor: "rgba(116,255,116,0.53)"}}
-                                onClick={() => sendCommand('START_BG', this.props.ACM_idx)}>
+                                onClick={() => sendCommand('START_BG', this.props.acmIdx)}>
                             run in background
                         </button>
                     </td>
                     <td>
                         <button className={style.x2}
                                 style={{backgroundColor: "#74ff74"}}
-                                onClick={() => sendCommand('START', this.props.ACM_idx)}>
+                                onClick={() => sendCommand('START', this.props.acmIdx)}>
                             run
                         </button>
                     </td>
@@ -171,7 +171,7 @@ class AutomaticControlWidget extends Component {
                         {timeValueToClockView(this.state.elapsedTime)}/{timeValueToClockView(this.props.duration)}
                     </td>
                     <td>
-                        <button onClick={() => sendCommand(this.props.isPaused ? 'RESUME' : 'PAUSE', this.props.ACM_idx)}>
+                        <button onClick={() => sendCommand(this.props.isPaused ? 'RESUME' : 'PAUSE', this.props.acmIdx)}>
                             {this.props.isPaused ? 'resume' : 'pause'}
                         </button>
                     </td>
@@ -193,7 +193,7 @@ class AutomaticControlWidget extends Component {
                                }}
                                onMouseUp={()=>{
                                    this.timeSliderPressed = false;
-                                   sendCommand('SET_TIME', this.props.ACM_idx, this.state.elapsedTime);
+                                   sendCommand('SET_TIME', this.props.acmIdx, this.state.elapsedTime);
                                }}
                         />
                     </td>
@@ -204,7 +204,7 @@ class AutomaticControlWidget extends Component {
 }
 const AutomaticControlWidgetRedux = connect((state, ownProps) => {
     return {
-        ...state.get('fControlData').data[ownProps.ACM_idx],
+        ...state.get('fControlData').data[ownProps.acmIdx],
     }
 })(AutomaticControlWidget);
 
@@ -215,8 +215,8 @@ class ControlButtons extends Component {
     render() {
         return <div className={'col-md-6 col-12 ' + style.controlButtons}>
             <ManualControlWidgetRedux title='Manual control'/>
-            <AutomaticControlWidgetRedux title='Follow temp profile' ACM_idx={0}/>
-            <AutomaticControlWidgetRedux title='Hold const temp' ACM_idx={1}/>
+            <AutomaticControlWidgetRedux title='Follow temp profile' acmIdx={0}/>
+            <AutomaticControlWidgetRedux title='Hold const temp' acmIdx={1}/>
 
             <button style={{backgroundColor: "#6193ff"}} onClick={() => sendCommand('CLIENT_REQUIRES_RESET')}>Reset MCU</button>
             <button style={{backgroundColor: "#0c0d29", color: "#c7d4ff"}} onClick={() => sendCommand('SUDO_HALT')}>sudo halt</button>

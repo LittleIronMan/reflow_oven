@@ -93,7 +93,7 @@
          * @property {PB_CmdType|null} [cmdType] PB_Command cmdType
          * @property {number|null} [id] PB_Command id
          * @property {number|null} [priority] PB_Command priority
-         * @property {number|null} [ACMIdx] PB_Command ACMIdx
+         * @property {number|null} [acmIdx] PB_Command acmIdx
          * @property {number|null} [value] PB_Command value
          */
     
@@ -137,12 +137,12 @@
         PB_Command.prototype.priority = 0;
     
         /**
-         * PB_Command ACMIdx.
-         * @member {number} ACMIdx
+         * PB_Command acmIdx.
+         * @member {number} acmIdx
          * @memberof PB_Command
          * @instance
          */
-        PB_Command.prototype.ACMIdx = 0;
+        PB_Command.prototype.acmIdx = 0;
     
         /**
          * PB_Command value.
@@ -182,8 +182,8 @@
                 writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.id);
             if (message.priority != null && message.hasOwnProperty("priority"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.priority);
-            if (message.ACMIdx != null && message.hasOwnProperty("ACMIdx"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.ACMIdx);
+            if (message.acmIdx != null && message.hasOwnProperty("acmIdx"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.acmIdx);
             if (message.value != null && message.hasOwnProperty("value"))
                 writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.value);
             return writer;
@@ -230,7 +230,7 @@
                     message.priority = reader.uint32();
                     break;
                 case 4:
-                    message.ACMIdx = reader.uint32();
+                    message.acmIdx = reader.uint32();
                     break;
                 case 5:
                     message.value = reader.uint32();
@@ -296,9 +296,9 @@
             if (message.priority != null && message.hasOwnProperty("priority"))
                 if (!$util.isInteger(message.priority))
                     return "priority: integer expected";
-            if (message.ACMIdx != null && message.hasOwnProperty("ACMIdx"))
-                if (!$util.isInteger(message.ACMIdx))
-                    return "ACMIdx: integer expected";
+            if (message.acmIdx != null && message.hasOwnProperty("acmIdx"))
+                if (!$util.isInteger(message.acmIdx))
+                    return "acmIdx: integer expected";
             if (message.value != null && message.hasOwnProperty("value"))
                 if (!$util.isInteger(message.value))
                     return "value: integer expected";
@@ -379,8 +379,8 @@
                 message.id = object.id >>> 0;
             if (object.priority != null)
                 message.priority = object.priority >>> 0;
-            if (object.ACMIdx != null)
-                message.ACMIdx = object.ACMIdx >>> 0;
+            if (object.acmIdx != null)
+                message.acmIdx = object.acmIdx >>> 0;
             if (object.value != null)
                 message.value = object.value >>> 0;
             return message;
@@ -403,7 +403,7 @@
                 object.cmdType = options.enums === String ? "GET_ALL_INFO" : 0;
                 object.id = 0;
                 object.priority = 0;
-                object.ACMIdx = 0;
+                object.acmIdx = 0;
                 object.value = 0;
             }
             if (message.cmdType != null && message.hasOwnProperty("cmdType"))
@@ -412,8 +412,8 @@
                 object.id = message.id;
             if (message.priority != null && message.hasOwnProperty("priority"))
                 object.priority = message.priority;
-            if (message.ACMIdx != null && message.hasOwnProperty("ACMIdx"))
-                object.ACMIdx = message.ACMIdx;
+            if (message.acmIdx != null && message.hasOwnProperty("acmIdx"))
+                object.acmIdx = message.acmIdx;
             if (message.value != null && message.hasOwnProperty("value"))
                 object.value = message.value;
             return object;
