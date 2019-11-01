@@ -98,6 +98,13 @@ function receiveMsgFromStm32 (data) {
         let debugVar = {countConverts: 0, countCalls: 0}; // переменная для отладки
         convertPB_Time2Number(dataObj, null);
 
+        // если был получен термопрофиль - то так как массив фиксированной длины,
+        // вырезаем из него точки, которые не несут данных, оставляем только актуальные
+        if (msgProto === 'PB_ResponseGetTempProfile') {
+            let p = dataObj.profile;
+            p.data = p.data.slice(0, p.countPoints);
+        }
+
         // применяем обновление для глобальной структуры данных
         let action = {type: msgProto, data: dataObj};
         reduxStore.dispatch({type: msgProto, data: dataObj});

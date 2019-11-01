@@ -115,7 +115,7 @@ void timerFunc(xTimerHandle xTimer) {
 	// xTimerChangePeriod(xTimer, uiAutoReloadTimerPeriod, 0);
 }
 
-void money_sendFullControlData()
+void Oven_sendFullControlData()
 {
 	PB_FullControlData* response = (PB_FullControlData*)fControlDataQueue.dataBuf;
 	*response = g.fControlData;
@@ -181,16 +181,16 @@ void money_cmdManagerTask(void const *argument)
 					}
 					break;
 			}
-			money_sendFullControlData();
+			Oven_sendFullControlData();
 			break;
 		}
 		case PB_CmdType_SET_CONST_TEMP:
 			g.fControlData.constTempValue = cmd.value;
-			money_sendFullControlData();
+			Oven_sendFullControlData();
 
 		case PB_CmdType_GET_ALL_INFO: {
 			// отправляем данные о всех видах управления
-			money_sendFullControlData();
+			Oven_sendFullControlData();
 
 			// отправляем термопрофиль
 			PB_ResponseGetTempProfile* response2 = (PB_ResponseGetTempProfile*)getProfileQueue.dataBuf;
@@ -220,7 +220,7 @@ void money_cmdManagerTask(void const *argument)
 				.time = currentTime
 			};
 			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
-			money_sendFullControlData();
+			Oven_sendFullControlData();
 			break;
 		}
 		case PB_CmdType_MANUAL_ON:
@@ -232,7 +232,7 @@ void money_cmdManagerTask(void const *argument)
 
 			Oven_startControlMode(PB_ControlMode_MANUAL, false);
 
-			money_sendFullControlData();
+			Oven_sendFullControlData();
 			break;
 		}
 		default: {
@@ -283,6 +283,7 @@ void money_pidControllerTask(void const *argument)
 				if (prevTime.unixSeconds == 0) { prevTime = currentTime; }
 
 				bool allAutomaticModesDisabled = true;
+				bool needSendFullControlData = false;
 
 				xSemaphoreTake(g.fControlDataMutex, portMAX_DELAY);
 
@@ -297,28 +298,30 @@ void money_pidControllerTask(void const *argument)
 						uint32_t millsSinceStart;
 
 						if (!data->isPaused) {
+							millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &data->startTime);
 							if (g.fControlData.strictMode) {
 								static float waitTemp;
 #define temperatureError 5.0f
-								// если включен строгий режим управления,
-								// если следующая точка времени принадлежит другому отрезку термопрофиля,
-								// и если при этом текущая реальная температура печки меньше чем идеальная(заданная),
-								// то тормозим время(elapsedTime не увеличиваем) и ждем пока печь завершит нагревание на предыдущем отрезке профиля
 								if (!g.fControlData.strictWaitEnabled) {
+									// если следующая точка времени принадлежит другому отрезку термопрофиля,
+									// и если при этом текущая реальная температура печки меньше чем идеальная(заданная),
+									// то тормозим время(elapsedTime не увеличиваем) и ждем пока печь завершит нагревание на предыдущем отрезке профиля
 									float prevTimePoint = (float)NRC_getTimeDiffInMills(&prevTime, &data->startTime) / 1000.0f;
-									float curTimePoint = data->elapsedTime.unixSeconds + (float)data->elapsedTime.mills / 1000.0f;
+									float curTimePoint = millsSinceStart / 1000.0f;
 									if (prevTimePoint > 0 && curTimePoint > prevTimePoint&&
 										curTimePoint < data->duration.unixSeconds)
 									{
 										for (uint8_t i = 0; i < g.tempProfile.countPoints; i++) {
 											PB_TempMeasure* crossPoint = &g.tempProfile.data[i];
-											if (curTimePoint >= crossPoint->time.unixSeconds) {
-												if (prevTimePoint < crossPoint->time.unixSeconds) {
+											if (prevTimePoint < crossPoint->time.unixSeconds) {
+												if (curTimePoint >= crossPoint->time.unixSeconds) {
 													// проверка что текущая температура значительно ниже заданной
 													if (crossPoint->temp - temp > temperatureError) {
 														g.fControlData.strictWaitEnabled = true;
 														waitTemp = crossPoint->temp;
-														millsSinceStart = crossPoint->time.unixSeconds * 1000;
+														// сохраняем время остановки в переменной elapsedTime
+														data->elapsedTime = crossPoint->time;
+														needSendFullControlData = true;
 													}
 												}
 												break;
@@ -327,29 +330,32 @@ void money_pidControllerTask(void const *argument)
 									}
 								}
 								else {
+									// ожидание заданной температуры(в строгом режиме)
 									if (waitTemp - temp < temperatureError) {
 										// выходим из режима ожидания
 										g.fControlData.strictWaitEnabled = false;
+										// обновляем startTime исходя из сохраненной величины elapsedTime
+										data->startTime = NRC_getTimeDiff(&currentTime, &data->elapsedTime);
+										needSendFullControlData = true;
 									}
 								}
 							}
 						}
 
-						if (data->isPaused) {
+						if (data->isPaused || g.fControlData.strictWaitEnabled) {
+							// если время приостановлено - рассчитываем millsSinceStart
+							// исходя из последней сохраненной величины elapsedTime
 							millsSinceStart = data->elapsedTime.unixSeconds * 1000 + data->elapsedTime.mills;
 						}
-						else if (g.fControlData.strictWaitEnabled) {
-							// в этом случае millsSinceStart определен по коду выше
-						}
 						else {
-							millsSinceStart = NRC_getTimeDiffInMills(&currentTime, &data->startTime);
+							// если время не остановлено, обновляем величину elapsedTime
 							data->elapsedTime.unixSeconds = millsSinceStart / 1000;
 							data->elapsedTime.mills = millsSinceStart - data->elapsedTime.unixSeconds * 1000;
 						}
 
 						if (millsSinceStart > data->duration.unixSeconds * 1000) {
 							Oven_finishControlMode(PB_ControlMode_FOLLOW_TEMP_PROFILE);
-							money_sendFullControlData();
+							Oven_sendFullControlData();
 							nrcLogD("Heating program finished");
 						}
 						else if (data->controlState == PB_ControlState_ENABLED) {
@@ -399,6 +405,10 @@ void money_pidControllerTask(void const *argument)
 					.strictWaitEnabled = g.fControlData.strictWaitEnabled
 				};
 				addItemToQueue(&periodicMsgQueue, (uint8_t*)&msg, 1, msgSenderTaskHandle);
+
+				if (needSendFullControlData) {
+					Oven_sendFullControlData();
+				}
 			}
 		}
 	}

@@ -300,7 +300,12 @@ class GraphView extends Component {
             this._realMeasureGraph.drawGraph(state.get('realPoints'), this.state.viewParams, 0);
         }
         if (this._idealGraph) {
-            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, state.get('fControlData').data[0].startTime);
+            let ftpData = state.get('fControlData').data[0];
+            let offset = ftpData.startTime;
+            if (ftpData.isPaused || state.get('fControlData').strictWaitEnabled) {
+                offset = state.get('lastRealTimeMeasure') - ftpData.elapsedTime;
+            }
+            this._idealGraph.drawGraph(state.get('tempProfile'), this.state.viewParams, offset);
         }
     };
 

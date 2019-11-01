@@ -107,7 +107,7 @@ extern NrcUartBufAlpha dmaRxBuf; // циклический буфер прини
 
 void money_init(void);
 void money_initTasks(void);
-void money_sendFullControlData(void);
+void Oven_sendFullControlData(void);
 void money_cmdManagerTask(void const* argument);
 void money_pidControllerTask(void const *argument);
 void money_msgReceiverTask(void const *argument);
