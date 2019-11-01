@@ -8,9 +8,17 @@
 .ui .selectable {
   width: 100%;
   padding: 5px;
-  &:hover {
-    padding: 0px;
+  &:hover:not(.enabled):not(.enabledInBackground) {
+    padding: 0;
     border: 5px solid lighten($mainColor, 15%);
+  }
+  &.enabled {
+    padding: 0;
+    border: 5px solid green;
+  }
+  &.enabledInBackground {
+    padding: 0;
+    border: 5px solid rgba(0, 128, 0, 0.4);
   }
 }
 .ui table {

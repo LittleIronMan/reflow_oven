@@ -220,11 +220,16 @@ void money_cmdManagerTask(void const *argument)
 				.time = currentTime
 			};
 			bool success = addItemToQueue(&responseQueue, (uint8_t*)&response, cmd.priority, msgSenderTaskHandle);
+			money_sendFullControlData();
 			break;
 		}
 		case PB_CmdType_MANUAL_ON:
+		case PB_CmdType_MANUAL_KEEP_CURRENT:
 		case PB_CmdType_MANUAL_OFF: {
-			Oven_setState(cmd.cmdType == PB_CmdType_MANUAL_ON ? PB_OvenState_ON : PB_OvenState_OFF);
+			if (cmd.cmdType == PB_CmdType_MANUAL_OFF) { Oven_setState(PB_OvenState_OFF); }
+			else if (cmd.cmdType == PB_CmdType_MANUAL_ON) { Oven_setState(PB_OvenState_ON); }
+			// else - оставляем предыдущее состояние печки
+
 			Oven_startControlMode(PB_ControlMode_MANUAL, false);
 
 			money_sendFullControlData();
@@ -306,7 +311,7 @@ void money_pidControllerTask(void const *argument)
 										curTimePoint < data->duration.unixSeconds)
 									{
 										for (uint8_t i = 0; i < g.tempProfile.countPoints; i++) {
-											PB_TempMeasure* crossPoint = g.tempProfile.data[i].time.unixSeconds;
+											PB_TempMeasure* crossPoint = &g.tempProfile.data[i];
 											if (curTimePoint >= crossPoint->time.unixSeconds) {
 												if (prevTimePoint < crossPoint->time.unixSeconds) {
 													// проверка что текущая температура значительно ниже заданной
@@ -382,6 +387,8 @@ void money_pidControllerTask(void const *argument)
 					}
 				}
 				xSemaphoreGive(g.fControlDataMutex);
+
+				prevTime = currentTime;
 
 				if (allAutomaticModesDisabled) {
 					nrcLogD("Temp %.2f", temp);
@@ -725,55 +732,76 @@ void Oven_setState(PB_OvenState newState)
 	}
 }
 
-void Oven_startControlMode(PB_ControlMode controlMode, bool inBackground)
+void Oven_startControlMode(PB_ControlMode controlMode, bool startInBackground)
 {
-	PB_ControlMode prevEnabledMode = g.fControlData.leadControlMode;
-	if (!inBackground && prevEnabledMode != PB_ControlMode_DEFAULT_OFF && prevEnabledMode != PB_ControlMode_MANUAL) {
+	const PB_ControlMode prevEnabledMode = g.fControlData.leadControlMode;
+	// деактивируем текущий активный режим
+	if (prevEnabledMode != PB_ControlMode_DEFAULT_OFF) {
+		if (prevEnabledMode == PB_ControlMode_MANUAL) {
+			// ручной режим управления особым образом выключать не нужно, достаточно изменить leadControlMode на другую величину
+		}
+		else if (!startInBackground) {
+			// если до этого была включена какая-то автоматическая программа стабилизации температуры,
+			// то она продолжит выполняться фоном(BACKGROUND_MODE т.е. время для неё продолжить тикать, но печка не будет переключаться)
+			for (uint8_t i = 0; i < countAutomaticModes; i++) {
+				PB_ControlData* data = automaticModes[i];
+				if (prevEnabledMode == data->controlMode) {
+					data->controlState = PB_ControlState_BACKGROUND;
+					break;
+				}
+			}
+		}
+	}
+
+	// активируем новый режим
+	if (controlMode == PB_ControlMode_MANUAL) {
+		g.fControlData.leadControlMode = PB_ControlMode_MANUAL;
+	}
+	else {
 		for (uint8_t i = 0; i < countAutomaticModes; i++) {
-			PB_ControlData *data = automaticModes[i];
-			if (prevEnabledMode == data->controlMode) {
-				// если до этого была включена какая-то автоматическая программа стабилизации температуры,
-				// то она продолжит выполняться фоном(BACKGROUND_MODE т.е. время для неё продолжить тикать, но печка не будет переключаться)
-				data->controlState = PB_ControlState_BACKGROUND;
+			if (controlMode == automaticModes[i]->controlMode) {
+				PB_ControlData* data = automaticModes[i];
+				if (startInBackground) {
+					data->controlState = PB_ControlState_BACKGROUND;
+					if (prevEnabledMode == controlMode) {
+						// если текущий активный режим переводим переводим в фоновый, то печку нужно выключить
+						Oven_setState(PB_OvenState_OFF);
+					}
+				}
+				else {
+					data->controlState = PB_ControlState_ENABLED;
+					NRC_getTime(&data->startTime, NULL);
+					data->isPaused = false;
+					data->elapsedTime = NRC_NULL_TIME;
+					// сброс начальных данных ПИД регулятора перед включением
+					g.lastIterationTime = data->startTime;
+					pidData.lastProcessValue = 0.0f;
+					pidData.integralErr = 0.0f;
+					// делаем новый режим активным
+					g.fControlData.leadControlMode = controlMode;
+				}
 				break;
 			}
 		}
-	}
-	for (uint8_t i = 0; i < countAutomaticModes; i++) {
-		if (controlMode == automaticModes[i]->controlMode) {
-			PB_ControlData *data = automaticModes[i];
-			if (data->controlState == PB_ControlState_DISABLED) {
-				data->isPaused = false;
-				NRC_getTime(&data->startTime, NULL);
-				data->elapsedTime = NRC_NULL_TIME;
-				// сброс начальных данных ПИД регулятора
-				g.lastIterationTime = data->startTime;
-				pidData.lastProcessValue = 0.0f;
-				pidData.integralErr = 0.0f;
-			}
-			data->controlState = inBackground ? PB_ControlState_BACKGROUND : PB_ControlState_ENABLED;
-			break;
-		}
-	}
-	if (inBackground && prevEnabledMode == controlMode) {
-		// если текущее активное управление переводим в фоновый режим, то печку нужно выключить
-		Oven_setState(PB_OvenState_OFF);
-	}
-	else {
-		g.fControlData.leadControlMode = controlMode;
 	}
 }
 
 void Oven_finishControlMode(PB_ControlMode controlMode)
 {
 	// TODO: проверить, безопасно ли такое выключение. Могут ли другие задачи/таймеры/перывания это как-то прервать?
+
 	if (controlMode == g.fControlData.leadControlMode) {
+		// выключаем текущий активный режим
 		g.fControlData.leadControlMode = PB_ControlMode_DEFAULT_OFF;
 	}
+	// если выключается какой-то из автоматических режимов, то нужно сбросить соответсвующую ему структуру данных
 	for (uint8_t i = 0; i < countAutomaticModes; i++) {
 		PB_ControlData* data = automaticModes[i];
 		if (controlMode == data->controlMode) {
 			data->controlState = PB_ControlState_DISABLED;
+			data->isPaused = false;
+			data->elapsedTime = NRC_NULL_TIME;
+
 			break;
 		}
 	}
@@ -916,7 +944,7 @@ void NRC_getTime(PB_Time *time, uint32_t *argTickCount)
 // возвращает разницу между 2-мя временными метками в миллисекундах
 long NRC_getTimeDiffInMills(PB_Time* time1, PB_Time* time2)
 {
-	return (time1->unixSeconds - time2->unixSeconds) * 1000 + ((long)time1->mills - time2->mills);
+	return ((long)time1->unixSeconds - (long)time2->unixSeconds) * 1000 + ((long)time1->mills - time2->mills);
 }
 
 PB_Time NRC_getTimeDiff(PB_Time* time1, PB_Time* time2)

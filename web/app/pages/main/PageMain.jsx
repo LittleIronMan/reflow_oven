@@ -71,7 +71,7 @@ class ManualControlWidget extends Component {
         super(props);
     }
     render() {
-        return <div className={style.selectable}>
+        return <div className={style.selectable + (this.props.enabled ? (' ' + style.enabled) : '')}>
             <table><tbody>
                 <tr>
                     <td colSpan="3">
@@ -104,7 +104,11 @@ class ManualControlWidget extends Component {
         </div>
     }
 }
-const ManualControlWidgetRedux = connect()(ManualControlWidget);
+const ManualControlWidgetRedux = connect((state, ownProps) => {
+    return {
+        enabled: (state.get('fControlData').leadControlMode === 'MANUAL')
+    }
+})(ManualControlWidget);
 
 function timeValueToClockView(time) {
     return `${Math.floor(time / 60)}:${Math.floor(time % 60)}`;
@@ -129,7 +133,8 @@ class AutomaticControlWidget extends Component {
         this.unsubscribe();
     }
     render() {
-        return <div className={style.selectable}>
+        return <div className={style.selectable + (this.props.controlState === 'ENABLED' ? (' ' + style.enabled) :
+                                                    this.props.controlState === 'BACKGROUND' ? (' ' + style.enabledInBackground) : '')}>
             <table><tbody>
                 <tr>
                     <td colSpan="3">
@@ -204,7 +209,7 @@ class AutomaticControlWidget extends Component {
 }
 const AutomaticControlWidgetRedux = connect((state, ownProps) => {
     return {
-        ...state.get('fControlData').data[ownProps.acmIdx],
+        ...state.get('fControlData').data[ownProps.acmIdx]
     }
 })(AutomaticControlWidget);
 
