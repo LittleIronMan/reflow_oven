@@ -852,10 +852,10 @@ void money_init()
 
 void money_initTasks()
 {
-	NRC_INIT_TASK(msgReceiver, 202, 4);
-	NRC_INIT_TASK(cmdManager, 146, 3);
-	NRC_INIT_TASK(pidController, 134, 2);
-	NRC_INIT_TASK(msgSender, 134, 1);
+	NRC_INIT_TASK(msgReceiver, ((336 + 60) / 2), 4);
+	NRC_INIT_TASK(cmdManager, ((240 + 60) / 2), 3);
+	NRC_INIT_TASK(pidController, ((240 + 60) / 2), 2);
+	NRC_INIT_TASK(msgSender, ((208 + 100/*!!!*/ + 60) / 2), 1);
 
 	PB_Response response = (PB_Response) {
 		.cmdType = PB_CmdType_HARD_RESET,
