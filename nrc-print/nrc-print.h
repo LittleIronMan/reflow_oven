@@ -9,9 +9,9 @@
 #define NRC_LOG_LEVEL_DEFAULT 1
 #define NRC_LOG_LEVEL_DEBUG 2
 #define NRC_LOG_LEVEL_VERBATIM 3
-// NRC_LOG_LEVEL_DYNAMIC - если этот макрос определен и равен 1, то логи фильтруются программно глобальной переменной logLevelGlobal
+// NRC_LOG_LEVEL_DYNAMIC - РµСЃР»Рё СЌС‚РѕС‚ РјР°РєСЂРѕСЃ РѕРїСЂРµРґРµР»РµРЅ Рё СЂР°РІРµРЅ 1, С‚Рѕ Р»РѕРіРё С„РёР»СЊС‚СЂСѓСЋС‚СЃСЏ РїСЂРѕРіСЂР°РјРјРЅРѕ РіР»РѕР±Р°Р»СЊРЅРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№ logLevelGlobal
 
-// здесь определены все настройки логов для C-программ в проекте NRC
+// Р·РґРµСЃСЊ РѕРїСЂРµРґРµР»РµРЅС‹ РІСЃРµ РЅР°СЃС‚СЂРѕР№РєРё Р»РѕРіРѕРІ РґР»СЏ C-РїСЂРѕРіСЂР°РјРј РІ РїСЂРѕРµРєС‚Рµ NRC
 #ifdef NRC_RPI_UART_TX
 	//#ifdef NRC_WINDOWS_SIMULATOR
 	#define NRC_LOG_LEVEL NRC_LOG_LEVEL_DEFAULT
