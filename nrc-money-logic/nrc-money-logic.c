@@ -65,9 +65,6 @@ NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, BufState_USED_BY_HARDW
 NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
 nrc_defineSemaphore(TxBufSem); // семафор, блокирующий задачу отправки сообщений до тех пор пока не завершится предыдущая отправка
 
-#define NRC_OUTGOING_QUEUE 1
-#define NRC_INCOMING_QUEUE 0
-
 // очереди со входящими данными
 #define NRC_INCOMING_QUEUES \
 X(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields) /* очередь входящих сообщений */
