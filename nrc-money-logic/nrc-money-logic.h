@@ -101,6 +101,22 @@ typedef struct {
 	nrc_defineSemaphore(fControlDataMutex);
 } NRC_GlobalData;
 
+// макрофункция для статического выделения памяти для очередей
+#define NRC_INIT_QUEUE(aQueueName,aType,aCountItems,aMsgType,aProtobufFields) \
+uint8_t aQueueName##DataBuf[sizeof(aType) * (aCountItems)]; \
+NRC_QueueItem aQueueName##ItemsBuf[(aCountItems)]; \
+NRC_Queue aQueueName = { \
+	.queueName = #aQueueName, \
+	.firstItem = NULL, \
+	.items = aQueueName##ItemsBuf, \
+	.dataBuf = aQueueName##DataBuf, \
+	.itemDataSize = sizeof(aType), \
+	.maxItemsCount = (aCountItems), \
+	.msgType = (aMsgType), \
+	.protobufFields = aProtobufFields, \
+	.mutex = NULL \
+};
+
 extern NrcUartBufBeta	RxBuf, // буфер данных, принятых по UART
 						TxBuf; // буфер данных, передаваемых по UART
 extern NrcUartBufAlpha dmaRxBuf; // циклический буфер принимаемых по UART данных для DMA

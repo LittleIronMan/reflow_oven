@@ -65,35 +65,36 @@ NrcUartBufBeta RxBuf = { RxArr, UART_RECEIVE_BUF_SIZE, 0, BufState_USED_BY_HARDW
 NrcUartBufAlpha dmaRxBuf = { RxDmaArr, UART_RECEIVE_BUF_SIZE / 2, UART_RECEIVE_BUF_SIZE / 2};
 nrc_defineSemaphore(TxBufSem); // семафор, блокирующий задачу отправки сообщений до тех пор пока не завершится предыдущая отправка
 
-// макрофункция для статического выделения памяти для очередей
-#define NRC_CREATE_QUEUE(aQueueName,aType,aCountItems,aMsgType,aProtobufFields) \
-uint8_t aQueueName##DataBuf[sizeof(aType) * (aCountItems)]; \
-NRC_QueueItem aQueueName##ItemsBuf[(aCountItems)]; \
-NRC_Queue aQueueName = { \
-	.queueName = #aQueueName, \
-	.firstItem = NULL, \
-	.items = aQueueName##ItemsBuf, \
-	.dataBuf = aQueueName##DataBuf, \
-	.itemDataSize = sizeof(aType), \
-	.maxItemsCount = (aCountItems), \
-	.msgType = (aMsgType), \
-	.protobufFields = aProtobufFields, \
-	.mutex = NULL \
-}
+#define NRC_OUTGOING_QUEUE 1
+#define NRC_INCOMING_QUEUE 0
 
-NRC_CREATE_QUEUE(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields); // очередь входящих сообщений
-NRC_CREATE_QUEUE(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields); // очередь сообщений для отправки
-NRC_CREATE_QUEUE(periodicMsgQueue, PB_PeriodicMessage, 3, PB_MsgType_PERIODIC_MESSAGE, PB_PeriodicMessage_fields); // очередь измерений температуры для отправки
-NRC_CREATE_QUEUE(switchOvenStateQueue, PB_SwitchOvenState, 2, PB_MsgType_SWITCH_OVEN_STATE, PB_SwitchOvenState_fields); // очередь сообщений об изменении(переключении) состояния печки(вкл/выкл)
-NRC_CREATE_QUEUE(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPONSE_GET_TEMP_PROFILE, PB_ResponseGetTempProfile_fields);
-NRC_CREATE_QUEUE(fControlDataQueue, PB_FullControlData, 1, PB_MsgType_FULL_CONTROL_DATA, PB_FullControlData_fields);
+// очереди со входящими данными
+#define NRC_INCOMING_QUEUES \
+X(commandQueue, PB_Command, 3, PB_MsgType_CMD, PB_Command_fields) /* очередь входящих сообщений */
 
-// массив всех очередей
-NRC_Queue *const allQueues[] = { &commandQueue, &responseQueue, &periodicMsgQueue, &getProfileQueue, &switchOvenStateQueue, &fControlDataQueue };
+// очереди с исходящими данными(при отправке бОльший приоритет имеют те очереди, которые в начале этого списка)
+#define NRC_OUTGOING_QUEUES \
+X(switchOvenStateQueue, PB_SwitchOvenState, 2, PB_MsgType_SWITCH_OVEN_STATE, PB_SwitchOvenState_fields) /* очередь сообщений об изменении(переключении) состояния печки(вкл/выкл) */ \
+X(fControlDataQueue, PB_FullControlData, 1, PB_MsgType_FULL_CONTROL_DATA, PB_FullControlData_fields) \
+X(responseQueue, PB_Response, 3, PB_MsgType_RESPONSE, PB_Response_fields) /* очередь сообщений для отправки */ \
+X(periodicMsgQueue, PB_PeriodicMessage, 3, PB_MsgType_PERIODIC_MESSAGE, PB_PeriodicMessage_fields) /* очередь измерений температуры для отправки */ \
+X(getProfileQueue, PB_ResponseGetTempProfile, 1, PB_MsgType_RESPONSE_GET_TEMP_PROFILE, PB_ResponseGetTempProfile_fields)
+
+// список всех очередей
+#define NRC_ALL_QUEUES \
+	NRC_INCOMING_QUEUES \
+	NRC_OUTGOING_QUEUES
+
+// определение всех очередей и массивов к ним
+#define X(a1,a2,a3,a4,a5) NRC_INIT_QUEUE(a1,a2,a3,a4,a5)
+NRC_ALL_QUEUES
+#undef X
+
+#define X(aQueueName, ...) &aQueueName,
+NRC_Queue *const allQueues[] = { NRC_ALL_QUEUES }; // массив всех очередей
+NRC_Queue *const outgoingQueues[] = { NRC_OUTGOING_QUEUES };
+#undef X
 #define allQueuesCount (sizeof(allQueues) / sizeof(NRC_Queue*))
-
-// массив очередей с исходящими данными(при отправке бОльший приоритет имеют те очереди, которые в начале этого массива)
-NRC_Queue *const outgoingQueues[] = { &switchOvenStateQueue, &fControlDataQueue, &responseQueue, &periodicMsgQueue, &getProfileQueue };
 #define outgoingQueuesCount (sizeof(outgoingQueues) / sizeof(NRC_Queue*))
 
 //nrc_defineSemaphore(termometerMutex);
